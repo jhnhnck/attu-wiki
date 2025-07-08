@@ -1,0 +1,4 @@
+cysystemd
+pydantic
+python-dotenv
+py-cord @ git+https://github.com/Pycord-Development/pycord.git
