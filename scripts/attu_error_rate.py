@@ -91,7 +91,7 @@ for alert in alerts:
 # --- Send Alerts ---
 
 # for trimming to discord character length (adapted from attubot.util)
-def break_at_newline(lines: list[str], maximum: int = 2000, end: str = '...\n') -> str:
+def break_at_newline(lines: list[str], maximum: int = 2000, end: str = '\n...\n') -> str:
     result = ''
 
     for line in lines:
