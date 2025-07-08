@@ -23,7 +23,7 @@ RUN set -eux; \
 		dirmngr \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
-	mkdir -p /var/www/mediawiki;
+	mkdir -p /var/www/mediawiki /var/www/mediawiki/trash;
 
 # Install the Python packages we need
 RUN set -eux; \
@@ -107,4 +107,5 @@ RUN set -eux; \
 	git apply /var/www/citizen-viewport.patch; \
 	rm -rv .git;
 
+WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
