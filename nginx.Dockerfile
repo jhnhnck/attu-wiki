@@ -5,25 +5,20 @@ ARG MEDIAWIKI_MAJOR_VERSION='1.43'
 ARG MEDIAWIKI_VERSION='1.43.0'
 ARG MEDIAWIKI_RELEASE_BRANCH='REL1_43'
 
-# # System dependencies
-# RUN set -eux; \
-# 	\
-# 	apt-get update; \
-# 	apt-get install -y --no-install-recommends \
-#         netcat-traditional \
-# 	; \
-# 	rm -rf /var/lib/apt/lists/*
-
-# MediaWiki setup
+# System dependencies
 RUN set -eux; \
-    fetchDeps=" \
+	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+        netcat-traditional \
         gnupg \
         dirmngr \
         unzip \
-    "; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends $fetchDeps; \
-    \
+	; \
+	rm -rf /var/lib/apt/lists/*
+
+# MediaWiki setup
+RUN set -eux; \
     curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
     curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
     export GNUPGHOME="$(mktemp -d)"; \
@@ -37,15 +32,12 @@ RUN set -eux; \
     curl -fSL "https://github.com/StarCitizenTools/mediawiki-skins-Citizen/archive/main.zip" -o skin-citizen.zip; \
     unzip skin-citizen.zip -d /var/www/mediawiki/skins; \
     mv /var/www/mediawiki/skins/mediawiki-skins-Citizen-main /var/www/mediawiki/skins/Citizen; \
-    rm -r "$GNUPGHOME" \
-        mediawiki.tar.gz.sig \
-        mediawiki.tar.gz \
-        skin-citizen.zip \
-    ; \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps; \
-    rm -rf /var/lib/apt/lists/*
+    rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz skin-citizen.zip; \
+    mkdir -p /etc/nginx/templates/;
 
 # TODO: Copy over configs
+COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
+COPY ./config/nginx.conf /etc/nginx/nginx.conf
 
 # Copy over static files into webroot
 COPY ./files/assets /var/www/mediawiki/resources/custom_assets
@@ -57,10 +49,7 @@ COPY ./files/robots.txt /var/www/mediawiki/robots.txt
 COPY ./files/well-known /var/www/mediawiki/.well-known
 
 RUN set -eux; \
-  ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml; \
-  \
-  printf 'Set permissions on files: [chown: %s changes] [chmod: %s changes]\n' \
-    "$(chown -Rc www-data:www-data /var/www | wc -l)" \
-	"$(chmod -Rc +220 /var/www/mediawiki | wc -l)"; \
-  \
-  rm -rvf /etc/nginx/conf.d/*; \
+    ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml; \
+    chown -R www-data:www-data /var/www & \
+    chmod -R +220 /var/www/mediawiki; \
+    rm -r /etc/nginx/conf.d/*;
