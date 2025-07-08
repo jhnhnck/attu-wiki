@@ -203,8 +203,10 @@ if ( $attuIsWikiDiff2Enabled ) {
 if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 
 	$wgServer = "https://dev.attuproject.org";
-		$wgInternalServer = "http://attu-nginx-dev";
-		$wgShowExceptionDetails = true;
+
+	$wgInternalServer = "http://attu-nginx-dev";
+	$wgDBserver = "attu-database-dev";
+	$wgShowExceptionDetails = true;
 
 	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_ALT_WEBHOOK']}" ];
 	$wgSFSIPListLocation = "{$wgInternalServer}/resources/listed_ip_30_all.txt";
@@ -215,5 +217,4 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgEnableEmail = false;
 	$wgEnableUserEmail = false;
 }
-
 ?>
