@@ -1,8 +1,8 @@
-name: attu-dev
+name: attu-prod
 
 services:
     mediawiki:
-        container_name: attu-mediawiki-dev
+        container_name: attu-mediawiki-prod
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
@@ -12,26 +12,20 @@ services:
             - memcached
         volumes:
             - ./images:/var/www/mediawiki/images
-            # - ./config/LocalSettings.php:/var/www/mediawiki/LocalSettings.php
             - ./sitemap:/var/www/mediawiki/sitemap
-            - ./trash:/var/www/mediawiki/trash
-            # - ./logs:/var/log/mediawiki
-        environment:
-            ATTU_DEV_MODE: 1
         env_file:
             - .env
         logging:
             driver: journald
-        # networks:
-            # - attu
+        networks:
+            - attu
     nginx:
-        container_name: attu-nginx-dev
+        container_name: attu-nginx-prod
         restart: always
         environment:
-            BUILD_TYPE: 'dev'
-            ATTU_DEV_MODE: 1
+            BUILD_TYPE: 'prod'
         ports:
-            - 127.0.0.1:6008:80
+            - 127.0.0.1:6010:80
         volumes:
             - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/var/www/mediawiki/images
@@ -43,10 +37,10 @@ services:
             dockerfile: ./nginx.Dockerfile
         logging:
             driver: journald
-        # networks:
-            # - attu
+        networks:
+            - attu
     memcached:
-        container_name: attu-memcached-dev
+        container_name: attu-memcached-prod
         image: memcached:latest
         restart: always
         mem_limit: 768m
@@ -54,45 +48,45 @@ services:
             - --memory-limit=512
             # - -e /store/memory_file
         # volumes:
-        # - /tmp/attu-memcached-dev:/store
+        # - /tmp/attu-memcached-prod:/store
         logging:
             driver: journald
-        # networks:
-            # - attu
-    # yourls:
-    #     container_name: attu-yourls-dev
-    #     image: yourls:latest
-    #     restart: always
-    #     ports:
-    #         - 127.0.0.1:6009:80
-    #     env_file:
-    #         - .env
-    #     volumes:
-    #         - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
-    #         - ./files/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
-    #         - ./files/well-known:/var/www/mediawiki/.well-known
-    #     logging:
-    #         driver: journald
-    #     networks:
-    #         - attu
+        networks:
+            - attu
+    yourls:
+        container_name: attu-yourls-prod
+        image: yourls:latest
+        restart: always
+        ports:
+            - 127.0.0.1:6009:80
+        environment:
+            YOURLS_DB_HOST: 'attu-database-prod'
+            YOURLS_DB_USER: 'attu'
+            YOURLS_DB_NAME: 'attu_links'
+            YOURLS_SITE: https://links.attuproject.org
+            YOURLS_USER: 'doom'
+        env_file:
+            - .env
+        volumes:
+            - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
+            - ./files/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
+            - ./files/well-known:/var/www/mediawiki/.well-known
+        logging:
+            driver: journald
+        networks:
+            - attu
     database:
-        container_name: attu-database-dev
+        container_name: attu-database-prod
         image: mariadb:latest
         restart: always
         logging:
             driver: journald
-        environment:
-            MARIADB_RANDOM_ROOT_PASSWORD: true
-            MARIADB_DATABASE: 'attu_wiki'
-            MARIADB_USER: 'attu'
-        env_file:
-            - .env
         volumes:
-          - ./attu-wiki-backup_2025-06-30.sql:/docker-entrypoint-initdb.d/init.sql
-# networks:
-#     - attu
+            - ./database:/var/lib/mysql
+        networks:
+            - attu
 
-# networks:
-#     attu:
-#         external: true
-#         name: attu_dev_unified
+networks:
+    attu:
+        external: true
+        name: attu_unified
