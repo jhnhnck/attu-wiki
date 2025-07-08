@@ -1,0 +1,97 @@
+name: attu-dev
+
+services:
+    mediawiki:
+        container_name: attu-mediawiki-dev
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+        restart: always
+        links:
+            - database
+            - memcached
+        volumes:
+            - ./images:/var/www/mediawiki/images
+            - ./config/LocalSettings.php:/var/www/mediawiki/LocalSettings.php
+            - ./logs:/var/log/mediawiki
+            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./trash:/var/www/mediawiki/trash
+        env_file:
+            - .env
+        logging:
+            driver: journald
+        # networks:
+            # - attu
+    nginx:
+        container_name: attu-nginx-dev
+        restart: always
+        environment:
+            BUILD_TYPE: 'dev'
+            ATTU_DEV_MODE: 1
+        ports:
+            - 127.0.0.1:6008:80
+        volumes:
+            - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
+            - ./images:/var/www/mediawiki/images
+            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./config/mediawiki.conf:/etc/nginx/conf.d/mediawiki.conf
+            - ./config/nginx.conf:/etc/nginx/nginx.conf
+        links:
+            - mediawiki
+        build:
+            context: .
+            dockerfile: ./nginx.Dockerfile
+        logging:
+            driver: journald
+        # networks:
+            # - attu
+    memcached:
+        container_name: attu-memcached-dev
+        image: memcached:latest
+        restart: always
+        mem_limit: 768m
+        command:
+            - --memory-limit=512
+            # - -e /store/memory_file
+        # volumes:
+        # - /tmp/attu-memcached-dev:/store
+        logging:
+            driver: journald
+        # networks:
+            # - attu
+    # yourls:
+    #     container_name: attu-yourls-dev
+    #     image: yourls:latest
+    #     restart: always
+    #     ports:
+    #         - 127.0.0.1:6009:80
+    #     env_file:
+    #         - .env
+    #     volumes:
+    #         - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
+    #         - ./files/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
+    #         - ./files/well-known:/var/www/mediawiki/.well-known
+    #     logging:
+    #         driver: journald
+    #     networks:
+    #         - attu
+    database:
+        container_name: attu-database-dev
+        image: mariadb:latest
+        restart: always
+        logging:
+            driver: journald
+        environment:
+            MARIADB_DATABASE: 'attu_wiki'
+            MARIADB_USER: 'attu'
+        env_file:
+            - .env
+        volumes:
+          - ./attu-wiki-backup_2025-06-30.sql:/docker-entrypoint-initdb.d
+# networks:
+#     - attu
+
+# networks:
+#     attu:
+#         external: true
+#         name: attu_dev_unified
