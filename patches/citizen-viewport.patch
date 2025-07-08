@@ -1,0 +1,13 @@
+diff --git a/includes/Hooks/SkinHooks.php b/includes/Hooks/SkinHooks.php
+index a07c2877..5efb0ac5 100644
+--- a/includes/Hooks/SkinHooks.php
++++ b/includes/Hooks/SkinHooks.php
+@@ -95,7 +95,7 @@ class SkinHooks implements
+ 		 */
+ 		$tags['meta-viewport'] = Html::element( 'meta', [
+ 			'name' => 'viewport',
+-			'content' => 'width=device-width,initial-scale=1,viewport-fit=cover',
++			'content' => 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0',
+ 		] );
+ 	}
+ 

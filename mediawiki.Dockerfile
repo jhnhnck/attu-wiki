@@ -64,6 +64,7 @@ RUN set -eux; \
 # Copy over config
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
 COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
+COPY ./patches/citizen-viewport.patch /var/www/citizen-viewport.patch
 
 RUN set -eux; \
 	echo 'max_execution_time = 60' >> /usr/local/etc/php/conf.d/docker-php-executiontime.ini; \
@@ -103,6 +104,7 @@ WORKDIR /var/www/mediawiki/skins
 RUN set -eux; \
 	git clone https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
 	cd Citizen; \
+	git apply /var/www/citizen-viewport.patch; \
 	rm -rv .git;
 
 CMD ["php-fpm"]
