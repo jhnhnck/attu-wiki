@@ -6,6 +6,7 @@ services:
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
+        command: bash -c "php maintenance/run.php update --quick && exec php-fpm"
         restart: always
         links:
             - database
@@ -19,6 +20,7 @@ services:
             driver: journald
         networks:
             - attu
+
     nginx:
         container_name: attu-nginx-prod
         restart: always
@@ -39,6 +41,7 @@ services:
             driver: journald
         networks:
             - attu
+
     memcached:
         container_name: attu-memcached-prod
         image: memcached:latest
@@ -46,13 +49,11 @@ services:
         mem_limit: 768m
         command:
             - --memory-limit=512
-            # - -e /store/memory_file
-        # volumes:
-        # - /tmp/attu-memcached-prod:/store
         logging:
             driver: journald
         networks:
             - attu
+
     yourls:
         container_name: attu-yourls-prod
         image: yourls:latest
@@ -75,6 +76,7 @@ services:
             driver: journald
         networks:
             - attu
+
     database:
         container_name: attu-database-prod
         image: mariadb:latest

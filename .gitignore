@@ -230,3 +230,4 @@ logs/
 sitemap/
 trash/
 *.sql
+docker-compose.yml

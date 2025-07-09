@@ -7,23 +7,21 @@ services:
             context: .
             dockerfile: ./mediawiki.Dockerfile
         restart: always
+        command: bash -c "php maintenance/run.php update --quick && exec php-fpm"
         links:
             - database
             - memcached
         volumes:
             - ./images:/var/www/mediawiki/images
-            # - ./config/LocalSettings.php:/var/www/mediawiki/LocalSettings.php
             - ./sitemap:/var/www/mediawiki/sitemap
-            - ./trash:/var/www/mediawiki/trash
-            # - ./logs:/var/log/mediawiki
+          # - ./logs:/var/log/mediawiki
         environment:
             ATTU_DEV_MODE: 1
         env_file:
             - .env
         logging:
             driver: journald
-        # networks:
-            # - attu
+
     nginx:
         container_name: attu-nginx-dev
         restart: always
@@ -43,8 +41,7 @@ services:
             dockerfile: ./nginx.Dockerfile
         logging:
             driver: journald
-        # networks:
-            # - attu
+
     memcached:
         container_name: attu-memcached-dev
         image: memcached:latest
@@ -52,29 +49,9 @@ services:
         mem_limit: 768m
         command:
             - --memory-limit=512
-            # - -e /store/memory_file
-        # volumes:
-        # - /tmp/attu-memcached-dev:/store
         logging:
             driver: journald
-        # networks:
-            # - attu
-    # yourls:
-    #     container_name: attu-yourls-dev
-    #     image: yourls:latest
-    #     restart: always
-    #     ports:
-    #         - 127.0.0.1:6009:80
-    #     env_file:
-    #         - .env
-    #     volumes:
-    #         - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
-    #         - ./files/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
-    #         - ./files/well-known:/var/www/mediawiki/.well-known
-    #     logging:
-    #         driver: journald
-    #     networks:
-    #         - attu
+
     database:
         container_name: attu-database-dev
         image: mariadb:latest
@@ -88,11 +65,4 @@ services:
         env_file:
             - .env
         volumes:
-          - ./attu-wiki-backup_2025-06-30.sql:/docker-entrypoint-initdb.d/init.sql
-# networks:
-#     - attu
-
-# networks:
-#     attu:
-#         external: true
-#         name: attu_dev_unified
+            - ./attu-wiki-backup_2025-06-30.sql:/docker-entrypoint-initdb.d/init.sql

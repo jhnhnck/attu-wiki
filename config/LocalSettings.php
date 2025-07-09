@@ -193,6 +193,8 @@ if ( $attuIsWikiDiff2Enabled ) {
 	$wgDiffEngine = 'wikidiff2';
 }
 
+wfLoadExtension( 'Drafts' );
+
 # Uncomment to restrict account creation
 # $wgGroupPermissions['*']['createaccount'] = false;
 

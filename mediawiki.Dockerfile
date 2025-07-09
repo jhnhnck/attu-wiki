@@ -3,6 +3,7 @@ FROM php:8.3-fpm
 # Version
 ARG MEDIAWIKI_MAJOR_VERSION='1.43'
 ARG MEDIAWIKI_VERSION='1.43.1'
+ARG MEDIAWIKI_BRANCH='REL1_43'
 
 # System dependencies
 RUN set -eux; \
@@ -102,10 +103,16 @@ USER www-data
 WORKDIR /var/www/mediawiki/skins
 
 RUN set -eux; \
-	git clone https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
-	cd Citizen; \
-	git apply /var/www/citizen-viewport.patch; \
-	rm -rv .git;
+	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
+	git -C Citizen apply /var/www/citizen-viewport.patch; \
+	rm -r ./Citizen/.git;
+
+WORKDIR /var/www/mediawiki/extensions
+
+RUN set -eux; \
+	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/Drafts Drafts; \
+	git -C Drafts checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./Drafts/.git;
 
 WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
