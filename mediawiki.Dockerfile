@@ -92,7 +92,6 @@ RUN set -eux; \
 	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
 
 # Copy over static files into webroot
-COPY ./extensions/. /var/www/mediawiki/extensions/
 COPY ./files/assets /var/www/mediawiki/resources/custom_assets
 
 RUN set -eux; \
@@ -109,10 +108,59 @@ RUN set -eux; \
 
 WORKDIR /var/www/mediawiki/extensions
 
+# https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
-	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/Drafts Drafts; \
+	git clone --filter=blob:none https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
 	git -C Drafts checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
 	rm -r ./Drafts/.git;
+
+# https://www.mediawiki.org/wiki/Extension:CreatePageUw
+RUN set -eux; \
+	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
+	# git -C CreatePageUw checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./CreatePageUw/.git;
+
+# https://github.com/jayktaylor/mw-discord
+RUN set -eux; \
+	git clone --filter=blob:none https://github.com/jayktaylor/mw-discord Discord; \
+	# git -C Discord checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./Discord/.git;
+
+# https://www.mediawiki.org/wiki/Extension:EasyTimeline
+RUN set -eux; \
+	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
+	git -C EasyTimeline checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./EasyTimeline/.git;
+
+# https://www.mediawiki.org/wiki/Extension:OpenGraphMeta
+RUN set -eux; \
+	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
+	git -C OpenGraphMeta checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./OpenGraphMeta/.git;
+
+# https://www.mediawiki.org/wiki/Extension:ShortDescription
+RUN set -eux; \
+	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
+	# git -C ShortDescription checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./ShortDescription/.git;
+
+# https://www.mediawiki.org/wiki/Extension:StopForumSpam
+RUN set -eux; \
+	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
+	git -C StopForumSpam checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./StopForumSpam/.git;
+
+# https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
+RUN set -eux; \
+	git clone --filter=blob:none https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
+	# git -C TemplateStylesExtender checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./TemplateStylesExtender/.git;
+
+# https://www.mediawiki.org/wiki/Extension:Thumbro
+RUN set -eux; \
+	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
+	# git -C Thumbro checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	rm -r ./Thumbro/.git;
 
 WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
