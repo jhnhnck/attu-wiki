@@ -8,7 +8,7 @@ source .env
 # Configuration
 backup_path='/srv/backups/attu-wiki'
 bot_backup_path='/srv/backups/attu-bot'
-heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${HEARTBEAT_KEY}"
+heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${UPDATES_HEARTBEAT_KEY}"
 min_backup_size=10000
 wiki_path="$PWD"
 mw_container='mediawiki'
