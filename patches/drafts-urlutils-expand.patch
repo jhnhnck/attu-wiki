@@ -1,0 +1,33 @@
+diff --git a/includes/specials/SpecialDrafts.php b/includes/specials/SpecialDrafts.php
+index 6ca07d4..48c8d08 100644
+--- a/includes/specials/SpecialDrafts.php
++++ b/includes/specials/SpecialDrafts.php
+@@ -7,6 +7,7 @@
+  */
+ 
+ use MediaWiki\Title\Title;
++use MediaWiki\MediaWikiServices;
+ 
+ class SpecialDrafts extends SpecialPage {
+ 	public function __construct() {
+@@ -44,17 +45,18 @@ class SpecialDrafts extends SpecialPage {
+ 			// Redirect to the article editor or view if returnto was set
+ 			$section = $request->getIntOrNull( 'section' );
+ 			$urlSection = $section !== null ? "&section={$section}" : '';
++			$urlUtils = MediaWikiServices::getInstance()->getUrlUtils();
+ 			switch ( $request->getText( 'returnto' ) ) {
+ 				case 'edit':
+ 					$title = Title::newFromDBKey( $draft->getTitle() );
+ 					$out->redirect(
+-						wfExpandURL( $title->getEditURL() . $urlSection )
++						$urlUtils->expand( $title->getEditURL() . $urlSection )
+ 					);
+ 					break;
+ 				case 'view':
+ 					$title = Title::newFromDBKey( $draft->getTitle() );
+ 					$out->redirect(
+-						wfExpandURL( $title->getFullURL() . $urlSection )
++						$urlUtils->expand( $title->getFullURL() . $urlSection )
+ 					);
+ 					break;
+ 			}

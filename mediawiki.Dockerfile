@@ -111,6 +111,7 @@ WORKDIR /var/www/mediawiki/extensions
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
 	git -C Drafts apply /var/www/patches/drafts-namespaced-types.patch; \
+	git -C Drafts apply /var/www/patches/drafts-urlutils-expand.patch; \
 	rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw
