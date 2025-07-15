@@ -62,11 +62,6 @@ RUN set -eux; \
 	docker-php-ext-enable apcu luasandbox; \
 	rm -r /tmp/pear;
 
-# Copy over config
-COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
-COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
-COPY ./patches/citizen-viewport.patch /var/www/citizen-viewport.patch
-
 RUN set -eux; \
 	echo 'max_execution_time = 60' >> /usr/local/etc/php/conf.d/docker-php-executiontime.ini; \
 	echo 'pm.max_children = 30' >> /usr/local/etc/php-fpm.d/zz-docker.conf; \
@@ -93,6 +88,11 @@ RUN set -eux; \
 
 # Copy over static files into webroot
 COPY ./files/assets /var/www/mediawiki/resources/custom_assets
+
+# Copy over config
+COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
+COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
+COPY ./patches/citizen-viewport.patch /var/www/citizen-viewport.patch
 
 RUN set -eux; \
 	chown -R www-data:www-data /var/www; \
