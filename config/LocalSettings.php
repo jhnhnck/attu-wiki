@@ -11,7 +11,7 @@ $wgMetaNamespace = "Attu_Project";
 # URL configuration
 $wgScriptPath = "";
 $wgServer = "https://attuproject.org";
-$wgInternalServer = "http://attu-nginx-prod";
+// $wgInternalServer = "http://attu-nginx-prod";
 $wgResourceBasePath = $wgScriptPath;
 $wgArticlePath = "/wiki/$1";
 $wgUsePathInfo = true;
@@ -206,7 +206,7 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 
 	$wgServer = "https://dev.attuproject.org";
 
-	$wgInternalServer = "http://attu-nginx-dev";
+	// $wgInternalServer = "http://attu-nginx-dev";
 	$wgDBserver = "attu-database-dev";
 	$wgShowExceptionDetails = true;
 
