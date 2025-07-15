@@ -1,0 +1,26 @@
+diff --git a/src/Utils.php b/src/Utils.php
+index a316d1f..1a5340e 100644
+--- a/src/Utils.php
++++ b/src/Utils.php
+@@ -2,6 +2,7 @@
+ 
+ use MediaWiki\MediaWikiServices;
+ use MediaWiki\User\UserIdentity;
++use MediaWiki\Title\Title;
+ 
+ class DiscordUtils {
+ 	/**
+@@ -201,7 +202,12 @@ class DiscordUtils {
+      * Creates formatted text for a specific Revision object
+      */
+     public static function createRevisionText ($revision) {
+-		$diff = DiscordUtils::createMarkdownLink( wfMessage( 'discord-diff' )->inContentLanguage()->text(), $revision->getPageAsLinkTarget()->getFullURL( [ 'diff' => 'prev', 'oldid' => $revision->getId() ], false, PROTO_CANONICAL ) );
++        $linkTarget = $revision->getPageAsLinkTarget();
++        $title = Title::newFromLinkTarget( $linkTarget );
++        if ( !$title ) {
++            return '';
++        }
++        $diff = DiscordUtils::createMarkdownLink( wfMessage( 'discord-diff' )->inContentLanguage()->text(), $title->getFullURL( [ 'diff' => 'prev', 'oldid' => $revision->getId() ], false, PROTO_CANONICAL ) );
+         $minor = '';
+         $size = '';
+         if ( $revision->isMinor() ) {

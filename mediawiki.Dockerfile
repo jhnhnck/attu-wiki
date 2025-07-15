@@ -123,7 +123,8 @@ RUN set -eux; \
 # https://github.com/jayktaylor/mw-discord
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/jayktaylor/mw-discord Discord; \
-	# git -C Discord checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	git -C Discord apply --ignore-whitespace /var/www/patches/discord-get-full-url.patch; \
+	git -C Discord apply --ignore-whitespace /var/www/patches/discord-http-request-factory.patch; \
 	rm -r ./Discord/.git;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
