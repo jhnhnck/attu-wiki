@@ -213,8 +213,8 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_ALT_WEBHOOK']}" ];
 	$wgSFSIPListLocation = "{$wgInternalServer}/resources/listed_ip_30_all.txt";
 
-		# Enable debug logging (adjust path as needed)
-		# $wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
+	# Enable debug logging (adjust path as needed)
+	# $wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
 
 	$wgEnableEmail = false;
 	$wgEnableUserEmail = false;
