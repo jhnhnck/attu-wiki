@@ -89,18 +89,18 @@ wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);
 $wgTurnstileSiteKey = "{$_ENV['TURNSTILE_SITE_KEY']}";
 $wgTurnstileSecretKey = "{$_ENV['TURNSTILE_SECRET_KEY']}";
 
-# Title blacklist
-wfLoadExtension( 'TitleBlacklist' );
-$wgTitleBlacklistSources = [
-	[
-		'type' => 'localpage',
-		'src'  => 'MediaWiki:TitleBlacklist'
-	],
-	[
-		'type' => 'url',
-		'src'  => 'https://meta.wikimedia.org/w/index.php?title=Title_blacklist&action=raw'
-	]
-];
+// # Title blacklist
+// wfLoadExtension( 'TitleBlacklist' );
+// $wgTitleBlacklistSources = [
+// 	[
+// 		'type' => 'localpage',
+// 		'src'  => 'MediaWiki:TitleBlacklist'
+// 	],
+// 	[
+// 		'type' => 'url',
+// 		'src'  => 'https://meta.wikimedia.org/w/index.php?title=Title_blacklist&action=raw'
+// 	]
+// ];
 
 # Skins
 wfLoadSkin( 'Citizen' );
