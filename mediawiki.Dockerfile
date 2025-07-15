@@ -117,7 +117,6 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw
 RUN set -eux; \
 	git clone --filter=blob:none https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
-	# git -C CreatePageUw checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
 	rm -r ./CreatePageUw/.git;
 
 # https://github.com/jayktaylor/mw-discord
@@ -142,7 +141,6 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:ShortDescription
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
-	# git -C ShortDescription checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
 	rm -r ./ShortDescription/.git;
 
 # https://www.mediawiki.org/wiki/Extension:StopForumSpam
@@ -154,13 +152,11 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
-	# git -C TemplateStylesExtender checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
 	rm -r ./TemplateStylesExtender/.git;
 
 # https://www.mediawiki.org/wiki/Extension:Thumbro
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
-	# git -C Thumbro checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
 	rm -r ./Thumbro/.git;
 
 WORKDIR /var/www/mediawiki
