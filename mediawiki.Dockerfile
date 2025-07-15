@@ -92,7 +92,7 @@ COPY ./files/assets /var/www/mediawiki/resources/custom_assets
 # Copy over config
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
 COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
-COPY ./patches/citizen-viewport.patch /var/www/citizen-viewport.patch
+COPY ./patches /var/www/patches
 
 RUN set -eux; \
 	chown -R www-data:www-data /var/www; \
@@ -103,7 +103,7 @@ WORKDIR /var/www/mediawiki/skins
 
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
-	git -C Citizen apply /var/www/citizen-viewport.patch; \
+	git -C Citizen apply /var/www/patches/citizen-viewport.patch; \
 	rm -r ./Citizen/.git;
 
 WORKDIR /var/www/mediawiki/extensions
@@ -111,7 +111,7 @@ WORKDIR /var/www/mediawiki/extensions
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
-	git -C Drafts checkout -b "${MEDIAWIKI_BRANCH}" "origin/${MEDIAWIKI_BRANCH}"; \
+	git -C Drafts apply /var/www/patches/drafts-hooks-types.patch; \
 	rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw

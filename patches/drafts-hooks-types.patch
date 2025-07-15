@@ -1,0 +1,13 @@
+diff --git a/includes/DraftHooks.php b/includes/DraftHooks.php
+index 3304c74..84827e9 100644
+--- a/includes/DraftHooks.php
++++ b/includes/DraftHooks.php
+@@ -8,6 +8,8 @@
+ 
+ use MediaWiki\MediaWikiServices;
+ use MediaWiki\User\UserIdentity;
++use MediaWiki\EditPage\EditPage;
++use MediaWiki\Title\Title;
+ 
+ class DraftHooks {
+ 	/**
