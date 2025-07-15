@@ -110,7 +110,7 @@ WORKDIR /var/www/mediawiki/extensions
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
-	git -C Drafts apply /var/www/patches/drafts-hooks-types.patch; \
+	git -C Drafts apply /var/www/patches/drafts-namespaced-types.patch; \
 	rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw

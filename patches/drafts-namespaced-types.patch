@@ -1,0 +1,85 @@
+diff --git a/includes/Draft.php b/includes/Draft.php
+index 61f1cd5..debb2f0 100644
+--- a/includes/Draft.php
++++ b/includes/Draft.php
+@@ -2,6 +2,7 @@
+ 
+ use MediaWiki\MediaWikiServices;
+ use MediaWiki\User\UserIdentity;
++use MediaWiki\Title\Title;
+ 
+ /**
+  * Class representing a single draft.
+diff --git a/includes/DraftHooks.php b/includes/DraftHooks.php
+index 3304c74..6c849c5 100644
+--- a/includes/DraftHooks.php
++++ b/includes/DraftHooks.php
+@@ -7,7 +7,14 @@
+  */
+ 
+ use MediaWiki\MediaWikiServices;
++use MediaWiki\User\User;
+ use MediaWiki\User\UserIdentity;
++use MediaWiki\EditPage\EditPage;
++use MediaWiki\Title\Title;
++use MediaWiki\Page\WikiPage;
++use MediaWiki\Linker\Linker;
++use MediaWiki\Xml\Xml;
++use MediaWiki\Status\Status;
+ 
+ class DraftHooks {
+ 	/**
+diff --git a/includes/Drafts.php b/includes/Drafts.php
+index 04bde06..8f4601c 100644
+--- a/includes/Drafts.php
++++ b/includes/Drafts.php
+@@ -7,6 +7,7 @@
+  */
+ 
+ use MediaWiki\MediaWikiServices;
++use MediaWiki\Title\Title;
+ 
+ abstract class Drafts {
+ 	/**
+diff --git a/includes/api/ApiLoadDrafts.php b/includes/api/ApiLoadDrafts.php
+index 464d52b..128d67f 100644
+--- a/includes/api/ApiLoadDrafts.php
++++ b/includes/api/ApiLoadDrafts.php
+@@ -7,6 +7,9 @@
+  * @date 26 February 2022
+  * @see https://phabricator.wikimedia.org/T57451
+  */
++
++use MediaWiki\Api\ApiBase;
++
+ class ApiLoadDrafts extends ApiBase {
+ 
+ 	public function execute() {
+diff --git a/includes/api/ApiSaveDrafts.php b/includes/api/ApiSaveDrafts.php
+index bdca399..3406926 100644
+--- a/includes/api/ApiSaveDrafts.php
++++ b/includes/api/ApiSaveDrafts.php
+@@ -6,6 +6,10 @@
+  * @ingroup API
+  * @author Kunal Mehta
+  */
++
++use MediaWiki\Api\ApiBase;
++use MediaWiki\Title\Title;
++
+ class ApiSaveDrafts extends ApiBase {
+ 	public function execute() {
+ 		if ( $this->getUser()->isAnon() ) {
+diff --git a/includes/specials/SpecialDrafts.php b/includes/specials/SpecialDrafts.php
+index 09de08f..6ca07d4 100644
+--- a/includes/specials/SpecialDrafts.php
++++ b/includes/specials/SpecialDrafts.php
+@@ -6,6 +6,8 @@
+  * @ingroup Extensions
+  */
+ 
++use MediaWiki\Title\Title;
++
+ class SpecialDrafts extends SpecialPage {
+ 	public function __construct() {
+ 		parent::__construct( 'Drafts' );
