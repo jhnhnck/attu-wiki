@@ -72,20 +72,6 @@ RUN set -eux; \
 
 COPY ./files/freefont-ttf /usr/share/fonts/truetype/freefont
 
-# USER www-data
-WORKDIR /var/www/mediawiki
-
-# MediaWiki setup
-RUN set -eux; \
-	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
-	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --fetch-keys "https://www.mediawiki.org/keys/keys.txt"; \
-	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
-	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
-	gpgconf --kill all; \
-	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
-
 # Copy over static files into webroot
 COPY ./files/assets /var/www/mediawiki/resources/custom_assets
 
@@ -99,6 +85,19 @@ RUN set -eux; \
 	chmod -R +220 /var/www;
 
 USER www-data
+WORKDIR /var/www/mediawiki
+
+# MediaWiki setup
+RUN set -eux; \
+	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
+	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --fetch-keys "https://www.mediawiki.org/keys/keys.txt"; \
+	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
+	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
+	gpgconf --kill all; \
+	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
+
 WORKDIR /var/www/mediawiki/skins
 
 RUN set -eux; \

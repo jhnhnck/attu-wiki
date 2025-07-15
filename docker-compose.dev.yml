@@ -11,7 +11,7 @@ services:
         volumes:
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
-          # - ./logs:/var/log/mediawiki
+            # - ./logs:/var/log/mediawiki
         environment:
             ATTU_DEV_MODE: 1
         env_file:
@@ -60,4 +60,4 @@ services:
         env_file:
             - .env
         volumes:
-            - ./attu-wiki-backup_2025-06-30.sql:/docker-entrypoint-initdb.d/init.sql
+            - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
