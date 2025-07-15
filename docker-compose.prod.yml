@@ -8,9 +8,6 @@ services:
             dockerfile: ./mediawiki.Dockerfile
         command: bash -c "php maintenance/run.php update --quick && exec php-fpm"
         restart: always
-        links:
-            - database
-            - memcached
         volumes:
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
@@ -32,8 +29,6 @@ services:
             - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
-        links:
-            - mediawiki
         build:
             context: .
             dockerfile: ./nginx.Dockerfile
