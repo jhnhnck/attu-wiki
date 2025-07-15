@@ -14,8 +14,10 @@ RUN set -eux; \
         gnupg \
         dirmngr \
         unzip \
+        git \
 	; \
-	rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/*; \
+    mkdir -p /etc/nginx/templates/;
 
 # MediaWiki setup
 RUN set -eux; \
@@ -27,15 +29,16 @@ RUN set -eux; \
 	mkdir -p /var/www/mediawiki; \
     tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
     gpgconf --kill all; \
-    # Replicate some skins and extensions on nginx so that their bundled assets can be accessed (e.g. icons/images/fonts)
-    # Skin:Citizen
-    curl -fSL "https://github.com/StarCitizenTools/mediawiki-skins-Citizen/archive/main.zip" -o skin-citizen.zip; \
-    unzip skin-citizen.zip -d /var/www/mediawiki/skins; \
-    mv /var/www/mediawiki/skins/mediawiki-skins-Citizen-main /var/www/mediawiki/skins/Citizen; \
-    rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz skin-citizen.zip; \
-    mkdir -p /etc/nginx/templates/;
+    rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
 
-# TODO: Copy over configs
+# Replicate some skins and extensions on nginx so that their bundled assets can be accessed (e.g. icons/images/fonts)
+# Skin:Citizen
+RUN set -eux; \
+    cd /var/www/mediawiki/skins; \
+	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
+	rm -r ./Citizen/.git;
+
+# Copy over configs
 COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
 COPY ./config/nginx.conf /etc/nginx/nginx.conf
 
