@@ -82,7 +82,7 @@ $wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
 $wgGroupPermissions['sysop']['tboverride'] = false;
 $wgUsePrivateIPs = true;
 $wgCdnServers = [ '10.22.4.232', '172.18.0.1', '10.22.0.254' ];
-$wgUseCdn = true;
+$wgUseCdn = false;
 
 # CAPTCHA and ConfirmEdit
 wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);
