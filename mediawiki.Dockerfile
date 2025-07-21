@@ -96,7 +96,8 @@ RUN set -eux; \
 	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
 	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
 	gpgconf --kill all; \
-	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
+	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz; \
+	git apply /var/www/patches/mediawiki-deprecated-sidebar.patch;
 
 WORKDIR /var/www/mediawiki/skins
 

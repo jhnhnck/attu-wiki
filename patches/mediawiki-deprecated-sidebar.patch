@@ -1,0 +1,13 @@
+diff --git a/includes/skins/Skin.php b/includes/skins/Skin.php
+index 7058c341b52..fd6329e6729 100644
+--- a/includes/skins/Skin.php
++++ b/includes/skins/Skin.php
+@@ -1635,8 +1635,6 @@ abstract class Skin extends ContextSource {
+ 			$this->getHookRunner()->onSidebarBeforeOutput( $this, $sidebar );
+ 
+ 			$this->sidebar = $sidebar;
+-
+-			$this->appendSpecialPagesLinkIfAbsent();
+ 		}
+ 
+ 		return $this->sidebar;
