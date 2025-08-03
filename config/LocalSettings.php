@@ -81,8 +81,8 @@ $wgGroupPermissions['user']['move-rootuserpages'] = true;
 $wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
 $wgGroupPermissions['sysop']['tboverride'] = false;
 $wgUsePrivateIPs = true;
-$wgCdnServers = [ '10.22.4.232', '172.18.0.1', '10.22.0.254' ];
-$wgUseCdn = false;
+$wgCdnServersNoPurge = [ '10.22.5.1', '10.22.4.232', '172.18.0.1', '10.22.0.254' ];
+$wgUseCdn = true;
 
 # CAPTCHA and ConfirmEdit
 wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);
