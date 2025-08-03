@@ -8,6 +8,27 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 $wgSitename = "Attu Project";
 $wgMetaNamespace = "Attu_Project";
 
+# Story Namespace
+define("NS_STORY", 100);
+define("NS_STORY_TALK", 101);
+
+$wgExtraNamespaces[NS_STORY] = "Story";
+$wgExtraNamespaces[NS_STORY_TALK] = "Story_talk";
+
+# Namespaces
+$wgExtraNamespaces[NS_TALK] = "Meta";
+$wgNamespaceAliases['Talk'] = NS_TALK;
+
+$wgNamespacesToBeSearchedDefault = [
+	NS_MAIN => true,
+	NS_TALK => true,
+	NS_CATEGORY => true,
+	NS_STORY => true,
+];
+
+$wgContentNamespaces[] = NS_TALK;
+$wgContentNamespaces[] = NS_STORY;
+
 # URL configuration
 $wgScriptPath = "";
 $wgServer = "https://attuproject.org";
@@ -167,15 +188,6 @@ wfLoadExtension( 'Interwiki' );
 $wgGroupPermissions['sysop']['interwiki'] = true;
 
 wfLoadExtension( 'CreatePageUw' );
-
-# Namespaces
-$wgExtraNamespaces[NS_TALK] = "Meta";
-$wgNamespaceAliases['Talk'] = NS_TALK;
-
-$wgNamespacesToBeSearchedDefault = [
-	NS_MAIN => true,
-	NS_TALK => true,
-];
 
 # Misc
 $wgPingback = true;
