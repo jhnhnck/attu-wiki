@@ -105,6 +105,22 @@ $wgUsePrivateIPs = true;
 $wgCdnServersNoPurge = [ '10.22.5.1', '10.22.4.232', '172.18.0.1', '10.22.0.254' ];
 $wgUseCdn = true;
 
+# Development Mode Overrides
+if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
+
+	$wgServer = "https://dev.attuproject.org";
+	$wgInternalServer = "http://attu-nginx-dev";
+	$wgShowExceptionDetails = true;
+
+	$wgDBserver = "attu-database-dev";
+
+	# Enable debug logging
+	# $wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
+
+	$wgEnableEmail = false;
+	$wgEnableUserEmail = false;
+}
+
 # CAPTCHA and ConfirmEdit
 wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);
 $wgTurnstileSiteKey = "{$_ENV['TURNSTILE_SITE_KEY']}";
@@ -150,9 +166,14 @@ wfLoadExtension( 'InputBox' );
 wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 
 wfLoadExtension( 'Discord' );
-$wgDiscordWebhookURL = [ "{$_ENV['ATTU_WEBHOOK']}" ];
-$wgDiscordDisabledUsers = [ "127.0.0.1" ];
 $wgDiscordNoBots = false;
+
+if ( empty($_ENV['ATTU_DEV_MODE']) ) {
+	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_WEBHOOK']}" ];
+	$wgDiscordDisabledUsers = [ "127.0.0.1" ];
+} else {
+	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_ALT_WEBHOOK']}" ];
+}
 
 wfLoadExtension( 'OpenGraphMeta' );
 wfLoadExtension( 'Math' );
@@ -212,23 +233,4 @@ wfLoadExtension( 'Drafts' );
 
 # Uncomment for maintenance mode
 # $wgReadOnly = 'This wiki is currently undergoing a hardware upgrade. Check back in a couple of hours.';
-
-# Development Mode Overrides
-if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
-
-	$wgServer = "https://dev.attuproject.org";
-
-	$wgInternalServer = "http://attu-nginx-dev";
-	$wgDBserver = "attu-database-dev";
-	$wgShowExceptionDetails = true;
-
-	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_ALT_WEBHOOK']}" ];
-	$wgSFSIPListLocation = "{$wgInternalServer}/resources/listed_ip_30_all.txt";
-
-	# Enable debug logging (adjust path as needed)
-	# $wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
-
-	$wgEnableEmail = false;
-	$wgEnableUserEmail = false;
-}
 ?>
