@@ -60,7 +60,7 @@ if [[ -e "$templates_xml" && $(($(date +%s) - $(stat -c %Y "$templates_xml"))) -
             'Template:Taxobox' \
             'Template:Did you mean box' \
             'Template:Infobox military unit' \
-            'Template:IPA' \
+            # 'Template:IPA' \
             'Template:Infobox' \
             'Template:MessageBox' \
             'Template:Color box' \
