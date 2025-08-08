@@ -57,11 +57,12 @@ def get_journal_entries() -> list[LogEntry]:
             if message[14] == '{':
                 obj = LogEntry.model_validate_json(message[14:])
                 entries.append(obj)
-            else:
-                print(f'error_rate: skipping: {message}', file=sys.stderr)
+            # else:
+                # print(f'error_rate: skipping: {message}', file=sys.stderr)
 
-        except Exception as err:
-            print(f'error_rate: error: parsing entry; {str(err).lower()}', file=sys.stderr)
+        except:  # noqa: E722, S110
+            # print(f'error_rate: error: parsing entry; {str(err).lower()}', file=sys.stderr)
+            pass
 
     return entries
 
