@@ -53,13 +53,13 @@ templates_xml="${wiki_path}/files/templates.xml"
 if [[ ! -e "$templates_xml" || $(($(date +%s) - $(stat -c %Y "$templates_xml"))) -gt $((7 * 3600)) ]]; then
     printf '%s\n' "templates.xml is stale; refreshing..."
 
+    # Disabled:'Template:IPA'
     template_list() {
         printf '%s%%0A' \
             'Template:Composition bar' \
             'Template:Taxobox' \
             'Template:Did you mean box' \
             'Template:Infobox military unit' \
-            # 'Template:IPA' \
             'Template:Infobox' \
             'Template:MessageBox' \
             'Template:Color box' \
