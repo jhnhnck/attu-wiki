@@ -14,6 +14,12 @@ wiki_path="$PWD"
 mw_container='mediawiki'
 db_container='database'
 
+boot_secs=$(printf '%.0f\n' "$(cut -d' ' -f1 </proc/uptime)")
+if [ "$boot_secs" -lt 300 ]; then
+    printf '%s\n' "Script caught running ${boot_secs}s after boot; exiting"
+    exit 0
+fi
+
 # Exit Trap
 exit_trap() {
     printf '%s\n' "caught error; sending fail hook"
@@ -22,20 +28,13 @@ exit_trap() {
 }
 
 trap 'exit_trap' ZERR
-
-boot_secs=$(printf '%.0f\n' "$(cut -d' ' -f1 </proc/uptime)")
-if [ "$boot_secs" -lt 300 ]; then
-    printf '%s\n' "Script caught running ${boot_secs}s after boot; exiting"
-    exit 0
-fi
-
 # set -eux
 
 # Download ip ban list
 ip_list_url="https://www.stopforumspam.com/downloads/listed_ip_30_all.zip"
 ip_list_dest="${wiki_path}/files/listed_ip_30_all.txt"
 
-if [[ -e "$ip_list_dest" && $(($(date +%s) - $(stat -c %Y "$ip_list_dest"))) -gt $((3 * 3600)) ]]; then
+if [[ ! -e "$ip_list_dest" || $(($(date +%s) - $(stat -c %Y "$ip_list_dest"))) -gt $((3 * 3600)) ]]; then
     printf '%s\n' "StopForumSpam list is stale; refreshing..."
 
     ip_temp=$(mktemp --suffix=.zip)
@@ -51,7 +50,7 @@ fi
 # update templates
 templates_xml="${wiki_path}/files/templates.xml"
 
-if [[ -e "$templates_xml" && $(($(date +%s) - $(stat -c %Y "$templates_xml"))) -gt $((7 * 3600)) ]]; then
+if [[ ! -e "$templates_xml" || $(($(date +%s) - $(stat -c %Y "$templates_xml"))) -gt $((7 * 3600)) ]]; then
     printf '%s\n' "templates.xml is stale; refreshing..."
 
     template_list() {
