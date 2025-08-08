@@ -31,7 +31,7 @@ fi
 
 # set -eux
 
-echo "/usr/bin/zsh ${wiki_path}/scripts/attu_updates.zsh" | at now +8 hours
+echo "/usr/bin/zsh ${wiki_path}/scripts/attu_updates.zsh" | at now +2 hours
 
 # Ensure the backup directory exists
 mkdir -p "$backup_path" || {
