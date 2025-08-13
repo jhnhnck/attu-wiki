@@ -15,6 +15,8 @@ mw_container='mediawiki'
 db_container='database'
 
 # Exit Trap
+doombot_db_path='/srv/services/doom-bot/assets/markers.db'
+
 exit_trap() {
     printf '%s\n' "caught error; sending fail hook"
     curl -fsS "${heartbeat_url}/fail" >/dev/null
@@ -79,23 +81,9 @@ find images -mtime -1 -type f -print0 | tar --null -cjf "$images_backup_file" --
 
 # Weekly SQLite backup for attu-bot (runs only on Saturdays)
 if [[ $(date +%u) -eq 6 ]]; then
-    printf '%s\n' "Performing weekly SQLite backup for doom-bot"
+    printf '%s\n' "backup: doom-bot database"
     sqlite_backup_file="$bot_backup_path/markers-$(date +%Y-%-m-%-d).sql"
-    sqlite3 /srv/services/doom-bot/markers.db .dump >"$sqlite_backup_file" || {
-        printf '%s\n' "SQLite backup failed"
-        exit 1
-    }
-
-    if [[ -s "$sqlite_backup_file" ]]; then
-        printf '%s\n' "SQLite backup succeeded (size: $(stat -c%s "$sqlite_backup_file") bytes)"
-    else
-        printf '%s\n' "SQLite backup failed: file is empty"
-        exit 1
-    fi
-    chown jhn:jhn "$sqlite_backup_file" || {
-        printf '%s\n' "Failed to set ownership for $sqlite_backup_file"
-        exit 1
-    }
+    sqlite3 "$doombot_db_path" .dump > "$sqlite_backup_file"
 fi
 
 # Compact backups on the first day of the month
