@@ -17,19 +17,19 @@ RUN set -eux; \
         git \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
-    mkdir -p /etc/nginx/templates/;
+    mkdir -p /etc/nginx/templates/ /var/www/mediawiki; \
+    rm -r /etc/nginx/conf.d/*;
 
 # MediaWiki setup
 RUN set -eux; \
-    curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
-    curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
-    export GNUPGHOME="$(mktemp -d)"; \
+	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
+	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
+	export GNUPGHOME="$(mktemp -d)"; \
     curl -fsSL "https://www.mediawiki.org/keys/keys.txt" | gpg --import; \
-    gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
-	mkdir -p /var/www/mediawiki; \
-    tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
-    gpgconf --kill all; \
-    rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
+  	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
+	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
+	gpgconf --kill all; \
+	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
 
 # Replicate some skins and extensions on nginx so that their bundled assets can be accessed (e.g. icons/images/fonts)
 # Skin:Citizen
@@ -55,4 +55,3 @@ RUN set -eux; \
     ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml; \
     chown -R www-data:www-data /var/www & \
     chmod -R +220 /var/www/mediawiki; \
-    rm -r /etc/nginx/conf.d/*;
