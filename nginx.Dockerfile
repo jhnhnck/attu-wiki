@@ -6,19 +6,24 @@ ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 
 # System dependencies
-RUN set -eux; \
-	\
+RUN RUN --mount=type=cache,target=/var/lib/apt \
+    set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
         netcat-traditional \
         gnupg \
         dirmngr \
         unzip \
-        git \
-	; \
+        git; \
 	rm -rf /var/lib/apt/lists/*; \
     mkdir -p /etc/nginx/templates/ /var/www/mediawiki; \
     rm -r /etc/nginx/conf.d/*;
+
+# Copy over nginx configs
+COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
+COPY ./config/nginx.conf /etc/nginx/nginx.conf
+
+WORKDIR /var/www/mediawiki
 
 # MediaWiki setup
 RUN set -eux; \
@@ -38,10 +43,6 @@ RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
 	rm -r ./Citizen/.git;
 
-# Copy over configs
-COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
-COPY ./config/nginx.conf /etc/nginx/nginx.conf
-
 # Copy over static files into webroot
 COPY ./files/assets /var/www/mediawiki/resources/custom_assets
 
@@ -53,5 +54,5 @@ COPY ./files/well-known /var/www/mediawiki/.well-known
 
 RUN set -eux; \
     ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml; \
-    chown -R www-data:www-data /var/www & \
-    chmod -R +220 /var/www/mediawiki; \
+    chown -R www-data:www-data /var/www; \
+    chmod -R +220 /var/www/mediawiki;

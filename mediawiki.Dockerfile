@@ -6,8 +6,8 @@ ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 
 # System dependencies
-RUN set -eux; \
-	\
+RUN --mount=type=cache,target=/var/lib/apt \
+	set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		git \
@@ -17,67 +17,60 @@ RUN set -eux; \
 		unzip \
 		neovim \
 		liblua5.1-0 \
-		libzip4 \
+		libzip5 \
 		python3 \
 		python3-pip \
 		gnupg \
-		dirmngr \
-	; \
-	rm -rf /var/lib/apt/lists/*; \
-	mkdir -p /var/www/mediawiki /var/www/mediawiki/trash;
+		dirmngr; \
+	mkdir -p /var/www/mediawiki /var/www/mediawiki/trash /var/log/mediawiki; \
+	chown www-data:www-data /var/log/mediawiki;
 
 # Install the Python packages we need
 RUN set -eux; \
 	pip3 install Pygments --break-system-packages;
 
-# Install wikidiff2
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-
 # Executables
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 COPY ./files/ploticus /usr/bin/ploticus
 
-RUN set -eux; \
+# Mediawiki dependencies
+RUN --mount=type=cache,target=/var/lib/apt \
+	set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
-	libicu-dev \
-	libonig-dev \
-	libzip-dev \
-	liblua5.1-0-dev; \
-	rm -rf /var/lib/apt/lists/*;
+		libicu-dev \
+		libzip-dev \
+		libonig-dev \
+		liblua5.1-0-dev;
 
-RUN set -eux; \
-	docker-php-ext-install -j "$(nproc)" \
-	calendar \
-	exif \
-	intl \
-	mbstring \
-	mysqli \
-	opcache \
-	zip;
 
+# php extensions
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN set -eux; \
-	install-php-extensions wikidiff2; \
-	pecl install APCu luasandbox; \
-	docker-php-ext-enable apcu luasandbox; \
-	rm -r /tmp/pear;
+    install-php-extensions \
+		calendar \
+		exif \
+		intl \
+		mbstring \
+		mysqli \
+		opcache \
+		zip \
+		apcu \
+		luasandbox \
+		wikidiff2;
 
 RUN set -eux; \
 	echo 'max_execution_time = 60' >> /usr/local/etc/php/conf.d/docker-php-executiontime.ini; \
-	echo 'pm.max_children = 30' >> /usr/local/etc/php-fpm.d/zz-docker.conf; \
-	echo 'pm.max_requests = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf; \
-	echo 'pm.start_servers = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf; \
-	echo 'pm.min_spare_servers = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf; \
-	echo 'pm.max_spare_servers = 30' >> /usr/local/etc/php-fpm.d/zz-docker.conf;
+	printf '%s\n' 'pm.max_children = 30' \
+		'pm.max_requests = 200' \
+		'pm.start_servers = 10' \
+		'pm.min_spare_servers = 10' \
+		'pm.max_spare_servers = 30' \
+			>> /usr/local/etc/php-fpm.d/zz-docker.conf;
 
+# System files + build requirements
 COPY ./files/freefont-ttf /usr/share/fonts/truetype/freefont
-
-# Copy over static files into webroot
-COPY ./files/assets /var/www/mediawiki/resources/custom_assets
-
-# Copy over config
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
-COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
 COPY ./patches /var/www/patches
 
 RUN set -eux; \
@@ -156,6 +149,12 @@ RUN set -eux; \
 RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
 	rm -r ./Thumbro/.git;
+
+# Copy over static files into webroot
+COPY ./files/assets /var/www/mediawiki/resources/custom_assets
+
+# Copy over wiki config
+COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
 
 WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
