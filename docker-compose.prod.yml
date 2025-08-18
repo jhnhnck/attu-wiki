@@ -17,6 +17,9 @@ services:
             driver: journald
         networks:
             - attu
+        depends_on:
+            database:
+                condition: service_healthy
 
     nginx:
         container_name: attu-nginx-prod
@@ -82,6 +85,12 @@ services:
             - ./database:/var/lib/mysql
         networks:
             - attu
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
 
 networks:
     attu:

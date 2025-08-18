@@ -16,6 +16,9 @@ services:
             ATTU_DEV_MODE: 1
         env_file:
             - .env
+        depends_on:
+            database:
+                condition: service_healthy
         logging:
             driver: journald
 
@@ -61,3 +64,9 @@ services:
             - .env
         volumes:
             - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
