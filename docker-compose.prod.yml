@@ -74,7 +74,7 @@ services:
 
     database:
         container_name: attu-database-prod
-        image: mariadb:latest
+        image: mariadb:lts
         restart: always
         logging:
             driver: journald

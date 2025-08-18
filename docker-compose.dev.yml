@@ -49,7 +49,7 @@ services:
 
     database:
         container_name: attu-database-dev
-        image: mariadb:latest
+        image: mariadb:lts
         restart: always
         logging:
             driver: journald
