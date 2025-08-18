@@ -24,7 +24,7 @@ RUN set -eux; \
     curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
     curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
     export GNUPGHOME="$(mktemp -d)"; \
-    gpg --fetch-keys "https://www.mediawiki.org/keys/keys.txt"; \
+    curl -fsSL "https://www.mediawiki.org/keys/keys.txt" | gpg --import; \
     gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
 	mkdir -p /var/www/mediawiki; \
     tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
