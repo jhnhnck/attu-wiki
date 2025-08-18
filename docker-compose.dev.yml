@@ -7,7 +7,7 @@ services:
             context: .
             dockerfile: ./mediawiki.Dockerfile
         restart: always
-        command: bash -c "php maintenance/run.php update --quick && exec php-fpm"
+        command: bash -c "php maintenance/run.php update --quick; exec php-fpm"
         volumes:
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
