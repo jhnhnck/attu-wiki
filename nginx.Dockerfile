@@ -14,15 +14,16 @@ RUN RUN --mount=type=cache,target=/var/lib/apt \
         gnupg \
         dirmngr \
         unzip \
-        git; \
-	rm -rf /var/lib/apt/lists/*; \
+        git;
+
+
+RUN set -eux; \
+    rm -r /etc/nginx/conf.d/*; \
     mkdir -p /etc/nginx/templates/ /var/www/mediawiki; \
-    rm -r /etc/nginx/conf.d/*;
-
-# Copy over nginx configs
-COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
-COPY ./config/nginx.conf /etc/nginx/nginx.conf
-
+	chown -R www-data:www-data /var/www; \
+	chmod -R +220 /var/www;
+    
+USER www-data
 WORKDIR /var/www/mediawiki
 
 # MediaWiki setup
@@ -44,15 +45,19 @@ RUN set -eux; \
 	rm -r ./Citizen/.git;
 
 # Copy over static files into webroot
-COPY ./files/assets /var/www/mediawiki/resources/custom_assets
+COPY --chown=www-data:www-data ./files/assets /var/www/mediawiki/resources/custom_assets
 
 # Search engine stuff
-COPY ./files/BingSiteAuth.xml /var/www/mediawiki/BingSiteAuth.xml
-COPY ./files/google*.html /var/www/mediawiki/
-COPY ./files/robots.txt /var/www/mediawiki/robots.txt
-COPY ./files/well-known /var/www/mediawiki/.well-known
+COPY --chown=www-data:www-data ./files/BingSiteAuth.xml /var/www/mediawiki/BingSiteAuth.xml
+COPY --chown=www-data:www-data ./files/google*.html /var/www/mediawiki/
+COPY --chown=www-data:www-data ./files/robots.txt /var/www/mediawiki/robots.txt
+COPY --chown=www-data:www-data ./files/well-known /var/www/mediawiki/.well-known
+
+# Copy over nginx configs
+COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
+COPY ./config/nginx.conf /etc/nginx/nginx.conf
 
 RUN set -eux; \
-    ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml; \
-    chown -R www-data:www-data /var/www; \
-    chmod -R +220 /var/www/mediawiki;
+    ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml;
+
+USER root
