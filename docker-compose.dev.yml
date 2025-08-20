@@ -1,72 +1,70 @@
+---
 name: attu-dev
-
 services:
+    database:
+        container_name: attu-database-dev
+        env_file:
+            - .env
+        environment:
+            MARIADB_DATABASE: attu_wiki
+            MARIADB_RANDOM_ROOT_PASSWORD: true
+            MARIADB_USER: attu
+        healthcheck:
+            interval: 10s
+            retries: 3
+            start_period: 10s
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            timeout: 5s
+        image: mariadb:lts
+        logging:
+            driver: journald
+        restart: always
+        volumes:
+            - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
     mediawiki:
-        container_name: attu-mediawiki-dev
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
-        restart: always
         command: bash -c "php maintenance/run.php update --quick; exec php-fpm"
-        volumes:
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
-            # - ./logs:/var/log/mediawiki
-        environment:
-            ATTU_DEV_MODE: 1
-        env_file:
-            - .env
+        container_name: attu-mediawiki-dev
         depends_on:
             database:
                 condition: service_healthy
+        env_file:
+            - .env
+        environment:
+            ATTU_DEV_MODE: 1
         logging:
             driver: journald
-
-    nginx:
-        container_name: attu-nginx-dev
         restart: always
+        volumes:
+            - ./images:/var/www/mediawiki/images
+            - ./sitemap:/var/www/mediawiki/sitemap
+    memcached:
+        command:
+            - '--memory-limit=512'
+        container_name: attu-memcached-dev
+        image: memcached:latest
+        logging:
+            driver: journald
+        mem_limit: 768m
+        networks:
+            - attu
+        restart: always
+    nginx:
+        build:
+            context: .
+            dockerfile: ./nginx.Dockerfile
+        container_name: attu-nginx-dev
         environment:
-            BUILD_TYPE: 'dev'
             ATTU_DEV_MODE: 1
+            BUILD_TYPE: dev
+        logging:
+            driver: journald
         ports:
             - 127.0.0.1:6008:80
+        restart: always
         volumes:
             - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
-        build:
-            context: .
-            dockerfile: ./nginx.Dockerfile
-        logging:
-            driver: journald
-
-    memcached:
-        container_name: attu-memcached-dev
-        image: memcached:latest
-        restart: always
-        mem_limit: 768m
-        command:
-            - --memory-limit=512
-        logging:
-            driver: journald
-
-    database:
-        container_name: attu-database-dev
-        image: mariadb:lts
-        restart: always
-        logging:
-            driver: journald
-        environment:
-            MARIADB_RANDOM_ROOT_PASSWORD: true
-            MARIADB_DATABASE: 'attu_wiki'
-            MARIADB_USER: 'attu'
-        env_file:
-            - .env
-        volumes:
-            - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
-        healthcheck:
-            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-            start_period: 10s
-            interval: 10s
-            timeout: 5s
-            retries: 3
