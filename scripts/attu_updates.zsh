@@ -1,6 +1,5 @@
 #!/usr/bin/env zsh
 
-# Import Secrets
 SCRIPT_SOURCE=${0%/*}
 cd $SCRIPT_SOURCE/..
 source .env
@@ -83,6 +82,5 @@ printf '%s\n' "Regenerating sitemap"
 docker compose -f "$wiki_path/docker-compose.yml" exec "$mw_container" php maintenance/run.php generateSitemap --fspath=/var/www/html/sitemap/ --identifier=attuproject.org --urlpath=/sitemap/ --compress=no --skip-redirects --server="https://attuproject.org"
 
 # rebuild docker containers
-printf '%s\n' "Pulling any changes to docker images"
-
-docker compose -f "$wiki_path/docker-compose.yml" up -d --build --pull always --quiet-pull
+# printf '%s\n' "Pulling any changes to docker images"
+# docker compose -f "$wiki_path/docker-compose.yml" up -d --build --pull always --quiet-pull
