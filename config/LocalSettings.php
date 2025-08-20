@@ -115,7 +115,7 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgDBserver = "attu-database-dev";
 
 	# Enable debug logging
-	# $wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
+	$wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
 
 	$wgEnableEmail = false;
 	$wgEnableUserEmail = false;
@@ -230,7 +230,4 @@ wfLoadExtension( 'Drafts' );
 
 # Uncomment to restrict account creation
 # $wgGroupPermissions['*']['createaccount'] = false;
-
-# Uncomment for maintenance mode
-# $wgReadOnly = 'This wiki is currently undergoing a hardware upgrade. Check back in a couple of hours.';
 ?>
