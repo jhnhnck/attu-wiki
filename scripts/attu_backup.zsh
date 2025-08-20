@@ -61,7 +61,7 @@ if [[ $(date +%u) -eq 6 ]]; then
     printf '%s\n' "backup: doom-bot database"
     sqlite_backup_file="$bot_backup_path/markers-$(date +%Y-%-m-%-d).sql"
     docker compose -f "$bot_path/docker-compose.yml" \
-        exec core sqlite3 "$bot_database_path" .dump \
+        exec "$bot_container" sqlite3 "$bot_database_path" .dump \
         > "$sqlite_backup_file"
 fi
 
