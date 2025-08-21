@@ -180,6 +180,7 @@ wfLoadExtension( 'TemplateStyles' );
 wfLoadExtension( 'TemplateStylesExtender' );
 wfLoadExtension( 'TemplateData' );
 wfLoadExtension( 'InputBox' );
+wfLoadExtension( 'Echo' );
 
 wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 
