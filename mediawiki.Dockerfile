@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/var/lib/apt \
 		python3-pip \
 		gnupg \
 		dirmngr; \
-	mkdir -p /var/www/mediawiki /var/www/mediawiki/trash /var/log/mediawiki; \
+	mkdir -p /var/www/mediawiki /var/log/mediawiki; \
 	chown www-data:www-data /var/log/mediawiki;
 
 # Install the Python packages we need
@@ -82,15 +82,10 @@ WORKDIR /var/www/mediawiki
 
 # MediaWiki setup
 RUN set -eux; \
-	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
-	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz.sig" -o mediawiki.tar.gz.sig; \
-	export GNUPGHOME="$(mktemp -d)"; \
-	curl -fsSL "https://www.mediawiki.org/keys/keys.txt" | gpg --import; \
-	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
-	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
-	gpgconf --kill all; \
-	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz; \
-	git apply /var/www/patches/mediawiki-deprecated-sidebar.patch;
+    git clone --recurse-submodules --depth=100 https://gerrit.wikimedia.org/r/mediawiki/core.git --branch "$MEDIAWIKI_BRANCH" .; \
+    git apply /var/www/patches/mediawiki-deprecated-sidebar.patch; \
+    composer update --no-dev; \
+    mkdir -p ./mediawiki/trash;
 
 WORKDIR /var/www/mediawiki/skins
 
