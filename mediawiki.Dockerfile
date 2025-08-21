@@ -98,6 +98,11 @@ RUN set -eux; \
 
 WORKDIR /var/www/mediawiki/extensions
 
+# https://www.mediawiki.org/wiki/Extension:TemplateStyles
+RUN set -eux; \
+    cd TemplateStyles; \
+    composer install --no-dev;
+
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
 	git clone --depth=100 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
