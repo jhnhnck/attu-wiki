@@ -40,17 +40,16 @@ services:
         volumes:
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
-    memcached:
-        command:
-            - '--memory-limit=512'
-        container_name: attu-memcached-dev
-        image: memcached:latest
+    redis:
+        command: ["redis-server", "--appendonly", "yes"]
+        container_name: attu-redis-dev
+        image: redis:7-alpine
         logging:
             driver: journald
-        mem_limit: 768m
-        networks:
-            - attu
+        mem_limit: 1024m
         restart: always
+        volumes:
+            - redis-data-dev:/data
     nginx:
         build:
             context: .
@@ -68,3 +67,5 @@ services:
             - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
+volumes:
+    redis-data-dev:

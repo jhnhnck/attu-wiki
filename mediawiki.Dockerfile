@@ -57,6 +57,7 @@ RUN set -eux; \
 		zip \
 		apcu \
 		luasandbox \
+        redis \
 		wikidiff2;
 
 RUN set -eux; \

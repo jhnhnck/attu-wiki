@@ -80,10 +80,14 @@ $wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
 $wgSharedTables[] = "actor";
 
 # Cache settings
-$wgMainCacheType = CACHE_MEMCACHED;
-$wgSessionCacheType = CACHE_MEMCACHED;
-$wgMemCachedServers = [ 'memcached:11211' ];
-# $wgCacheDirectory = "$IP/cache"; # Optional
+$attuRedisServer = "attu-redis-prod";
+$wgCachePrefix = 'attu_wiki';
+$wgSessionName = 'brch_sesssion';
+
+define("CACHE_REDIS", 'redis');
+$wgMainCacheType = CACHE_REDIS;
+$wgSessionCacheType = CACHE_REDIS;
+$wgParserCacheType  = CACHE_REDIS;
 
 # Uploads and media
 $wgEnableUploads = true;
@@ -114,6 +118,7 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgShowExceptionDetails = true;
 
 	$wgDBserver = "attu-database-dev";
+    $attuRedisServer = 'attu-redis-dev';
 
 	# Enable debug logging
 	$wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
@@ -121,6 +126,12 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgEnableEmail = false;
 	$wgEnableUserEmail = false;
 }
+
+$wgObjectCaches['redis'] = [
+    'class' => 'RedisBagOStuff',
+    'servers' => [ $attuRedisServer . ':6379' ],
+    'persistent' => true,
+];
 
 # CAPTCHA and ConfirmEdit
 wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);
@@ -231,4 +242,3 @@ wfLoadExtension( 'Drafts' );
 
 # Uncomment to restrict account creation
 # $wgGroupPermissions['*']['createaccount'] = false;
-?>
