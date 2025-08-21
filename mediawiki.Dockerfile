@@ -85,7 +85,8 @@ RUN set -eux; \
     git clone --recurse-submodules --depth=100 https://gerrit.wikimedia.org/r/mediawiki/core.git --branch "$MEDIAWIKI_BRANCH" .; \
     git apply /var/www/patches/mediawiki-deprecated-sidebar.patch; \
     composer update --no-dev; \
-    mkdir -p ./mediawiki/trash;
+    mkdir -p ./mediawiki/trash; \
+    rm -r ./.git;
 
 WORKDIR /var/www/mediawiki/skins
 
