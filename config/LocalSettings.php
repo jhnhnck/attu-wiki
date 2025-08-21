@@ -32,7 +32,7 @@ $wgContentNamespaces[] = NS_STORY;
 # URL configuration
 $wgScriptPath = "";
 $wgServer = "https://attuproject.org";
-$wgInternalServer = "http://attu-nginx-prod";
+$wgInternalServer = "http://nginx";
 $wgResourceBasePath = $wgScriptPath;
 $wgArticlePath = "/wiki/$1";
 $wgUsePathInfo = true;
@@ -71,7 +71,7 @@ $wgSMTP = [
 
 # Database settings
 $wgDBtype = "mysql";
-$wgDBserver = "attu-database-prod";
+$wgDBserver = "database";
 $wgDBname = "attu_wiki";
 $wgDBuser = "attu";
 $wgDBpassword = "{$_ENV['ATTU_DB_PASSWORD']}";
@@ -80,7 +80,7 @@ $wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
 $wgSharedTables[] = "actor";
 
 # Cache settings
-$attuRedisServer = "attu-redis-prod";
+$attuRedisServer = "redis";
 $wgCachePrefix = 'attu_wiki';
 $wgSessionName = 'brch_sesssion';
 
@@ -114,11 +114,7 @@ $wgUseCdn = true;
 if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 
 	$wgServer = "https://dev.attuproject.org";
-	$wgInternalServer = "http://attu-nginx-dev";
 	$wgShowExceptionDetails = true;
-
-	$wgDBserver = "attu-database-dev";
-    $attuRedisServer = 'attu-redis-dev';
 
 	# Enable debug logging
 	$wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
@@ -132,6 +128,16 @@ $wgObjectCaches['redis'] = [
     'servers' => [ $attuRedisServer . ':6379' ],
     'persistent' => true,
 ];
+
+# Jobs
+$wgJobRunRate = 0;
+$wgJobTypeConf['default'] = [
+    'class'          => 'JobQueueRedis',
+    'redisServer'    => $attuRedisServer . ':6379',
+    'redisConfig'    => [],
+    'claimTTL'       => 3600,
+    'daemonized'     => true
+ ];
 
 # CAPTCHA and ConfirmEdit
 wfLoadExtensions([ 'ConfirmEdit', 'ConfirmEdit/Turnstile' ]);

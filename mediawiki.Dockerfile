@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.4-fpm as mediawiki
 
 # Version
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
@@ -72,7 +72,7 @@ RUN set -eux; \
 # System files + build requirements
 COPY ./files/freefont-ttf /usr/share/fonts/truetype/freefont
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
-COPY ./patches /var/www/patches
+COPY --chown=www-data:www-data ./patches /var/www/patches
 
 RUN set -eux; \
 	chown -R www-data:www-data /var/www; \
@@ -150,10 +150,36 @@ RUN set -eux; \
 	rm -r ./Thumbro/.git;
 
 # Copy over static files into webroot
-COPY ./files/assets /var/www/mediawiki/resources/custom_assets
+COPY --chown=www-data:www-data ./files/assets /var/www/mediawiki/resources/custom_assets
 
 # Copy over wiki config
-COPY ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
+COPY --chown=www-data:www-data ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
 
 WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
+
+# Job runner
+FROM mediawiki AS jobrunner
+
+USER root
+WORKDIR /var/www
+
+# Php Deps
+RUN set -eux; \
+    install-php-extensions \
+    pcntl \
+    sockets;
+
+USER www-data
+
+# https://www.mediawiki.org/wiki/Redis
+RUN set -eux; \
+	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner jobrunner; \
+    cd jobrunner; \
+    composer install --no-dev;
+
+COPY --chown=www-data:www-data ./config/jobrunner.json /var/www/jobrunner/config.json
+COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh /var/www/jobrunner/jobrunner-entry.sh
+
+WORKDIR /var/www/jobrunner
+CMD ["bash", "./jobrunner-entry.sh"]

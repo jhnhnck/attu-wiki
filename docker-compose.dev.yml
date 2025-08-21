@@ -1,8 +1,11 @@
 ---
 name: attu-dev
+networks:
+    attu:
+        attachable: true
+        name: attu_dev
 services:
     database:
-        container_name: attu-database-dev
         env_file:
             - .env
         environment:
@@ -10,56 +13,119 @@ services:
             MARIADB_RANDOM_ROOT_PASSWORD: true
             MARIADB_USER: attu
         healthcheck:
-            interval: 10s
-            retries: 3
-            start_period: 10s
+            interval: 5s
+            retries: 5
+            start_period: 5s
             test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-            timeout: 5s
+            timeout: 3s
         image: mariadb:lts
         logging:
             driver: journald
+        networks:
+            - attu
         restart: always
         volumes:
             - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
+    job-chron:
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: jobrunner
+        depends_on:
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            ATTU_DEV_MODE: 1
+            RUNNER_TYPE: chron
+        logging:
+            driver: journald
+        networks:
+            - attu
+        restart: always
+        volumes:
+            - ./images:/var/www/mediawiki/images
+            - ./sitemap:/var/www/mediawiki/sitemap
+    job-runner:
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: jobrunner
+        depends_on:
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            ATTU_DEV_MODE: 1
+            RUNNER_TYPE: runner
+        logging:
+            driver: journald
+        networks:
+            - attu
+        restart: always
+        volumes:
+            - ./devel/NovaDiscord:/var/www/mediawiki/extensions/NovaDiscord
+            - ./images:/var/www/mediawiki/images
+            - ./sitemap:/var/www/mediawiki/sitemap
+    job-update:
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: jobrunner
+        depends_on:
+            database:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        env_file:
+            - .env
+        environment:
+            ATTU_DEV_MODE: 1
+            RUNNER_TYPE: update
+        logging:
+            driver: journald
+        networks:
+            - attu
+        restart: 'no'
+        volumes:
+            - ./images:/var/www/mediawiki/images
+            - ./sitemap:/var/www/mediawiki/sitemap
     mediawiki:
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
-        command: bash -c "php maintenance/run.php update --quick; exec php-fpm"
-        container_name: attu-mediawiki-dev
+            target: mediawiki
         depends_on:
-            database:
-                condition: service_healthy
+            job-update:
+                condition: service_completed_successfully
         env_file:
             - .env
         environment:
             ATTU_DEV_MODE: 1
         logging:
             driver: journald
+        networks:
+            - attu
         restart: always
+        scale: 1
         volumes:
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
-    redis:
-        command: ["redis-server", "--appendonly", "yes"]
-        container_name: attu-redis-dev
-        image: redis:7-alpine
-        logging:
-            driver: journald
-        mem_limit: 1024m
-        restart: always
-        volumes:
-            - redis-data-dev:/data
     nginx:
         build:
             context: .
             dockerfile: ./nginx.Dockerfile
-        container_name: attu-nginx-dev
+        depends_on:
+            - mediawiki
         environment:
             ATTU_DEV_MODE: 1
             BUILD_TYPE: dev
         logging:
             driver: journald
+        networks:
+            - attu
         ports:
             - 127.0.0.1:6008:80
         restart: always
@@ -67,5 +133,22 @@ services:
             - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/var/www/mediawiki/images
             - ./sitemap:/var/www/mediawiki/sitemap
+    redis:
+        command: ["redis-server", "--save", "60",  "1", "--loglevel", "warning"]
+        healthcheck:
+            interval: 5s
+            retries: 5
+            start_period: 5s
+            test: ["CMD", "redis-cli", "ping"]
+            timeout: 3s
+        image: redis:8
+        logging:
+            driver: journald
+        mem_limit: 1024m
+        networks:
+            - attu
+        restart: always
+        volumes:
+            - redis-data-dev:/data
 volumes:
     redis-data-dev:
