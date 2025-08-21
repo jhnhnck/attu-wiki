@@ -81,6 +81,7 @@ $wgSharedTables[] = "actor";
 
 # Cache settings
 $wgMainCacheType = CACHE_MEMCACHED;
+$wgSessionCacheType = CACHE_MEMCACHED;
 $wgMemCachedServers = [ 'memcached:11211' ];
 # $wgCacheDirectory = "$IP/cache"; # Optional
 
