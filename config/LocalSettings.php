@@ -107,7 +107,7 @@ $wgGroupPermissions['user']['move-rootuserpages'] = true;
 $wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
 $wgGroupPermissions['sysop']['tboverride'] = false;
 $wgUsePrivateIPs = true;
-$wgCdnServersNoPurge = [ '10.22.5.1', '10.22.4.232', '172.18.0.1', '10.22.0.254' ];
+$wgCdnServersNoPurge = [ '172.16.0.0/12', '10.22.0.254' ];
 $wgUseCdn = true;
 
 # Development Mode Overrides
