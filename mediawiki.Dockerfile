@@ -4,6 +4,7 @@ FROM php:8.4-fpm as mediawiki
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
+ARG NOVADISCORD_TAG="2.0.1-alpha"
 
 # System dependencies
 RUN --mount=type=cache,target=/var/lib/apt \
@@ -132,10 +133,10 @@ RUN set -eux; \
 	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
 	rm -r ./CreatePageUw/.git;
 
-# https://github.com/jayktaylor/mw-discord
+# https://github.com/jhnhnck/mediawiki-extensions-Discord
 RUN set -eux; \
-	git clone --depth=100 https://github.com/jhnhnck/mediawiki-extensions-Discord Discord; \
-	rm -r ./Discord/.git;
+	git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
+	rm -r ./NovaDiscord/.git;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
 RUN set -eux; \

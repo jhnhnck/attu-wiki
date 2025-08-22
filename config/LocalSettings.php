@@ -184,7 +184,7 @@ wfLoadExtension( 'Echo' );
 
 wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 
-wfLoadExtension( 'Discord' );
+wfLoadExtension( 'NovaDiscord' );
 $wgDiscordNoBots = false;
 
 if ( empty($_ENV['ATTU_DEV_MODE']) ) {
