@@ -83,7 +83,25 @@ WORKDIR /var/www/mediawiki
 
 # MediaWiki setup
 RUN set -eux; \
-    git clone --recurse-submodules --depth=100 https://gerrit.wikimedia.org/r/mediawiki/core.git --branch "$MEDIAWIKI_BRANCH" .; \
+    git clone --no-recurse-submodules --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/core.git .; \
+    git submodule update --init -- \
+        extensions/Cite \
+        extensions/CodeEditor \
+        extensions/ConfirmEdit \
+        extensions/Echo \
+        extensions/InputBox \
+        extensions/Interwiki \
+        extensions/Math \
+        extensions/PageImages \
+        extensions/ParserFunctions \
+        extensions/Scribunto \
+        extensions/SyntaxHighlight_GeSHi \
+        extensions/TemplateData \
+        extensions/TemplateStyles \
+        extensions/TextExtracts \
+        extensions/TitleBlacklist \
+        extensions/VisualEditor \
+        extensions/WikiEditor; \
     git apply /var/www/patches/mediawiki-deprecated-sidebar.patch; \
     composer update --no-dev; \
     mkdir -p ./mediawiki/trash; \
