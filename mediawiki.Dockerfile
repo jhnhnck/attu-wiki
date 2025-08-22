@@ -139,12 +139,12 @@ RUN set -eux; \
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git --branch "$MEDIAWIKI_BRANCH" EasyTimeline; \
+	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
 	rm -r ./EasyTimeline/.git;
 
 # https://www.mediawiki.org/wiki/Extension:OpenGraphMeta
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta --branch "$MEDIAWIKI_BRANCH" OpenGraphMeta; \
+	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
 	rm -r ./OpenGraphMeta/.git;
 
 # https://www.mediawiki.org/wiki/Extension:ShortDescription
@@ -154,7 +154,7 @@ RUN set -eux; \
 
 # https://www.mediawiki.org/wiki/Extension:StopForumSpam
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam --branch "$MEDIAWIKI_BRANCH" StopForumSpam; \
+	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
 	rm -r ./StopForumSpam/.git;
 
 # https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
