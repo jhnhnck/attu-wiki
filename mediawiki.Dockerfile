@@ -4,7 +4,7 @@ FROM php:8.4-fpm as mediawiki
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
-ARG NOVADISCORD_TAG="2.0.2-alpha"
+ARG NOVADISCORD_TAG="2.0.3-alpha"
 
 # System dependencies
 RUN --mount=type=cache,target=/var/lib/apt \
