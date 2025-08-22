@@ -168,6 +168,11 @@ $wgDefaultSkin = 'citizen';
 # Extensions
 wfLoadExtension( 'CodeEditor' );
 wfLoadExtension( 'VisualEditor' );
+$wgDefaultUserOptions['visualeditor-editor'] = 'visualeditor';
+$wgDefaultUserOptions['visualeditor-newwikitext'] = 1;
+$wgVisualEditorEnableDiffPage = true;
+$wgVisualEditorEnableWikitext = true;
+$wgVisualEditorUseSingleEditTab = true;
 wfLoadExtension( 'WikiEditor' );
 wfLoadExtension( 'ParserFunctions' );
 $wgPFEnableStringFunctions = true;
