@@ -85,7 +85,7 @@ WORKDIR /var/www/mediawiki
 # MediaWiki setup
 RUN set -eux; \
     git clone --no-recurse-submodules --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/core.git .; \
-    git submodule update --init -- \
+    git submodule update --init --recursive -- \
         skins/ \
         extensions/Cite \
         extensions/CodeEditor \
