@@ -48,18 +48,20 @@ RUN --mount=type=cache,target=/var/lib/apt \
 # php extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN set -eux; \
-    install-php-extensions \
+	install-php-extensions \
+		apcu \
 		calendar \
 		exif \
 		intl \
+		luasandbox \
 		mbstring \
 		mysqli \
 		opcache \
-		zip \
-		apcu \
-		luasandbox \
-        redis \
-		wikidiff2;
+		pcntl \
+		redis \
+		sockets \
+		wikidiff2 \
+		zip;
 
 RUN set -eux; \
 	echo 'max_execution_time = 60' >> /usr/local/etc/php/conf.d/docker-php-executiontime.ini; \
@@ -175,20 +177,14 @@ COPY --chown=www-data:www-data ./files/assets /var/www/mediawiki/resources/custo
 # Copy over wiki config
 COPY --chown=www-data:www-data ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
 
+# Main image
+FROM mediawiki AS fpm
+
 WORKDIR /var/www/mediawiki
 CMD ["php-fpm"]
 
 # Job runner
 FROM mediawiki AS jobrunner
-
-USER root
-WORKDIR /var/www
-
-# Php Deps
-RUN set -eux; \
-    install-php-extensions \
-    pcntl \
-    sockets;
 
 USER www-data
 

@@ -96,7 +96,7 @@ services:
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
-            target: mediawiki
+            target: fpm
         depends_on:
             job-update:
                 condition: service_completed_successfully
