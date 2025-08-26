@@ -12,7 +12,7 @@ case "${RUNNER_TYPE:-runner}" in
     ;;
 
     "update")
-    cd /var/www/mediawiki
+    cd "$APP_HOME/mediawiki"
     php maintenance/run.php update --quick
     ;;
 esac

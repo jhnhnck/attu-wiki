@@ -45,8 +45,9 @@ services:
             - attu
         restart: always
         volumes:
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
+            - ./images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
     job-runner:
         build:
             context: .
@@ -66,9 +67,9 @@ services:
             - attu
         restart: always
         volumes:
-            - ./devel/NovaDiscord:/var/www/mediawiki/extensions/NovaDiscord
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
+            - ./images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
     job-update:
         build:
             context: .
@@ -90,8 +91,9 @@ services:
             - attu
         restart: 'no'
         volumes:
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
+            - ./images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
         build:
             context: .
@@ -111,8 +113,9 @@ services:
         restart: always
         scale: 1
         volumes:
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
+            - ./images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
     nginx:
         build:
             context: .
@@ -130,9 +133,10 @@ services:
             - 127.0.0.1:6008:80
         restart: always
         volumes:
-            - ./files/listed_ip_30_all.txt:/var/www/mediawiki/resources/listed_ip_30_all.txt
-            - ./images:/var/www/mediawiki/images
-            - ./sitemap:/var/www/mediawiki/sitemap
+            - ./files/doom-bot.html:/app/mediawiki/doom-bot.html
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
+            - ./images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
     redis:
         command: ["redis-server", "--save", "60",  "1", "--loglevel", "warning"]
         healthcheck:

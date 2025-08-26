@@ -1,12 +1,13 @@
 FROM nginx:latest
 
-# Version
+ENV APP_HOME="/app"
+
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 
 # System dependencies
-RUN RUN --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,target=/var/lib/apt \
     set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -19,12 +20,12 @@ RUN RUN --mount=type=cache,target=/var/lib/apt \
 
 RUN set -eux; \
     rm -r /etc/nginx/conf.d/*; \
-    mkdir -p /etc/nginx/templates/ /var/www/mediawiki; \
-	chown -R www-data:www-data /var/www; \
-	chmod -R +220 /var/www;
-    
+    mkdir -p /etc/nginx/templates/ $APP_HOME/mediawiki; \
+	chown -R www-data:www-data $APP_HOME; \
+	chmod -R +220 $APP_HOME;
+
 USER www-data
-WORKDIR /var/www/mediawiki
+WORKDIR $APP_HOME/mediawiki
 
 # MediaWiki setup
 RUN set -eux; \
@@ -33,31 +34,31 @@ RUN set -eux; \
 	export GNUPGHOME="$(mktemp -d)"; \
     curl -fsSL "https://www.mediawiki.org/keys/keys.txt" | gpg --import; \
   	gpg --batch --verify mediawiki.tar.gz.sig mediawiki.tar.gz; \
-	tar -x --strip-components=1 -f mediawiki.tar.gz -C /var/www/mediawiki; \
+	tar -x --strip-components=1 -f mediawiki.tar.gz -C $APP_HOME/mediawiki; \
 	gpgconf --kill all; \
 	rm -r "$GNUPGHOME" mediawiki.tar.gz.sig mediawiki.tar.gz;
 
 # Replicate some skins and extensions on nginx so that their bundled assets can be accessed (e.g. icons/images/fonts)
 # Skin:Citizen
 RUN set -eux; \
-    cd /var/www/mediawiki/skins; \
+    cd $APP_HOME/mediawiki/skins; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
 	rm -r ./Citizen/.git;
 
 # Copy over static files into webroot
-COPY --chown=www-data:www-data ./files/assets /var/www/mediawiki/resources/custom_assets
+COPY --chown=www-data:www-data ./files/assets $APP_HOME/mediawiki/resources/custom_assets
 
 # Search engine stuff
-COPY --chown=www-data:www-data ./files/BingSiteAuth.xml /var/www/mediawiki/BingSiteAuth.xml
-COPY --chown=www-data:www-data ./files/google*.html /var/www/mediawiki/
-COPY --chown=www-data:www-data ./files/robots.txt /var/www/mediawiki/robots.txt
-COPY --chown=www-data:www-data ./files/well-known /var/www/mediawiki/.well-known
+COPY --chown=www-data:www-data ./files/BingSiteAuth.xml $APP_HOME/mediawiki/BingSiteAuth.xml
+COPY --chown=www-data:www-data ./files/google*.html $APP_HOME/mediawiki/
+COPY --chown=www-data:www-data ./files/robots.txt $APP_HOME/mediawiki/robots.txt
+COPY --chown=www-data:www-data ./files/well-known $APP_HOME/mediawiki/.well-known
 
 # Copy over nginx configs
 COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template
 COPY ./config/nginx.conf /etc/nginx/nginx.conf
 
 RUN set -eux; \
-    ln -svf /var/www/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml /var/www/mediawiki/sitemap.xml;
+    ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
 USER root

@@ -94,7 +94,7 @@ $wgEnableUploads = true;
 $wgUseImageMagick = true;
 $wgImageMagickConvertCommand = "/usr/bin/convert";
 $wgUseInstantCommons = true;
-$wgTmpDirectory = "/var/www/mediawiki/images/folk-vending-cucumber";  # only on mediawiki box, not possible to access
+$wgTmpDirectory =  $_ENV['APP_HOME'] . '/mediawiki/images/folk-vending-cucumber';  # only on mediawiki box, not possible to access
 
 # Security and authentication
 $wgSecretKey = "{$_ENV['ATTU_SECRET_KEY']}";
@@ -117,7 +117,7 @@ if ( !empty($_ENV['ATTU_DEV_MODE']) ) {
 	$wgShowExceptionDetails = true;
 
 	# Enable debug logging
-	$wgDebugLogFile = "/var/log/mediawiki/debug-{$wgDBname}.log";
+	$wgDebugLogFile = $_ENV['APP_HOME'] . "/logs/debug-{$wgDBname}.log";
 
 	$wgEnableEmail = false;
 	$wgEnableUserEmail = false;

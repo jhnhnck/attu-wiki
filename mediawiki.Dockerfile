@@ -1,6 +1,8 @@
 FROM php:8.4-fpm as mediawiki
 
-# Version
+ENV TZ='America/New_York'
+ENV APP_HOME="/app"
+
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
@@ -20,10 +22,8 @@ RUN --mount=type=cache,target=/var/lib/apt \
 		liblua5.1-0 \
 		libzip5 \
 		python3 \
-		python3-pip \
-		gnupg \
-		dirmngr; \
-	mkdir -p /var/www/mediawiki /var/log/mediawiki; \
+		python3-pip; \
+	mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler} /var/log/mediawiki; \
 	chown www-data:www-data /var/log/mediawiki;
 
 # Install the Python packages we need
@@ -75,14 +75,15 @@ RUN set -eux; \
 # System files + build requirements
 COPY ./files/freefont-ttf /usr/share/fonts/truetype/freefont
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
-COPY --chown=www-data:www-data ./patches /var/www/patches
+COPY --chown=www-data:www-data ./patches $APP_HOME/patches
 
 RUN set -eux; \
-	chown -R www-data:www-data /var/www; \
-	chmod -R +220 /var/www;
+	usermod -d $APP_HOME www-data; \
+	chown -R www-data:www-data $APP_HOME; \
+	chmod -R +220 $APP_HOME;
 
 USER www-data
-WORKDIR /var/www/mediawiki
+WORKDIR $APP_HOME/mediawiki
 
 # MediaWiki setup
 RUN set -eux; \
@@ -106,19 +107,19 @@ RUN set -eux; \
         extensions/TitleBlacklist \
         extensions/VisualEditor \
         extensions/WikiEditor; \
-    git apply /var/www/patches/mediawiki-deprecated-sidebar.patch; \
+	git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
     composer update --no-dev; \
     mkdir -p ./mediawiki/trash; \
     rm -r ./.git;
 
-WORKDIR /var/www/mediawiki/skins
+WORKDIR $APP_HOME/mediawiki/skins
 
 RUN set -eux; \
 	git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
-	git -C Citizen apply /var/www/patches/citizen-viewport.patch; \
+	git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch; \
 	rm -r ./Citizen/.git;
 
-WORKDIR /var/www/mediawiki/extensions
+WORKDIR $APP_HOME/mediawiki/extensions
 
 # https://www.mediawiki.org/wiki/Extension:TemplateStyles
 RUN set -eux; \
@@ -128,7 +129,7 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
 	git clone --depth=100 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
-	git -C Drafts apply /var/www/patches/drafts-url-expand.patch; \
+	git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
 	rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw
@@ -172,30 +173,30 @@ RUN set -eux; \
 	rm -r ./Thumbro/.git;
 
 # Copy over static files into webroot
-COPY --chown=www-data:www-data ./files/assets /var/www/mediawiki/resources/custom_assets
+COPY --chown=www-data:www-data ./files/assets $APP_HOME/mediawiki/resources/custom_assets
 
 # Copy over wiki config
-COPY --chown=www-data:www-data ./config/LocalSettings.php /var/www/mediawiki/LocalSettings.php
+COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
 
 # Main image
 FROM mediawiki AS fpm
 
-WORKDIR /var/www/mediawiki
+WORKDIR $APP_HOME/mediawiki
 CMD ["php-fpm"]
 
 # Job runner
 FROM mediawiki AS jobrunner
 
 USER www-data
+WORKDIR $APP_HOME/jobrunner
 
 # https://www.mediawiki.org/wiki/Redis
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner jobrunner; \
-    cd jobrunner; \
+	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
     composer install --no-dev;
 
-COPY --chown=www-data:www-data ./config/jobrunner.json /var/www/jobrunner/config.json
-COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh /var/www/jobrunner/jobrunner-entry.sh
+COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
+COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
 
-WORKDIR /var/www/jobrunner
+WORKDIR $APP_HOME/jobrunner
 CMD ["bash", "./jobrunner-entry.sh"]
