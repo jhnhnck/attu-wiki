@@ -8,84 +8,70 @@ ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 ARG NOVADISCORD_TAG="2.0.4-alpha"
 
-# System dependencies
+# system packages
 RUN --mount=type=cache,target=/var/lib/apt \
-	set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
 		git \
-		librsvg2-bin \
 		imagemagick \
+		librsvg2-bin \
 		libvips-tools \
-		unzip \
 		neovim \
-		liblua5.1-0 \
-		libzip5 \
-		python3 \
-		python3-pip; \
-	mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler} /var/log/mediawiki; \
-	chown www-data:www-data /var/log/mediawiki;
+		python3-minimal \
+		python3-pip \
+        zsh; \
+	bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler,logs}';
 
-# Install the Python packages we need
+# Python packages
+# for SyntaxHighlight code highlighting
 RUN set -eux; \
-	pip3 install Pygments --break-system-packages;
+    pip3 install Pygments --break-system-packages;
 
 # Executables
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+# required by EasyTimeline extension
 COPY ./files/ploticus /usr/bin/ploticus
 
-# Mediawiki dependencies
-RUN --mount=type=cache,target=/var/lib/apt \
-	set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libicu-dev \
-		libzip-dev \
-		libonig-dev \
-		liblua5.1-0-dev;
-
-
-# php extensions
+# PHP extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN set -eux; \
-	install-php-extensions \
-		apcu \
-		calendar \
-		exif \
-		intl \
-		luasandbox \
-		mbstring \
-		mysqli \
-		opcache \
-		pcntl \
-		redis \
-		sockets \
-		wikidiff2 \
-		zip;
+RUN --mount=type=cache,target=/var/lib/apt \
+    install-php-extensions \
+        @composer \
+        apcu \
+        calendar \
+        exif \
+        intl \
+        luasandbox \
+        mysqli \
+        pcntl \
+        redis \
+        sockets \
+        wikidiff2 \
+        zip;
 
-RUN set -eux; \
-	echo 'max_execution_time = 60' >> /usr/local/etc/php/conf.d/docker-php-executiontime.ini; \
-	printf '%s\n' 'pm.max_children = 30' \
+# php-fpm configuration tweaks
+COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
+RUN set -eu; \
+	printf '%s\n' \
+        'pm.max_children = 30' \
 		'pm.max_requests = 200' \
 		'pm.start_servers = 10' \
 		'pm.min_spare_servers = 10' \
 		'pm.max_spare_servers = 30' \
 			>> /usr/local/etc/php-fpm.d/zz-docker.conf;
 
-# System files + build requirements
-COPY ./files/freefont-ttf /usr/share/fonts/truetype/freefont
-COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
-COPY --chown=www-data:www-data ./patches $APP_HOME/patches
-
 RUN set -eux; \
-	usermod -d $APP_HOME www-data; \
-	chown -R www-data:www-data $APP_HOME; \
-	chmod -R +220 $APP_HOME;
+    usermod -d $APP_HOME www-data; \
+    chown -R www-data:www-data $APP_HOME; \
+    chmod -R +220 $APP_HOME;
 
 USER www-data
 WORKDIR $APP_HOME/mediawiki
 
-# MediaWiki setup
+# Code patches (as needed)
+COPY --chown=www-data:www-data ./patches $APP_HOME/patches
+
+# MediaWiki core and "included" extensions
 RUN set -eux; \
     git clone --no-recurse-submodules --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/core.git .; \
     git submodule update --init --recursive -- \
@@ -112,13 +98,15 @@ RUN set -eux; \
     mkdir -p ./mediawiki/trash; \
     rm -r ./.git;
 
+# --- skins ---
 WORKDIR $APP_HOME/mediawiki/skins
 
 RUN set -eux; \
-	git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
-	git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch; \
-	rm -r ./Citizen/.git;
+    git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
+    git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch; \
+    rm -r ./Citizen/.git;
 
+# --- extensions ---
 WORKDIR $APP_HOME/mediawiki/extensions
 
 # https://www.mediawiki.org/wiki/Extension:TemplateStyles
@@ -128,54 +116,54 @@ RUN set -eux; \
 
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
-	git clone --depth=100 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
+    git clone --depth=100 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
 	git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
-	rm -r ./Drafts/.git;
+    rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
-	rm -r ./CreatePageUw/.git;
+    git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
+    rm -r ./CreatePageUw/.git;
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
-RUN set -eux; \
-	git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
-	rm -r ./NovaDiscord/.git;
+# RUN set -eux; \
+# 	git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
+# 	rm -r ./NovaDiscord/.git;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
 RUN set -eux; \
-	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
-	rm -r ./EasyTimeline/.git;
+    git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
+    rm -r ./EasyTimeline/.git;
 
 # https://www.mediawiki.org/wiki/Extension:OpenGraphMeta
 RUN set -eux; \
-	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
-	rm -r ./OpenGraphMeta/.git;
+    git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
+    rm -r ./OpenGraphMeta/.git;
 
 # https://www.mediawiki.org/wiki/Extension:ShortDescription
 RUN set -eux; \
-	git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
-	rm -r ./ShortDescription/.git;
+    git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
+    rm -r ./ShortDescription/.git;
 
 # https://www.mediawiki.org/wiki/Extension:StopForumSpam
 RUN set -eux; \
-	git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
-	rm -r ./StopForumSpam/.git;
+    git clone --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
+    rm -r ./StopForumSpam/.git;
 
 # https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
 RUN set -eux; \
-	git clone --depth=100 https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
-	rm -r ./TemplateStylesExtender/.git;
+    git clone --depth=100 https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
+    rm -r ./TemplateStylesExtender/.git;
 
 # https://www.mediawiki.org/wiki/Extension:Thumbro
 RUN set -eux; \
-	git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
-	rm -r ./Thumbro/.git;
+    git clone --depth=100 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
+    rm -r ./Thumbro/.git;
 
-# Copy over static files into webroot
+# static assets
 COPY --chown=www-data:www-data ./files/assets $APP_HOME/mediawiki/resources/custom_assets
 
-# Copy over wiki config
+# MediaWki config
 COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
 
 # Main image
@@ -195,8 +183,8 @@ RUN set -eux; \
 	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
     composer install --no-dev;
 
-COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
-COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
+COPY --chown=www-data:www-data ./config/jobrunner.json /var/www/jobrunner/config.json
+COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh /var/www/jobrunner/jobrunner-entry.sh
 
 WORKDIR $APP_HOME/jobrunner
 CMD ["bash", "./jobrunner-entry.sh"]

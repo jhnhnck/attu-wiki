@@ -206,8 +206,9 @@ wfLoadExtension( 'StopForumSpam' );
 $wgSFSIPListLocation = "{$wgInternalServer}/resources/listed_ip_30_all.txt";
 
 wfLoadExtension( 'EasyTimeline' );
-$wgTimelineFontDirectory = "/usr/share/fonts/truetype/freefont";
-$wgTimelineFonts = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+$wgTimelineFontDirectory = $_ENV['APP_HOME'] . '/fonts/freefont';
+$wgTimelineFonts = $wgTimelineFontDirectory . '/FreeSans.ttf';
+$wgTimelineFontFile = 'FreeSans';
 
 wfLoadExtension( 'ShortDescription' );
 $wgShortDescriptionExtendOpenSearchXml = true;
