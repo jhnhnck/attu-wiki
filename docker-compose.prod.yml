@@ -10,7 +10,7 @@ services:
             interval: 5s
             retries: 5
             start_period: 5s
-            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
         image: mariadb:lts
         logging:
@@ -124,12 +124,12 @@ services:
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     redis:
-        command: ["redis-server", "--save", "60",  "1", "--loglevel", "warning"]
+        command: [ "redis-server", "--save", "60", "1", "--loglevel", "warning" ]
         healthcheck:
             interval: 5s
             retries: 5
             start_period: 5s
-            test: ["CMD", "redis-cli", "ping"]
+            test: [ "CMD", "redis-cli", "ping" ]
             timeout: 3s
         image: redis:8
         logging:
@@ -163,7 +163,7 @@ services:
         restart: always
         volumes:
             - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
-            - ./files/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
-            - ./files/well-known:/var/www/mediawiki/.well-known
+            - ./config/yourls/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
+            - ./files/dotfiles/.well-known:/var/www/mediawiki/.well-known
 volumes:
     redis-data-prod:

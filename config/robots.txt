@@ -1,0 +1,27 @@
+User-agent: *
+# Disallow access to special pages and administrative areas
+Disallow: /wiki/Special:
+
+# Disallow access to scripts and other system files
+Disallow: /w/
+Disallow: /load.php
+Disallow: /index.php
+Disallow: /skins/
+Disallow: /images/
+
+# Disallow indexing of specific namespaces if necessary
+# Uncomment and modify the following lines as needed
+Disallow: /wiki/User:
+Disallow: /wiki/Category:
+Disallow: /wiki/Help:
+Disallow: /wiki/Template:
+
+# Allow search engines to index the main content
+Allow: /wiki/Attu_Project:Main
+Allow: /wiki/Meta:
+Allow: /wiki/Story:
+
+# Crawl delay to avoid overwhelming the server (adjust the value as needed)
+Crawl-delay: 10
+
+Sitemap: https://attuproject.org/sitemap.xml

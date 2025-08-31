@@ -50,6 +50,7 @@ COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/ass
 
 # Dotfiles (mostly search engine stuff)
 COPY --chown=www-data:www-data ./files/dotfiles/ $APP_HOME/mediawiki
+COPY --chown=www-data:www-data ./config/robots.txt $APP_HOME/mediawiki
 
 # Copy over nginx configs
 COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template

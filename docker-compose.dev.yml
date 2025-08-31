@@ -17,7 +17,7 @@ services:
             interval: 5s
             retries: 5
             start_period: 5s
-            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
         image: mariadb:lts
         logging:
@@ -134,12 +134,12 @@ services:
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     redis:
-        command: ["redis-server", "--loglevel", "warning"]
+        command: [ "redis-server", "--loglevel", "warning" ]
         healthcheck:
             interval: 5s
             retries: 5
             start_period: 5s
-            test: ["CMD", "redis-cli", "ping"]
+            test: [ "CMD", "redis-cli", "ping" ]
             timeout: 3s
         image: redis:8
         logging:
