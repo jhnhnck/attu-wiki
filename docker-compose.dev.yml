@@ -44,10 +44,8 @@ services:
         networks:
             - attu
         restart: always
-        volumes:
-            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
-            - ./images:/app/mediawiki/images
-            - ./sitemap:/app/mediawiki/sitemap
+        volumes_from:
+            - job-update
     job-runner:
         build:
             context: .
@@ -65,10 +63,8 @@ services:
         networks:
             - attu
         restart: always
-        volumes:
-            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
-            - ./images:/app/mediawiki/images
-            - ./sitemap:/app/mediawiki/sitemap
+        volumes_from:
+            - job-update
     job-update:
         build:
             context: .
@@ -110,10 +106,8 @@ services:
             - attu
         restart: always
         scale: 1
-        volumes:
-            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
-            - ./images:/app/mediawiki/images
-            - ./sitemap:/app/mediawiki/sitemap
+        volumes_from:
+            - job-update
     nginx:
         build:
             context: .
