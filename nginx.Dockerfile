@@ -25,7 +25,7 @@ RUN set -eux; \
 	chmod -R +220 $APP_HOME;
 
 USER www-data
-WORKDIR $APP_HOME/mediawiki
+WORKDIR $APP_HOME
 
 # MediaWiki setup
 RUN set -eux; \

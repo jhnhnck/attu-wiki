@@ -46,7 +46,7 @@ $wgLogos = [
 		"width" => 168,
 		"height" => 30,
 	],
-	'icon' => "$wgResourceBasePath/resources/assets/attu-favicon.ico",
+	'icon' => "$wgResourceBasePath/resources/assets/favicon.ico",
 ];
 
 # Language and time
@@ -165,7 +165,7 @@ wfLoadSkin( 'Timeless' );
 wfLoadSkin( 'Vector' );
 $wgDefaultSkin = 'citizen';
 
-# Extensions
+# Editors
 wfLoadExtension( 'CodeEditor' );
 wfLoadExtension( 'VisualEditor' );
 $wgDefaultUserOptions['visualeditor-editor'] = 'visualeditor';
@@ -176,6 +176,8 @@ $wgVisualEditorUseSingleEditTab = true;
 wfLoadExtension( 'WikiEditor' );
 wfLoadExtension( 'ParserFunctions' );
 $wgPFEnableStringFunctions = true;
+
+# Other Extensions
 
 wfLoadExtension( 'Scribunto' );
 $wgScribuntoDefaultEngine = 'luastandalone';
