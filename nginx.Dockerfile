@@ -45,14 +45,11 @@ RUN set -eux; \
 	git clone --filter=blob:none https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
 	rm -r ./Citizen/.git;
 
-# Copy over static files into webroot
-COPY --chown=www-data:www-data ./files/assets $APP_HOME/mediawiki/resources/custom_assets
+# Copy over static files into web root
+COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
 
-# Search engine stuff
-COPY --chown=www-data:www-data ./files/BingSiteAuth.xml $APP_HOME/mediawiki/BingSiteAuth.xml
-COPY --chown=www-data:www-data ./files/google*.html $APP_HOME/mediawiki/
-COPY --chown=www-data:www-data ./files/robots.txt $APP_HOME/mediawiki/robots.txt
-COPY --chown=www-data:www-data ./files/well-known $APP_HOME/mediawiki/.well-known
+# Dotfiles (mostly search engine stuff)
+COPY --chown=www-data:www-data ./files/dotfiles/ $APP_HOME/mediawiki
 
 # Copy over nginx configs
 COPY ./config/mediawiki.conf /etc/nginx/templates/mediawiki.conf.template

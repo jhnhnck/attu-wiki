@@ -40,13 +40,13 @@ $wgForceHTTPS = true;
 
 # Logos and icons
 $wgLogos = [
-	'1x' => "$wgResourceBasePath/resources/custom_assets/attu_thick_olive.svg",
+	'1x' => "$wgResourceBasePath/resources/assets/attu-olive.svg",
 	'wordmark' => [
-		"src" => "$wgResourceBasePath/resources/custom_assets/attu_wordmark_v4.svg",
+		"src" => "$wgResourceBasePath/resources/assets/attu-wordmark.svg",
 		"width" => 168,
 		"height" => 30,
 	],
-	'icon' => "$wgResourceBasePath/resources/custom_assets/favicon.ico",
+	'icon' => "$wgResourceBasePath/resources/assets/attu-favicon.ico",
 ];
 
 # Language and time

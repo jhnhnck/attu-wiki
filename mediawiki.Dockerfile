@@ -161,8 +161,8 @@ RUN set -eux; \
     rm -r ./Thumbro/.git;
 
 # static assets
-COPY --chown=www-data:www-data ./files/assets $APP_HOME/mediawiki/resources/custom_assets
-
+COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
+COPY --chown=www-data:www-data ./files/freefont-ttf $APP_HOME/fonts/freefont
 # MediaWki config
 COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
 
