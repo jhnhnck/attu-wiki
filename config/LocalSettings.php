@@ -61,10 +61,13 @@ $wgPasswordSender = "doom@attuproject.org";
 $wgEmailAuthentication = true;
 $wgEnotifUserTalk = true;
 $wgEnotifWatchlist = true;
+
+# Not well documented; code reference: <https://github.com/pear/Mail/blob/master/Mail/smtp.php>
 $wgSMTP = [
-	"host" => "ssl://in-v3.mailjet.com",
-	"port" => 465,
+	"host" => "smtp.protonmail.ch",
+	"port" => 587,
 	"auth" => true,
+    "starttls" => true,
 	"username" => "{$_ENV['SMTP_USERNAME']}",
 	"password" => "{$_ENV['SMTP_PASSWORD']}",
 ];
