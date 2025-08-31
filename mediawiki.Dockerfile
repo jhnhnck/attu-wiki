@@ -13,15 +13,15 @@ RUN --mount=type=cache,target=/var/lib/apt \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-		git \
-		imagemagick \
-		librsvg2-bin \
-		libvips-tools \
-		neovim \
-		python3-minimal \
-		python3-pip \
+        git \
+        imagemagick \
+        librsvg2-bin \
+        libvips-tools \
+        neovim \
+        python3-minimal \
+        python3-pip \
         zsh; \
-	bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler,logs}';
+    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler,logs}';
 
 # Python packages
 # for SyntaxHighlight code highlighting
@@ -52,13 +52,13 @@ RUN --mount=type=cache,target=/var/lib/apt \
 # php-fpm configuration tweaks
 COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
 RUN set -eu; \
-	printf '%s\n' \
+    printf '%s\n' \
         'pm.max_children = 30' \
-		'pm.max_requests = 200' \
-		'pm.start_servers = 10' \
-		'pm.min_spare_servers = 10' \
-		'pm.max_spare_servers = 30' \
-			>> /usr/local/etc/php-fpm.d/zz-docker.conf;
+        'pm.max_requests = 200' \
+        'pm.start_servers = 10' \
+        'pm.min_spare_servers = 10' \
+        'pm.max_spare_servers = 30' \
+            >> /usr/local/etc/php-fpm.d/zz-docker.conf;
 
 RUN set -eux; \
     usermod -d $APP_HOME www-data; \
@@ -93,7 +93,7 @@ RUN set -eux; \
         extensions/TitleBlacklist \
         extensions/VisualEditor \
         extensions/WikiEditor; \
-	git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
+    git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
     composer update --no-dev; \
     mkdir -p ./mediawiki/trash; \
     rm -r ./.git;
@@ -117,7 +117,7 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:Drafts
 RUN set -eux; \
     git clone --depth=100 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
-	git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
+    git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
     rm -r ./Drafts/.git;
 
 # https://www.mediawiki.org/wiki/Extension:CreatePageUw
@@ -126,9 +126,9 @@ RUN set -eux; \
     rm -r ./CreatePageUw/.git;
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
-# RUN set -eux; \
-# 	git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
-# 	rm -r ./NovaDiscord/.git;
+RUN set -eux; \
+    git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
+    rm -r ./NovaDiscord/.git;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
 RUN set -eux; \
@@ -180,10 +180,26 @@ WORKDIR $APP_HOME/jobrunner
 
 # https://www.mediawiki.org/wiki/Redis
 RUN set -eux; \
-	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
+    git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
     composer install --no-dev;
 
 COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
 COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
 
 CMD ["bash", "./jobrunner-entry.sh"]
+
+# Scheduler
+FROM golang:1.22 AS gobuilder
+RUN go install github.com/aptible/supercronic@latest
+
+FROM mediawiki AS scheduler
+
+USER root
+WORKDIR $APP_HOME/scheduler
+
+COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
+COPY --chown=www-data:www-data --chmod=770 ./scripts/scheduler-entry.sh $APP_HOME/scheduler/scheduler-entry.sh
+COPY --chown=www-data:www-data --chmod=770 ./config/wiki.crontab $APP_HOME/scheduler/wiki.crontab
+
+USER www-data
+CMD ["bash", "./scheduler-entry.sh"]

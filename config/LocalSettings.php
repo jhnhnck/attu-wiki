@@ -114,8 +114,9 @@ $wgCdnServersNoPurge = [ '172.16.0.0/12', '10.22.0.254' ];
 $wgUseCdn = true;
 
 # Development Mode Overrides
-if ($_ENV['BUILD_TYPE'] == 'dev') {
+$attuDevMode = !empty($_ENV['BUILD_TYPE']) && $_ENV['BUILD_TYPE'] == 'dev';
 
+if ($attuDevMode) {
 	$wgServer = "https://dev.attuproject.org";
 	$wgShowExceptionDetails = true;
 
@@ -197,7 +198,7 @@ wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 wfLoadExtension( 'NovaDiscord' );
 $wgDiscordNoBots = false;
 
-if ($_ENV['BUILD_TYPE'] == 'dev') {
+if ($attuDevMode) {
 	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_WIKI_WEBHOOK']}" ];
 	$wgDiscordDisabledUsers = [ "127.0.0.1" ];
 } else {

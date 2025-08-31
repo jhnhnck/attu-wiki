@@ -38,6 +38,7 @@ services:
         env_file:
             - .env
         environment:
+            - BUILD_TYPE=dev
             - RUNNER_TYPE=chron
         logging:
             driver: journald
@@ -57,6 +58,7 @@ services:
         env_file:
             - .env
         environment:
+            - BUILD_TYPE=dev
             - RUNNER_TYPE=runner
         logging:
             driver: journald
@@ -78,6 +80,7 @@ services:
         env_file:
             - .env
         environment:
+            - BUILD_TYPE=dev
             - RUNNER_TYPE=update
         logging:
             driver: journald

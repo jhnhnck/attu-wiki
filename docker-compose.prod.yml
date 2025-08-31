@@ -91,8 +91,6 @@ services:
                 condition: service_completed_successfully
         env_file:
             - .env
-        environment:
-            - BUILD_TYPE=prod
         logging:
             driver: journald
         networks:
@@ -107,8 +105,6 @@ services:
             dockerfile: ./nginx.Dockerfile
         depends_on:
             - mediawiki
-        environment:
-            - BUILD_TYPE=prod
         logging:
             driver: journald
         networks:
