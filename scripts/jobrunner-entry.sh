@@ -4,15 +4,15 @@ set -eu
 
 case "${RUNNER_TYPE:-runner}" in
     "chron")
-    php ./redisJobChronService --config-file=config.json
+    exec php ./redisJobChronService --config-file=config.json
     ;;
 
     "runner")
-    php ./redisJobRunnerService --config-file=config.json
+    exec php ./redisJobRunnerService --config-file=config.json
     ;;
 
     "update")
     cd "$APP_HOME/mediawiki"
-    php maintenance/run.php update --quick
+    exec php maintenance/run.php update --quick
     ;;
 esac
