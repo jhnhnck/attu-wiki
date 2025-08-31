@@ -84,3 +84,5 @@ docker compose -f "$wiki_path/docker-compose.yml" exec "$mw_container" php maint
 # rebuild docker containers
 # printf '%s\n' "Pulling any changes to docker images"
 # docker compose -f "$wiki_path/docker-compose.yml" up -d --build --pull always --quiet-pull
+
+curl -fsS "$heartbeat_url" > /dev/null

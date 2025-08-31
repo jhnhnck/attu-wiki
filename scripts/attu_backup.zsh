@@ -83,7 +83,7 @@ echo "/usr/bin/zsh ${wiki_path}/scripts/attu_updates.zsh" | at now +2 hours
 # verify backup size and send heartbeat
 backup_size=$(wc -c <"$db_backup_file")
 if [ "$backup_size" -ge "$min_backup_size" ]; then
-    curl -fsS "$heartbeat_url" >/dev/null
+    curl -fsS "$heartbeat_url" > /dev/null
 else
     printf '%s\n' "failure: wiki backup too small ($backup_size bytes)"
     exit 1
