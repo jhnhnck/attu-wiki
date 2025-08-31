@@ -13,12 +13,12 @@ from pydantic import BaseModel
 
 config = dotenv_values('./.env')
 
-webhook_url = config.get('ATTU_ERROR_RATE_WEBHOOK')
+webhook_url = config.get('ATTU_SCRIPTS_WEBHOOK')
 threshold = 0.015
 threshold_min = 10
 
 if webhook_url is None:
-    print('error_rate: error: ATTU_ERROR_RATE_WEBHOOK not set', file=sys.stderr)
+    print('error_rate: error: ATTU_SCRIPTS_WEBHOOK not set', file=sys.stderr)
     sys.exit(1)
 
 # --- Log Processing ---

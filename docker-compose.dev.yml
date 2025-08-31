@@ -9,9 +9,10 @@ services:
         env_file:
             - .env
         environment:
-            MARIADB_DATABASE: attu_wiki
-            MARIADB_RANDOM_ROOT_PASSWORD: true
-            MARIADB_USER: attu
+            - MARIADB_DATABASE=attu_wiki
+            - MARIADB_RANDOM_ROOT_PASSWORD=true
+            - MARIADB_USER=attu
+            - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
         healthcheck:
             interval: 5s
             retries: 5
@@ -37,8 +38,7 @@ services:
         env_file:
             - .env
         environment:
-            ATTU_DEV_MODE: 1
-            RUNNER_TYPE: chron
+            - RUNNER_TYPE=chron
         logging:
             driver: journald
         networks:
@@ -59,8 +59,7 @@ services:
         env_file:
             - .env
         environment:
-            ATTU_DEV_MODE: 1
-            RUNNER_TYPE: runner
+            - RUNNER_TYPE=runner
         logging:
             driver: journald
         networks:
@@ -83,8 +82,7 @@ services:
         env_file:
             - .env
         environment:
-            ATTU_DEV_MODE: 1
-            RUNNER_TYPE: update
+            - RUNNER_TYPE=update
         logging:
             driver: journald
         networks:
@@ -105,7 +103,7 @@ services:
         env_file:
             - .env
         environment:
-            ATTU_DEV_MODE: 1
+            - BUILD_TYPE=dev
         logging:
             driver: journald
         networks:
@@ -123,8 +121,7 @@ services:
         depends_on:
             - mediawiki
         environment:
-            ATTU_DEV_MODE: 1
-            BUILD_TYPE: dev
+            - BUILD_TYPE=dev
         logging:
             driver: journald
         networks:
@@ -133,7 +130,6 @@ services:
             - 127.0.0.1:6008:80
         restart: always
         volumes:
-            - ./files/doom-bot.html:/app/mediawiki/doom-bot.html
             - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap

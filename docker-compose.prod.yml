@@ -31,7 +31,7 @@ services:
         env_file:
             - .env
         environment:
-            RUNNER_TYPE: chron
+            - RUNNER_TYPE=chron
         logging:
             driver: journald
         networks:
@@ -51,7 +51,7 @@ services:
         env_file:
             - .env
         environment:
-            RUNNER_TYPE: runner
+            - RUNNER_TYPE=runner
         logging:
             driver: journald
         networks:
@@ -73,7 +73,7 @@ services:
         env_file:
             - .env
         environment:
-            RUNNER_TYPE: update
+            - RUNNER_TYPE=update
         logging:
             driver: journald
         networks:
@@ -93,6 +93,8 @@ services:
                 condition: service_completed_successfully
         env_file:
             - .env
+        environment:
+            - BUILD_TYPE=prod
         logging:
             driver: journald
         networks:
@@ -109,7 +111,7 @@ services:
         depends_on:
             - mediawiki
         environment:
-            BUILD_TYPE: prod
+            - BUILD_TYPE=prod
         logging:
             driver: journald
         networks:
@@ -145,11 +147,12 @@ services:
         env_file:
             - .env
         environment:
-            YOURLS_DB_HOST: database
-            YOURLS_DB_NAME: attu_links
-            YOURLS_DB_USER: attu
-            YOURLS_SITE: https://links.attuproject.org
-            YOURLS_USER: doom
+            - YOURLS_DB_HOST=database
+            - YOURLS_DB_NAME=attu_links
+            - YOURLS_DB_USER=attu
+            - YOURLS_DB_PASS=${ATTU_DB_PASSWORD}
+            - YOURLS_SITE=https://links.attuproject.org
+            - YOURLS_USER=doom
         image: yourls:latest
         logging:
             driver: journald

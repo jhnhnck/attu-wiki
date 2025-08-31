@@ -183,8 +183,7 @@ RUN set -eux; \
 	git clone --depth=100 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
     composer install --no-dev;
 
-COPY --chown=www-data:www-data ./config/jobrunner.json /var/www/jobrunner/config.json
-COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh /var/www/jobrunner/jobrunner-entry.sh
+COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
+COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
 
-WORKDIR $APP_HOME/jobrunner
 CMD ["bash", "./jobrunner-entry.sh"]
