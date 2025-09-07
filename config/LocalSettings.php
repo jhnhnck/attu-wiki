@@ -198,7 +198,7 @@ wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 wfLoadExtension( 'NovaDiscord' );
 $wgDiscordNoBots = false;
 
-if ($attuDevMode) {
+if (!$attuDevMode) {
 	$wgDiscordWebhookURL = [ "{$_ENV['ATTU_WIKI_WEBHOOK']}" ];
 	$wgDiscordDisabledUsers = [ "127.0.0.1" ];
 } else {
