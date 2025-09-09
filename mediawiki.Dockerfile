@@ -127,7 +127,7 @@ RUN set -eux; \
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
 RUN set -eux; \
-    git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-Discord NovaDiscord; \
+    git clone --depth=100 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
     rm -r ./NovaDiscord/.git;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
