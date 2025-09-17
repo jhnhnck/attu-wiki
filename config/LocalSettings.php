@@ -222,6 +222,7 @@ $wgCitizenSearchDescriptionSource = 'wikidata';
 
 wfLoadExtension( 'PageImages' );
 wfLoadExtension( 'TextExtracts' );
+wfLoadExtension( 'CategoryTree' );
 
 wfLoadExtension( 'Thumbro' );
 $wgThumbnailEpoch = 20250601000000;

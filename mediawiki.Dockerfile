@@ -1,4 +1,4 @@
-FROM php:8.4-fpm as mediawiki
+FROM php:8.4-fpm AS mediawiki
 
 ENV TZ='America/New_York'
 ENV APP_HOME="/app"
@@ -76,6 +76,7 @@ RUN set -eux; \
     git clone --no-recurse-submodules --depth=100 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/core.git .; \
     git submodule update --init --recursive -- \
         skins/ \
+        extensions/CategoryTree \
         extensions/Cite \
         extensions/CodeEditor \
         extensions/ConfirmEdit \
