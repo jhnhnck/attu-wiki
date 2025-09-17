@@ -161,6 +161,11 @@ $wgTurnstileSecretKey = "{$_ENV['TURNSTILE_SECRET_KEY']}";
 // 	]
 // ];
 
+# Roles
+$wgGroupPermissions['destroyer']['delete'] = true;
+# Uncomment to restrict account creation
+# $wgGroupPermissions['*']['createaccount'] = false;
+
 # Skins
 wfLoadSkin( 'Citizen' );
 wfLoadSkin( 'MinervaNeue' );
@@ -259,6 +264,3 @@ if ( $attuIsWikiDiff2Enabled ) {
 }
 
 wfLoadExtension( 'Drafts' );
-
-# Uncomment to restrict account creation
-# $wgGroupPermissions['*']['createaccount'] = false;
