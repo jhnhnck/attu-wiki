@@ -196,7 +196,11 @@ wfLoadExtension( 'TemplateStyles' );
 wfLoadExtension( 'TemplateStylesExtender' );
 wfLoadExtension( 'TemplateData' );
 wfLoadExtension( 'InputBox' );
+
+# Notifications
 wfLoadExtension( 'Echo' );
+$wgEchoUseJobQueue = true;
+$wgEchoWatchlistNotifications = true;
 
 wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 
