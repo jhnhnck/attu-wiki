@@ -37,5 +37,5 @@
       ]
     },
 
-    "dispatcher": "php /var/www/mediawiki/maintenance/run.php runJobs --type=%(type)x --maxtime=%(maxtime)x --memory-limit=%(maxmem)x --result=json"
+    "dispatcher": "php $APP_HOME/mediawiki/maintenance/run.php runJobs --type=%(type)x --maxtime=%(maxtime)x --memory-limit=%(maxmem)x --result=json"
   }
