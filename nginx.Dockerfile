@@ -7,7 +7,7 @@ ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 
 # System dependencies
-RUN --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \

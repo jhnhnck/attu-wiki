@@ -9,7 +9,7 @@ ARG MEDIAWIKI_BRANCH='REL1_44'
 ARG NOVADISCORD_TAG="2.0.5-alpha"
 
 # system packages
-RUN --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -34,7 +34,7 @@ COPY ./files/ploticus /usr/bin/ploticus
 
 # PHP extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     install-php-extensions \
         @composer \
         apcu \
