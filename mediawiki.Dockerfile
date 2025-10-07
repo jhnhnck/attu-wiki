@@ -7,6 +7,7 @@ ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 ARG NOVADISCORD_TAG="2.0.6"
+ARG BUILD_TYPE
 
 # system packages
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
@@ -95,9 +96,13 @@ RUN set -eux; \
         extensions/VisualEditor \
         extensions/WikiEditor; \
     git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
-    composer update --no-dev; \
     mkdir -p ./mediawiki/trash; \
-    rm -r ./.git;
+    if [ "${BUILD_TYPE:-}" != "dev" ]; then \
+        composer update --no-dev; \
+        rm -r ./.git; \
+    else \
+        composer update; \
+    fi;
 
 # --- skins ---
 WORKDIR $APP_HOME/mediawiki/skins
@@ -128,8 +133,10 @@ RUN set -eux; \
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
 RUN set -eux; \
-    git clone --depth=1 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
-    rm -r ./NovaDiscord/.git;
+    if [ "${BUILD_TYPE:-}" != "dev" ]; then \
+        git clone --depth=1 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
+        rm -r ./NovaDiscord/.git; \
+    fi;
 
 # https://www.mediawiki.org/wiki/Extension:EasyTimeline
 RUN set -eux; \
