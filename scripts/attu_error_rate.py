@@ -112,7 +112,7 @@ async def send_alert():
     async with aiohttp.ClientSession() as session:
         webhook = Webhook.from_url( cast(str, webhook_url), session=session)
 
-        heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate:.4f}% > {threshold * 100:.1f}% ({errors}/{total})'
+        heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
 
         await webhook.send(heading, username='DoomBot')
         await webhook.send(f'```{break_at_newline(alerts, maximum=2000 - 6)}```', username='DoomBot')
