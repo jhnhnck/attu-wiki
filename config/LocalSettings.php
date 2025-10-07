@@ -1,6 +1,6 @@
 <?php
 /**
- * NovaDiscord - onPageSaveComplete Hook
+ * Attu Project Wiki - MediaWiki Local Settings file
  * This file is licensed under the MIT License; See LICENSE for full text.
  */
 
