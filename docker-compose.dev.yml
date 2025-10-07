@@ -14,8 +14,8 @@ services:
             - MARIADB_USER=attu
             - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
         healthcheck:
-            interval: 5s
-            retries: 5
+            interval: 10s
+            retries: 10
             start_period: 5s
             test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
