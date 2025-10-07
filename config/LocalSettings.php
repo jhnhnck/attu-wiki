@@ -203,6 +203,7 @@ wfLoadExtension('TemplateStyles');
 wfLoadExtension('TemplateStylesExtender');
 wfLoadExtension('TemplateData');
 wfLoadExtension('InputBox');
+wfLoadExtension('Cite');
 
 # Notifications
 wfLoadExtension('Echo');
