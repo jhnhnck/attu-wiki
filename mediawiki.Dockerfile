@@ -6,7 +6,7 @@ ENV APP_HOME="/app"
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_VERSION='1.44.0'
 ARG MEDIAWIKI_BRANCH='REL1_44'
-ARG NOVADISCORD_TAG="2.0.5-alpha"
+ARG NOVADISCORD_TAG="2.0.6"
 
 # system packages
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
