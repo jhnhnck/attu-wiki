@@ -74,7 +74,7 @@ total, errors = 0, 0
 alerts: list[str] = []
 
 for entry in entries:
-    if 'attuproject.org' in entry.http_host.lower() and 'Better Uptime Bot' not in entry.http_user_agent:
+    if entry.http_host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.http_user_agent:
         total += 1
 
         if entry.status // 100 == 5:
