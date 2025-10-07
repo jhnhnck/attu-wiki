@@ -118,6 +118,7 @@ $wgUsePrivateIPs = true;
 $wgCdnServersNoPurge = ['172.16.0.0/12', '10.22.0.254'];
 $wgAutoblockExemptions = ['172.16.0.0/12', '10.22.0.0/22'];
 $wgUseCdn = true;
+$wgShowExceptionDetails = false;
 
 # Development Mode Overrides
 $attuDevMode = !empty($_ENV['BUILD_TYPE']) && $_ENV['BUILD_TYPE'] == 'dev';
@@ -269,7 +270,6 @@ $wgRightsIcon = '';
 $wgDiff3 = '/usr/bin/diff3';
 ini_set('post_max_size', '100M');
 ini_set('upload_max_filesize', '100M');
-$wgShowExceptionDetails = false;
 
 $attuIsWikiDiff2Enabled = extension_loaded('wikidiff2');
 if ( $attuIsWikiDiff2Enabled ) {
