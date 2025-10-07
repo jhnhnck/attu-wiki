@@ -111,6 +111,7 @@ $wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
 $wgGroupPermissions['sysop']['tboverride'] = false;
 $wgUsePrivateIPs = true;
 $wgCdnServersNoPurge = [ '172.16.0.0/12', '10.22.0.254' ];
+$wgAutoblockExemptions = ['172.16.0.0/12', '10.22.0.0/22'];
 $wgUseCdn = true;
 
 # Development Mode Overrides
