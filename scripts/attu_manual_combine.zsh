@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
-
+# Attu Project Wiki - Manual backups compaction script
+# This file is licensed under the MIT License; See LICENSE for full text.
 # Usage: ./compact_backups.zsh <year> <month>
 
 if [ $# -ne 2 ]; then

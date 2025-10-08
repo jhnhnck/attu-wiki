@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Attu Project Wiki - Automatic backups script
+# This file is licensed under the MIT License; See LICENSE for full text.
 
 # I can't seem to stop systend from running this at boot
 boot_secs=$(printf '%.0f\n' "$(cut -d' ' -f1 </proc/uptime)")

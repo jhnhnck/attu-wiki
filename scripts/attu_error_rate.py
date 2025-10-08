@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Attu Project Wiki - Error rate monitoring script
+This file is licensed under the MIT License; See LICENSE for full text.
+"""
 
 import asyncio
 import sys

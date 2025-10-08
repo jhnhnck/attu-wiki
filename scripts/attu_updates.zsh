@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# Attu Project Wiki - Automatic updates script
+# This file is licensed under the MIT License; See LICENSE for full text.
 
 SCRIPT_SOURCE=${0%/*}
 cd $SCRIPT_SOURCE/..
