@@ -22,7 +22,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         python3-minimal \
         python3-pip \
         zsh; \
-    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,scheduler,logs}';
+    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,logs}';
 
 # Python packages
 # for SyntaxHighlight code highlighting
@@ -179,19 +179,3 @@ COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/confi
 COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
 
 CMD ["bash", "./jobrunner-entry.sh"]
-
-# Scheduler
-FROM golang:1.22 AS gobuilder
-RUN go install github.com/aptible/supercronic@latest
-
-FROM mediawiki AS scheduler
-
-USER root
-WORKDIR $APP_HOME/scheduler
-
-COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
-COPY --chown=www-data:www-data --chmod=770 ./scripts/scheduler-entry.sh $APP_HOME/scheduler/scheduler-entry.sh
-COPY --chown=www-data:www-data --chmod=770 ./config/wiki.crontab $APP_HOME/scheduler/wiki.crontab
-
-USER www-data
-CMD ["bash", "./scheduler-entry.sh"]
