@@ -2,6 +2,7 @@ FROM php:8.4-fpm AS mediawiki
 
 ENV TZ='America/New_York'
 ENV APP_HOME='/app'
+ENV LANG='en_US.UTF-8'
 
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_BRANCH='REL1_44'
@@ -95,7 +96,7 @@ RUN set -eux; \
         extensions/VisualEditor \
         extensions/WikiEditor; \
     git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
-    mkdir -p ./mediawiki/trash; \
+    mkdir ./trash; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         composer update --no-dev; \
         rm -r ./.git; \

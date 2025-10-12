@@ -10,9 +10,9 @@ services:
             - .env
         environment:
             - MARIADB_DATABASE=attu_wiki
+            - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
             - MARIADB_RANDOM_ROOT_PASSWORD=true
             - MARIADB_USER=attu
-            - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
         healthcheck:
             interval: 10s
             retries: 10

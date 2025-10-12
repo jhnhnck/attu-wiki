@@ -102,7 +102,7 @@ $wgEnableUploads = true;
 $wgUseImageMagick = true;
 $wgImageMagickConvertCommand = '/usr/bin/convert';
 $wgUseInstantCommons = true;
-$wgTmpDirectory =  "{$_ENV['APP_HOME']}/mediawiki/images/folk-vending-cucumber";  # only on mediawiki box, not possible to access
+$wgTmpDirectory =  "/tmp";
 
 # Security and authentication
 $wgSecretKey = "{$_ENV['ATTU_SECRET_KEY']}";
