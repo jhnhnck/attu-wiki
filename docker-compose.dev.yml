@@ -94,7 +94,7 @@ services:
             - attu
         restart: 'no'
         volumes:
-            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord:ro
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:

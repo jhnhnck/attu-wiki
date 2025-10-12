@@ -109,8 +109,7 @@ WORKDIR $APP_HOME/mediawiki/skins
 
 RUN set -eux; \
     git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
-    git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch; \
-    rm -r ./Citizen/.git;
+    git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch;
 
 # --- extensions ---
 WORKDIR $APP_HOME/mediawiki/extensions
@@ -121,52 +120,37 @@ RUN set -eux; \
     composer install --no-dev;
 
 # https://www.mediawiki.org/wiki/Extension:Drafts
+# https://www.mediawiki.org/wiki/Extension:CreatePageUw
+# https://www.mediawiki.org/wiki/Extension:EasyTimeline
+# https://www.mediawiki.org/wiki/Extension:OpenGraphMeta
+# https://www.mediawiki.org/wiki/Extension:ShortDescription
+# https://www.mediawiki.org/wiki/Extension:StopForumSpam
+# https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
+# https://www.mediawiki.org/wiki/Extension:Thumbro
 RUN set -eux; \
     git clone --depth=1 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
     git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
-    rm -r ./Drafts/.git;
-
-# https://www.mediawiki.org/wiki/Extension:CreatePageUw
-RUN set -eux; \
+    \
     git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
-    rm -r ./CreatePageUw/.git;
+    \
+    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
+    \
+    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
+    \
+    git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
+    \
+    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
+    \
+    git clone --depth=1 https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
+    \
+    git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro;
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
 RUN set -eux; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         git clone --depth=1 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
-        rm -r ./NovaDiscord/.git; \
+        find . -type d -name '.git' -exec rm -rf \{\} +; \
     fi;
-
-# https://www.mediawiki.org/wiki/Extension:EasyTimeline
-RUN set -eux; \
-    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
-    rm -r ./EasyTimeline/.git;
-
-# https://www.mediawiki.org/wiki/Extension:OpenGraphMeta
-RUN set -eux; \
-    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/OpenGraphMeta OpenGraphMeta; \
-    rm -r ./OpenGraphMeta/.git;
-
-# https://www.mediawiki.org/wiki/Extension:ShortDescription
-RUN set -eux; \
-    git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-ShortDescription.git ShortDescription; \
-    rm -r ./ShortDescription/.git;
-
-# https://www.mediawiki.org/wiki/Extension:StopForumSpam
-RUN set -eux; \
-    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/StopForumSpam StopForumSpam; \
-    rm -r ./StopForumSpam/.git;
-
-# https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
-RUN set -eux; \
-    git clone --depth=1 https://github.com/octfx/mediawiki-extensions-TemplateStylesExtender TemplateStylesExtender; \
-    rm -r ./TemplateStylesExtender/.git;
-
-# https://www.mediawiki.org/wiki/Extension:Thumbro
-RUN set -eux; \
-    git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro; \
-    rm -r ./Thumbro/.git;
 
 # static assets
 COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
