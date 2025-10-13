@@ -196,6 +196,9 @@ $wgPFEnableStringFunctions = true;
 
 # Other Extensions
 
+## Extension Config
+$wgGitRepositoryViewers['https://github.com/(.*?)(\.git)?'] = 'https://github.com/%R/commit/%H';
+
 wfLoadExtension('Scribunto');
 $wgScribuntoDefaultEngine = 'luastandalone';
 // $wgScribuntoEngineConf['luastandalone']['errorFile'] = '/tmp/mw-lua-errors.log';
