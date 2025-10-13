@@ -3,6 +3,8 @@ FROM php:8.4-fpm AS mediawiki
 ENV TZ='America/New_York'
 ENV APP_HOME='/app'
 ENV LANG='en_US.UTF-8'
+ENV LANGUAGE='en_US:en'
+ENV LC_ALL='en_US.UTF-8'
 
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_BRANCH='REL1_44'
@@ -18,11 +20,13 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         imagemagick \
         librsvg2-bin \
         libvips-tools \
+        locales \
         neovim \
         python3-minimal \
         python3-pip \
         zsh; \
-    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,logs}';
+    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,logs}'; \
+    locale-gen "$LANG" && dpkg-reconfigure locales;
 
 # Python packages
 # for SyntaxHighlight code highlighting
