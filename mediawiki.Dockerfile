@@ -148,8 +148,8 @@ RUN set -eux; \
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
 RUN set -eux; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
-        git clone --depth=1 --branch "$NOVADISCORD_TAG" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
-        find . -type d -name '.git' -exec rm -rf \{\} +; \
+        git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
+        find .. -type d -name '.git' -exec rm -rf \{\} +; \
     fi;
 
 # static assets
