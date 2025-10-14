@@ -4,20 +4,18 @@ Attu Project Wiki - Error rate monitoring script
 This file is licensed under the MIT License; See LICENSE for full text.
 """
 
+from os import getenv
 import asyncio
 import sys
 from datetime import datetime, timedelta
 from typing import List, cast, Dict, Optional, Union
 
 from cysystemd.reader import JournalOpenMode, JournalReader, Rule
-from dotenv import dotenv_values
 from pydantic import BaseModel, Field
 
 # --- Init ---
 
-config = dotenv_values('./.env')
-
-webhook_url = config.get('ATTU_SCRIPTS_WEBHOOK')
+webhook_url = getenv('ATTU_SCRIPTS_WEBHOOK')
 threshold = 0.015
 threshold_min = 10
 
