@@ -90,14 +90,19 @@ entries = get_journal_entries()
 # --- Calc ---
 
 total, errors = 0, 0
-alerts: list[str] = []
+alerts: set[str] = set()
 
 for entry in entries:
     if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers['User-Agent'][0]:
         total += 1
 
         if entry.status // 100 == 5:
-            alerts.append(f'[{entry.status}] {entry.request.method} {entry.request.uri} (from {entry.request.headers["Cf-Ipcountry"][0]})')
+            if entry.request.headers["Cf-Ipcountry"] is not None:
+                cf_ip_country = ','.join(entry.request.headers["Cf-Ipcountry"])
+            else:
+                cf_ip_country = 'unknown'
+
+            alerts.add(f'[{entry.status}] {entry.request.method} {entry.request.uri} (from {cf_ip_country})')
             errors += 1
 
 now_text = datetime.now().strftime('%F,%T')
@@ -105,37 +110,36 @@ error_rate = errors / total
 
 print(f'error_rate: {now_text},{error_rate:.4f},{errors},{total}')
 
-for alert in alerts:
-    print(alert)
-
 # --- Send Alerts ---
 
-# for trimming to discord character length (adapted from attubot.util)
-def break_at_newline(lines: list[str], maximum: int = 2000, end: str = '\n...\n') -> str:
-    result = ''
+# feels inefficient but more straight-forward I think -jhn
+def break_at_newline(lines: set[str], maximum: int = 2000, begin: str = '', end: str = '') -> str:
+    everything = lambda lines_left: f'{begin}{"\n".join(lines_left)}\n{end}'
 
-    for line in lines:
-        holding = f'f{result}{line}\n'
+    while True:
+        if len(everything(lines)) <= maximum:
+            return everything(lines)
+        else:
+            lines.pop()
 
-        if len(holding) + len(end) > maximum:
-            return result + end
+    return everything(['...'])  # failsafe
 
-        result += line + '\n'
 
-    return '\n'.join(lines) + end
+def send_webhook_alert():
+    import requests  # noqa: PLC0415
 
-async def send_alert():
-    import aiohttp  # noqa: PLC0415
-    from discord import Webhook  # noqa: PLC0415
+    webhook = lambda(text: str): requests.post(cast(str, webhook_url), json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
 
-    async with aiohttp.ClientSession() as session:
-        webhook = Webhook.from_url( cast(str, webhook_url), session=session)
+    heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
+    webhook(heading)
 
-        heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
-
-        await webhook.send(heading, username='DoomBot')
-        await webhook.send(f'```{break_at_newline(alerts, maximum=2000 - 6)}```', username='DoomBot')
+    body = break_at_newline(alerts, begin='```\n', end='```')
+    webhook(body)
 
 
 if error_rate > threshold and errors > threshold_min:
-    asyncio.run(send_alert())
+    # print all alerts
+    for msg in alerts:
+        print(msg)
+
+    send_webhook_alert()
