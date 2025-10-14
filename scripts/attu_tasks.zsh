@@ -47,7 +47,7 @@ case '$1' in
 
     'task:error-rate-monitor')
     printf '%s\n' "Running task: error rate monitor"
-    source $APP_HOME/.venv/bin/activate && python $APP_HOME/scripts/attu_error_rate.py
+    source $APP_HOME/.venv/bin/activate && python $APP_HOME/scripts/tasks/attu_error_rate.py
     ;;
 
     *)

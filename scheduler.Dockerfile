@@ -27,20 +27,17 @@ ENV LANG='en_US.UTF-8'
 ENV LANGUAGE='en_US:en'
 ENV LC_ALL='en_US.UTF-8'
 
-COPY --chown=doom:doom --chmod=770 \
-    --exclude=archive --exclude=entry.zsh \
-    ./scripts $APP_HOME/scripts/
+COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
+
+COPY --chown=doom:doom --chmod=770 ./scripts $APP_HOME/scripts/
+COPY --chown=doom:doom ./config/wiki.crontab $APP_HOME/wiki.crontab
 
 RUN set -eux; \
     python -m venv .venv; \
     source .venv/bin/activate; \
-    pip install -r scripts/requirements.txt;
-
-WORKDIR $APP_HOME/scheduler
-
-COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
-COPY --chown=doom:doom --chmod=770 ./scripts/entry.zsh $APP_HOME/scheduler/entry.zsh
-COPY --chown=doom:doom ./config/wiki.crontab $APP_HOME/scheduler/wiki.crontab
+    ls -al $APP_HOME; \
+    pip install -r scripts/requirements.txt; \
+    chown doom:doom $APP_HOME -R;
 
 USER doom
-CMD ["zsh", "./entry.zsh"]
+CMD ["zsh", "./scripts/entry.zsh"]

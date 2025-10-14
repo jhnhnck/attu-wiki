@@ -16,8 +16,7 @@ case "${RUNNER_TYPE:-runner}" in
     ;;
 
     "scheduler")
-    cd "$APP_HOME/scheduler"
-    exec supercronic ./wiki.crontab
+    exec supercronic $APP_HOME/wiki.crontab
     ;;
 
     "sshd")
