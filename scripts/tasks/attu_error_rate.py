@@ -128,7 +128,8 @@ def break_at_newline(lines: set[str], maximum: int = 2000, begin: str = '', end:
 def send_webhook_alert():
     import requests  # noqa: PLC0415
 
-    webhook = lambda(text: str): requests.post(cast(str, webhook_url), json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
+    def webhook(text: str):
+        requests.post(cast(str, webhook_url), json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
 
     heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
     webhook(heading)
