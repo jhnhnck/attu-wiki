@@ -171,6 +171,14 @@ CMD ["php-fpm"]
 # Job runner
 FROM mediawiki AS jobrunner
 
+USER root
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        openssh-server \
+        sshpass;
+
 USER www-data
 WORKDIR $APP_HOME/jobrunner
 

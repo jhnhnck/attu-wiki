@@ -71,6 +71,32 @@ services:
         restart: always
         volumes_from:
             - job-update
+    job-scripts:
+        build:
+            args:
+                - BUILD_TYPE=dev
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: jobrunner
+        env_file:
+            - .env
+        environment:
+            - BUILD_TYPE=dev
+            - RUNNER_TYPE=sshd
+        healthcheck:
+            interval: 10s
+            retries: 3
+            start_period: 5s
+            test: ["CMD-SHELL", "sshpass -p \"$ATTU_SSH_PASSWORD\" ssh -o BatchMode=no -o StrictHostKeyChecking=no www-data@localhost -p 22 exit 0"]
+            timeout: 5s
+        logging:
+            driver: journald
+        networks:
+            - attu
+        restart: always
+        user: root:root
+        volumes_from:
+            - job-update
     job-update:
         build:
             args:
@@ -153,3 +179,28 @@ services:
         networks:
             - attu
         restart: always
+    scheduler:
+        build:
+            context: .
+            dockerfile: ./scheduler.Dockerfile
+        depends_on:
+            job-scripts:
+                condition: service_healthy
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            - BUILD_TYPE=dev
+            - RUNNER_TYPE=scheduler
+        logging:
+            driver: journald
+        mem_limit: 1024m
+        networks:
+            - attu
+        restart: always
+        volumes:
+            - /etc/machine-id:/etc/machine-id:ro
+            - /var/log/journal:/var/log/journal:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro

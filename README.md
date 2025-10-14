@@ -34,6 +34,9 @@ TURNSTILE_SECRET_KEY
 
 # Yourls (URL Shortener)
 YOURLS_PASS
+
+# SSH
+ATTU_SSH_PASSWORD
 ```
 
 ```
