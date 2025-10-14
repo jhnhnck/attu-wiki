@@ -30,7 +30,7 @@ services:
     job-chron:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -52,7 +52,7 @@ services:
     job-runner:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -100,7 +100,7 @@ services:
     job-update:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -126,7 +126,7 @@ services:
     mediawiki:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: fpm
