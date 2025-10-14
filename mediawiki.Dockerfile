@@ -66,7 +66,7 @@ RUN set -eu; \
             >> /usr/local/etc/php-fpm.d/zz-docker.conf;
 
 RUN set -eux; \
-    usermod -d $APP_HOME www-data; \
+    usermod --home $APP_HOME --shell /usr/bin/zsh www-data; \
     chown -R www-data:www-data $APP_HOME; \
     chmod -R +220 $APP_HOME;
 
@@ -177,9 +177,10 @@ WORKDIR $APP_HOME/jobrunner
 # https://www.mediawiki.org/wiki/Redis
 RUN set -eux; \
     git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
-    composer install --no-dev;
+    composer install --no-dev; \
+    cp /etc/zsh/zshrc $APP_HOME/.zshrc;
 
 COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
-COPY --chown=www-data:www-data --chmod=770 ./scripts/jobrunner-entry.sh $APP_HOME/jobrunner/jobrunner-entry.sh
+COPY --chown=www-data:www-data --chmod=770 ./scripts/entry.zsh $APP_HOME/jobrunner/entry.zsh
 
-CMD ["bash", "./jobrunner-entry.sh"]
+CMD ["zsh", "./entry.zsh"]
