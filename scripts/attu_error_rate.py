@@ -7,11 +7,11 @@ This file is licensed under the MIT License; See LICENSE for full text.
 import asyncio
 import sys
 from datetime import datetime, timedelta
-from typing import cast
+from typing import List, cast, Dict, Optional, Union
 
 from cysystemd.reader import JournalOpenMode, JournalReader, Rule
 from dotenv import dotenv_values
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # --- Init ---
 
@@ -28,44 +28,61 @@ if webhook_url is None:
 # --- Log Processing ---
 
 # quick and dirt pydantic model for json structure
-class LogEntry(BaseModel):
-    cf_connecting_ip: str
-    remote_addr: str
-    remote_user: str
-    time_local: str
-    request_method: str
-    request_uri: str
+class CaddyTLSInfo(BaseModel):
+    resumed: bool
+    version: int
+    cipher_suite: int
+    proto: str
+    server_name: str
+
+
+class CaddyRequestInfo(BaseModel):
+    remote_ip: str
+    remote_port: str
+    client_ip: str
+    proto: str
+    method: str
+    host: str
+    uri: str
+    headers: Dict[str, List[str]]
+    tls: CaddyTLSInfo
+
+class CaddyLogEntry(BaseModel):
+    level: str
+    ts: float
+    logger: str
+    msg: str
+    request: CaddyRequestInfo
+    bytes_read: int = Field(..., alias="bytes_read")
+    user_id: Optional[str] = Field(None, alias="user_id")
+    duration: float
+    size: int
     status: int
-    body_bytes_sent: int
-    http_referer: str
-    http_host: str
-    http_user_agent: str
-    http_x_forwarded_for: str
-    http_cf_ipcountry: str
+    resp_headers: Dict[str, List[str]] = Field(..., alias="resp_headers")
 
 # wraps up dealing with journald and parsing everything out
-def get_journal_entries() -> list[LogEntry]:
+def get_journal_entries() -> list[CaddyLogEntry]:
     reader = JournalReader()
     reader.open(JournalOpenMode.SYSTEM)
-    entries: list[LogEntry] = []
+    entries: list[CaddyLogEntry] = []
 
     since_time = datetime.now() - timedelta(minutes=15)
     reader.seek_realtime_usec(since_time.timestamp() * 1000000)
 
-    rule = Rule('_SYSTEMD_UNIT', 'nginx.service')
+    rule = Rule('_SYSTEMD_UNIT', 'caddy.service')
     reader.add_filter(rule)
 
     for record in reader:
         try:
             message = record.data.get('MESSAGE', '')
-            if message[14] == '{':
-                obj = LogEntry.model_validate_json(message[14:])
+            if message[0] == '{':
+                obj = CaddyLogEntry.model_validate_json(message)
                 entries.append(obj)
             # else:
                 # print(f'error_rate: skipping: {message}', file=sys.stderr)
 
         except:  # noqa: E722, S110
-            # print(f'error_rate: error: parsing entry; {str(err).lower()}', file=sys.stderr)
+            # print(f'error_rate: error parsing entry: {str(err).lower()}', file=sys.stderr)
             pass
 
     return entries
@@ -78,11 +95,11 @@ total, errors = 0, 0
 alerts: list[str] = []
 
 for entry in entries:
-    if entry.http_host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.http_user_agent:
+    if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers['User-Agent'][0]:
         total += 1
 
         if entry.status // 100 == 5:
-            alerts.append(f'[{entry.status}] {entry.request_method} {entry.request_uri} (from {entry.http_cf_ipcountry})')
+            alerts.append(f'[{entry.status}] {entry.request.method} {entry.request.uri} (from {entry.request.headers["Cf-Ipcountry"][0]})')
             errors += 1
 
 now_text = datetime.now().strftime('%F,%T')
