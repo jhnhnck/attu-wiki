@@ -8,14 +8,14 @@ from os import getenv
 import asyncio
 import sys
 from datetime import datetime, timedelta
-from typing import List, cast, Dict, Optional, Union
+from typing import List, Dict, Optional, Union
 
 from cysystemd.reader import JournalOpenMode, JournalReader, Rule
 from pydantic import BaseModel, Field
 
 # --- Init ---
 
-webhook_url = getenv('ATTU_SCRIPTS_WEBHOOK')
+webhook_url: str = getenv('ATTU_SCRIPTS_WEBHOOK')
 threshold = 0.015
 threshold_min = 10
 
@@ -129,7 +129,7 @@ def send_webhook_alert():
     import requests  # noqa: PLC0415
 
     def webhook(text: str):
-        requests.post(cast(str, webhook_url), json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
+        requests.post(webhook_url, json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
 
     heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
     webhook(heading)
