@@ -12,7 +12,7 @@
 
 # Backups
 0 18 * * *      zsh $APP_HOME/scripts/attu_tasks.zsh "backup:database"
-0 18 * * FRI    zsh $APP_HOME/scripts/attu_tasks.zsh "backup:images"
+0 18 */3 * *    zsh $APP_HOME/scripts/attu_tasks.zsh "backup:images"
 
 # Chores
 30 0 * * *      zsh $APP_HOME/scripts/attu_tasks.zsh "chore:clean-upload-stash"

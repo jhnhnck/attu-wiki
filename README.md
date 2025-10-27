@@ -18,8 +18,7 @@ ATTU_WIKI_WEBHOOK_ALT
 ATTU_SCRIPTS_WEBHOOK
 
 # BetterStack
-BACKUPS_HEARTBEAT_KEY
-UPDATES_HEARTBEAT_KEY
+TASKS_HEARTBEAT_KEY
 
 # Database
 ATTU_DB_PASSWORD
@@ -43,14 +42,6 @@ ATTU_SSH_PASSWORD
 BUILD_TYPE=
 $ ln -s docker-compose.${BUILD_TYPE}.yml docker-compose.yml
 $ docker compose up -d --build
-```
-
-### Scripts
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r scripts/requirements.txt
 ```
 
 ## Credits

@@ -204,3 +204,4 @@ services:
             - /run/log/journal:/run/log/journal:ro
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
             - /var/log/journal:/var/log/journal:ro
+            - ./images:/app/mediawiki/images

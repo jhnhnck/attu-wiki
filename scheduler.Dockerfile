@@ -13,6 +13,7 @@ WORKDIR $APP_HOME
 
 RUN set -eux; \
     dnf install --assumeyes --setopt=install_weak_deps=False \
+        bzip2 \
         git \
         glibc-langpack-en \
         openssh-clients \
