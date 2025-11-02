@@ -9,12 +9,11 @@
 
 	log {
 		format json
-		output file /var/log/caddy.log
-		include http.log.access
 	}
 
 	servers :8080 {
 		protocols h2c
+		trusted_proxies static private_ranges
 	}
 }
 
@@ -28,11 +27,34 @@
 	root {$APP_HOME}/mediawiki
 }
 
+(logging) {
+	log {
+		format json
+	}
+}
+
 :8080 {
 	import max-body-100mb
 	import root
+	import logging
 
 	encode zstd br gzip
+
+	@denied_files path \
+ */.ht* \
+ */.git* \
+ /cache* \
+ */.* \
+ /languages* \
+ /maintenance* \
+ /serialized* \
+ /mw-config* \
+ /images/deleted/* \
+ /images/temp/*
+
+	handle @denied_files {
+		respond 403
+	}
 
 	# never admit to using php -jhn
 	# this might redirect to a 404 in some cases but who cares
@@ -50,20 +72,9 @@
 		php_server @try_files
 	}
 
-	@denied_files path \
- *.ht* \
- *.git* \
- /cache* \
- /.* \
- /languages* \
- /maintenance* \
- /serialized* \
- /mw-config* \
- /images/deleted/* \
- /images/temp/* \
- *.php
-
-	respond @denied_files 403
+	# all others shouldn't be called directly
+	@php_files path *.php
+	respond @php_files 403
 
 	@ext_paths path /skins/* /extensions/*
 
@@ -81,4 +92,8 @@
 	}
 
 	file_server
+
+	handle_errors 404 {
+		redir * /wiki{uri} 301
+	}
 }

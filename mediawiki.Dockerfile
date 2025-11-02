@@ -168,8 +168,10 @@ FROM php-base AS mediawiki
 USER root
 WORKDIR $APP_HOME/mediawiki
 
-# caddy config
+# add and validate caddy config
 COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
+RUN set -eux; \
+    frankenphp validate --config /etc/frankenphp/Caddyfile;
 
 # Job runner
 FROM php-base AS jobrunner
