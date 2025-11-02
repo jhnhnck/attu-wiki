@@ -121,6 +121,7 @@ services:
         restart: 'no'
         volumes:
             - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord:ro
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
@@ -147,10 +148,6 @@ services:
         scale: 1
         volumes_from:
             - job-update
-        volumes:
-            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
-            - ./images:/app/mediawiki/images
-            - ./sitemap:/app/mediawiki/sitemap
     redis:
         command: [ "redis-server", "--loglevel", "warning" ]
         healthcheck:
