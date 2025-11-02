@@ -129,7 +129,7 @@ services:
                 - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
-            target: fpm
+            target: mediawiki
         depends_on:
             job-update:
                 condition: service_completed_successfully
@@ -141,25 +141,12 @@ services:
             driver: journald
         networks:
             - attu
+        ports:
+            - 127.0.0.1:6008:8080
         restart: always
         scale: 1
         volumes_from:
             - job-update
-    nginx:
-        build:
-            context: .
-            dockerfile: ./nginx.Dockerfile
-        depends_on:
-            - mediawiki
-        environment:
-            - BUILD_TYPE=dev
-        logging:
-            driver: journald
-        networks:
-            - attu
-        ports:
-            - 127.0.0.1:6008:80
-        restart: always
         volumes:
             - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images

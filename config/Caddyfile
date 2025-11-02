@@ -1,0 +1,84 @@
+{
+	frankenphp {
+		php_ini {
+			upload_max_filesize 100M
+			post_max_size 100M
+		}
+		max_wait_time 300s
+	}
+
+	log {
+		format json
+		output file /var/log/caddy.log
+		include http.log.access
+	}
+
+	servers :8080 {
+		protocols h2c
+	}
+}
+
+(max-body-100mb) {
+	request_body {
+		max_size 100MB
+	}
+}
+
+(root) {
+	root {$APP_HOME}/mediawiki
+}
+
+:8080 {
+	import max-body-100mb
+	import root
+
+	encode zstd br gzip
+
+	# never admit to using php -jhn
+	# this might redirect to a 404 in some cases but who cares
+	@index_php path_regexp index_php ^/index\.php(.*)$
+	redir @index_php /wiki{re.index_php.1} 301
+
+	# based on statistical analysis on wiki log files
+	@php_paths path /wiki/* /wiki /load.php /api.php /rest.php*
+
+	handle @php_paths {
+		@try_files file {path}.php /index.php =401 {
+			split_path .php
+		}
+
+		php_server @try_files
+	}
+
+	@denied_files path \
+ *.ht* \
+ *.git* \
+ /cache* \
+ /.* \
+ /languages* \
+ /maintenance* \
+ /serialized* \
+ /mw-config* \
+ /images/deleted/* \
+ /images/temp/* \
+ *.php
+
+	respond @denied_files 403
+
+	@ext_paths path /skins/* /extensions/*
+
+	handle @ext_paths {
+		header Cache-Control "public, max-age=604800"
+		file_server
+	}
+
+	rewrite /favicon.ico /resources/assets/favicon.ico
+	@img_paths path /images/* /resources/assets/
+
+	handle @img_paths {
+		header Cache-Control "public, no-transform"
+		file_server
+	}
+
+	file_server
+}

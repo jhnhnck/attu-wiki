@@ -1,14 +1,12 @@
-FROM php:8.4-fpm AS mediawiki
+FROM dunglas/frankenphp:1-php8.4 AS php-base
+
+# FROM php:8.4-fpm AS mediawiki
 
 ENV TZ='America/New_York'
 ENV APP_HOME='/app'
-ENV LANG='en_US.UTF-8'
-ENV LANGUAGE='en_US:en'
-ENV LC_ALL='en_US.UTF-8'
 
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_BRANCH='REL1_44'
-ARG NOVADISCORD_TAG='2.0.8'
 ARG BUILD_TYPE
 
 # system packages
@@ -17,16 +15,17 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         git \
-        imagemagick \
         librsvg2-bin \
         libvips-tools \
-        locales \
-        neovim \
         python3-minimal \
         python3-pip \
         zsh; \
+    if [ "${BUILD_TYPE:-}" = "dev" ]; then \
+        apt-get install -y --no-install-recommends \
+            neovim; \
+    fi; \
     bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,logs}'; \
-    locale-gen "$LANG" && dpkg-reconfigure locales;
+    ln -s /dev/stdout /var/log/caddy.log;
 
 # Python packages
 # for SyntaxHighlight code highlighting
@@ -55,16 +54,19 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         zip;
 
 # php-fpm configuration tweaks
-COPY ./config/php-config.ini /usr/local/etc/php/conf.d/php-config.ini
 RUN set -eu; \
     printf '%s\n' \
-        'pm.max_children = 30' \
-        'pm.max_requests = 200' \
-        'pm.start_servers = 10' \
-        'pm.min_spare_servers = 10' \
-        'pm.max_spare_servers = 30' \
-            >> /usr/local/etc/php-fpm.d/zz-docker.conf;
+        'error_reporting = E_ALL' \
+        'log_errors = On' \
+\
+        >> /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
+    if [ "${BUILD_TYPE:-}" != "dev" ]; then \
+        printf '%s\n' \
+            'display_errors = On' \
+            >> /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
+    fi;
 
+# Setup user
 RUN set -eux; \
     usermod --home $APP_HOME --shell /usr/bin/zsh www-data; \
     chown -R www-data:www-data $APP_HOME; \
@@ -156,20 +158,21 @@ RUN set -eux; \
         find .. -type d -name '.git' -exec rm -rf \{\} +; \
     fi;
 
-# static assets
+# mediawiki assets and config
 COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
-COPY --chown=www-data:www-data ./files/freefont-ttf $APP_HOME/fonts/freefont
-# MediaWki config
 COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
 
 # Main image
-FROM mediawiki AS fpm
+FROM php-base AS mediawiki
 
+USER root
 WORKDIR $APP_HOME/mediawiki
-CMD ["php-fpm"]
+
+# caddy config
+COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
 
 # Job runner
-FROM mediawiki AS jobrunner
+FROM php-base AS jobrunner
 
 USER root
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
