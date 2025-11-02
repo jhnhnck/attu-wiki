@@ -162,6 +162,10 @@ RUN set -eux; \
 COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
 COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
 
+# Dotfiles (mostly search engine stuff)
+COPY --chown=www-data:www-data ./files/dotfiles/ $APP_HOME/mediawiki
+COPY --chown=www-data:www-data ./config/robots.txt $APP_HOME/mediawiki
+
 # Main image
 FROM php-base AS mediawiki
 
@@ -171,7 +175,8 @@ WORKDIR $APP_HOME/mediawiki
 # add and validate caddy config
 COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
 RUN set -eux; \
-    frankenphp validate --config /etc/frankenphp/Caddyfile;
+    frankenphp validate --config /etc/frankenphp/Caddyfile; \
+    ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
 # Job runner
 FROM php-base AS jobrunner
