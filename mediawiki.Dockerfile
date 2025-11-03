@@ -79,7 +79,7 @@ WORKDIR $APP_HOME/mediawiki
 COPY --chown=www-data:www-data ./patches $APP_HOME/patches
 
 # MediaWiki core and "included" extensions
-RUN set -eux; \
+RUN set -eu; \
     git clone --no-recurse-submodules --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/core.git .; \
     git submodule update --init --recursive -- \
         skins/ \
@@ -113,7 +113,7 @@ RUN set -eux; \
 # --- skins ---
 WORKDIR $APP_HOME/mediawiki/skins
 
-RUN set -eux; \
+RUN set -eu; \
     git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-skins-Citizen.git Citizen; \
     git -C Citizen apply $APP_HOME/patches/citizen-viewport.patch;
 
@@ -121,7 +121,7 @@ RUN set -eux; \
 WORKDIR $APP_HOME/mediawiki/extensions
 
 # https://www.mediawiki.org/wiki/Extension:TemplateStyles
-RUN set -eux; \
+RUN set -eu; \
     cd TemplateStyles; \
     composer install --no-dev;
 
@@ -133,7 +133,7 @@ RUN set -eux; \
 # https://www.mediawiki.org/wiki/Extension:StopForumSpam
 # https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
 # https://www.mediawiki.org/wiki/Extension:Thumbro
-RUN set -eux; \
+RUN set -eu; \
     git clone --depth=1 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
     git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
     \
@@ -152,7 +152,7 @@ RUN set -eux; \
     git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro;
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
-RUN set -eux; \
+RUN set -eu; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
         find .. -type d -name '.git' -exec rm -rf \{\} +; \
