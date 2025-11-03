@@ -1,40 +1,74 @@
 FROM dunglas/frankenphp:1-php8.4 AS php-base
 
-# FROM php:8.4-fpm AS mediawiki
-
 ENV TZ='America/New_York'
+
 ENV APP_HOME='/app'
+ENV USER_HOME='/doom'
+WORKDIR $APP_HOME/logs
+# ^ no reason for this other than to make the directory
 
 ARG MEDIAWIKI_MAJOR_VERSION='1.44'
 ARG MEDIAWIKI_BRANCH='REL1_44'
 ARG BUILD_TYPE
 
-# system packages
+# stray executables
+# required by EasyTimeline extension
+COPY ./files/ploticus /usr/bin/ploticus
+
+# container packages
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
-    set -eux; \
+    set -eu; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         git \
-        librsvg2-bin \
-        libvips-tools \
         python3-minimal \
         python3-pip \
-        zsh; \
+        python3-venv \
+        sudo-rs \
+        zsh;
+
+SHELL [ "/usr/bin/zsh", "-euc" ]
+
+# dev container extras
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     if [ "${BUILD_TYPE:-}" = "dev" ]; then \
+        apt-get update; \
         apt-get install -y --no-install-recommends \
             neovim; \
-    fi; \
-    bash -c 'mkdir -p $APP_HOME/{mediawiki,jobrunner,logs}'; \
-    ln -s /dev/stdout /var/log/caddy.log;
+    fi;
+
+# configure users
+RUN set -eu; \
+    usermod \
+        --home $APP_HOME \
+        --shell /usr/bin/zsh \
+        www-data; \
+    useradd \
+        --home-dir $USER_HOME \
+        --create-home \
+        --uid 1000 \
+        --shell /usr/bin/zsh \
+        --groups adm,sudo,www-data \
+        doom; \
+    printf '%s\n' \
+        "PS1='%F{blue}%B%~%b%f %F{green}❯%f '" \
+        "autoload -U compinit && compinit" \
+        | tee -a $APP_HOME/.zshrc $USER_HOME/.zshrc; \
+    chown -Rc www-data:www-data $APP_HOME; \
+    chown -Rc doom:doom $USER_HOME; \
+    chmod -Rc +220 $APP_HOME $USER_HOME;
+
+# mediawiki apt dependencies
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        librsvg2-bin \
+        libvips-tools;
 
 # Python packages
 # for SyntaxHighlight code highlighting
-RUN set -eux; \
+RUN --mount=type=cache,target=$APP_HOME/.cache/pip \
     pip3 install Pygments --break-system-packages;
-
-# Executables
-# required by EasyTimeline extension
-COPY ./files/ploticus /usr/bin/ploticus
 
 # PHP extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
@@ -58,19 +92,13 @@ RUN set -eu; \
     printf '%s\n' \
         'error_reporting = E_ALL' \
         'log_errors = On' \
-\
-        >> /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
+        | tee -a /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
+    \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         printf '%s\n' \
             'display_errors = On' \
-            >> /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
+            | tee -a /usr/local/etc/php/conf.d/zz-mediawiki.ini; \
     fi;
-
-# Setup user
-RUN set -eux; \
-    usermod --home $APP_HOME --shell /usr/bin/zsh www-data; \
-    chown -R www-data:www-data $APP_HOME; \
-    chmod -R +220 $APP_HOME;
 
 USER www-data
 WORKDIR $APP_HOME/mediawiki
@@ -174,23 +202,20 @@ WORKDIR $APP_HOME/mediawiki
 
 # add and validate caddy config
 COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
-RUN set -eux; \
+RUN set -eu; \
     frankenphp validate --config /etc/frankenphp/Caddyfile; \
     ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
 # Job runner
 FROM php-base AS jobrunner
 
-USER root
-
 USER www-data
 WORKDIR $APP_HOME/jobrunner
 
 # https://www.mediawiki.org/wiki/Redis
-RUN set -eux; \
+RUN set -eu; \
     git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
-    composer install --no-dev; \
-    cp /etc/zsh/zshrc $APP_HOME/.zshrc;
+    composer install --no-dev;
 
 COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
 COPY --chown=www-data:www-data --chmod=770 ./scripts/entry.zsh $APP_HOME/jobrunner/entry.zsh
@@ -204,30 +229,31 @@ RUN go install github.com/aptible/supercronic@latest
 # Scheduler
 FROM php-base AS scheduler
 
-ENV TZ='America/New_York'
-ENV APP_HOME='/app'
-
 USER root
-WORKDIR $APP_HOME
+WORKDIR $USER_HOME
 
-RUN set -eux; \
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
+    set -eu; \
+    apt-get update; \
     apt-get install -y --no-install-recommends \
         bzip2 \
-        mariadb-client \
-        sudo-rs; \
-    usermod --groups adm,sudo www-data; \
-    sed -i '/%sudo/d' /etc/sudoers; \
-    echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-group;
+        mariadb-client;
+    # sed -i '/%sudo/d' /etc/sudoers; \
+    # echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-group;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
-COPY --chown=doom:doom --chmod=770 ./scripts $APP_HOME/scripts/
-COPY --chown=doom:doom ./config/wiki.crontab $APP_HOME/wiki.crontab
+COPY --chown=doom:doom --chmod=770 ./scripts $USER_HOME/
+COPY --chown=doom:doom ./config/wiki.crontab $USER_HOME/wiki.crontab
 
-RUN set -eux; \
-    python -m venv .venv; \
+USER doom
+
+WORKDIR $USER_HOME
+
+RUN --mount=type=cache,target=$USER_HOME/.cache/pip \
+    set -eu; \
+    python3 -m venv .venv; \
     source .venv/bin/activate; \
-    pip install -r scripts/requirements.txt; \
-    cp /etc/zshrc $APP_HOME/.zshrc;
+    pip3 install -r ./requirements.txt;
 
-USER www-data
-CMD ["zsh", "./scripts/entry.zsh"]
+    # cp /etc/zshrc $APP_HOME/.zshrc;
+CMD ["zsh", "./entry.zsh"]
