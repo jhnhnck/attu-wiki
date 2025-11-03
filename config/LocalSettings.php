@@ -16,23 +16,37 @@ $wgMetaNamespace = 'Attu_Project';
 # Story Namespace
 define('NS_STORY', 100);
 define('NS_STORY_TALK', 101);
-
 $wgExtraNamespaces[NS_STORY] = 'Story';
 $wgExtraNamespaces[NS_STORY_TALK] = 'Story_talk';
+$wgContentNamespaces[] = NS_STORY;
 
-# Namespaces
+# Record Namespace
+define('NS_RECORD', 102);
+define('NS_RECORD_TALK', 103);
+$wgExtraNamespaces[NS_RECORD] = 'Record';
+$wgExtraNamespaces[NS_RECORD_TALK] = 'Record_talk';
+$wgContentNamespaces[] = NS_RECORD;
+
+# Dictionary Namespace
+define('NS_DICT', 104);
+define('NS_DICT_TALK', 105);
+$wgExtraNamespaces[NS_DICT] = 'Dict';
+$wgExtraNamespaces[NS_DICT_TALK] = 'Dict_talk';
+$wgContentNamespaces[] = NS_DICT;
+
+# Rename Talk Namespace to Meta
 $wgExtraNamespaces[NS_TALK] = 'Meta';
 $wgNamespaceAliases['Talk'] = NS_TALK;
+$wgContentNamespaces[] = NS_TALK;
 
 $wgNamespacesToBeSearchedDefault = [
     NS_MAIN => true,
     NS_TALK => true,
     NS_CATEGORY => true,
     NS_STORY => true,
+    NS_RECORD => true,
+    NS_DICT => true,
 ];
-
-$wgContentNamespaces[] = NS_TALK;
-$wgContentNamespaces[] = NS_STORY;
 
 # URL configuration
 $wgScriptPath = '';
