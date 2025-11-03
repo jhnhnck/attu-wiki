@@ -1,6 +1,7 @@
 FROM dunglas/frankenphp:1-php8.4 AS php-base
 
 ENV TZ='America/New_York'
+ENV LANG='en_US.UTF-8'
 
 ENV APP_HOME='/app'
 ENV USER_HOME='/doom'
@@ -23,8 +24,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         git \
         python3-minimal \
         python3-pip \
-        python3-venv \
-        sudo-rs \
+        sudo \
         zsh;
 
 SHELL [ "/usr/bin/zsh", "-euc" ]
@@ -50,10 +50,15 @@ RUN set -eu; \
         --shell /usr/bin/zsh \
         --groups adm,sudo,www-data \
         doom; \
+    sed -i '/%sudo/d' /etc/sudoers; \
     printf '%s\n' \
+        "%sudo ALL=(ALL) NOPASSWD: ALL" \
+        | tee -a /etc/sudoers.d/doom-group; \
+    printf '%s\n' \
+        "LANG=${LANG}" \
         "PS1='%F{blue}%B%~%b%f %F{green}❯%f '" \
         "autoload -U compinit && compinit" \
-        | tee -a $APP_HOME/.zshrc $USER_HOME/.zshrc; \
+        | tee -a /root/.zshrc $APP_HOME/.zshrc $USER_HOME/.zshrc; \
     chown -Rc www-data:www-data $APP_HOME; \
     chown -Rc doom:doom $USER_HOME; \
     chmod -Rc +220 $APP_HOME $USER_HOME;
@@ -67,7 +72,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
 
 # Python packages
 # for SyntaxHighlight code highlighting
-RUN --mount=type=cache,target=$APP_HOME/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip \
     pip3 install Pygments --break-system-packages;
 
 # PHP extensions
@@ -202,8 +207,7 @@ WORKDIR $APP_HOME/mediawiki
 
 # add and validate caddy config
 COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
-RUN set -eu; \
-    frankenphp validate --config /etc/frankenphp/Caddyfile; \
+RUN frankenphp validate --config /etc/frankenphp/Caddyfile; \
     ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
 # Job runner
@@ -213,8 +217,7 @@ USER www-data
 WORKDIR $APP_HOME/jobrunner
 
 # https://www.mediawiki.org/wiki/Redis
-RUN set -eu; \
-    git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
+RUN git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
     composer install --no-dev;
 
 COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
@@ -229,31 +232,22 @@ RUN go install github.com/aptible/supercronic@latest
 # Scheduler
 FROM php-base AS scheduler
 
-USER root
+USER doom
 WORKDIR $USER_HOME
 
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
-    set -eu; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
+    sudo apt-get update; \
+    sudo apt-get install -y --no-install-recommends \
         bzip2 \
         mariadb-client;
-    # sed -i '/%sudo/d' /etc/sudoers; \
-    # echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-group;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
 COPY --chown=doom:doom --chmod=770 ./scripts $USER_HOME/
 COPY --chown=doom:doom ./config/wiki.crontab $USER_HOME/wiki.crontab
 
-USER doom
-
-WORKDIR $USER_HOME
-
 RUN --mount=type=cache,target=$USER_HOME/.cache/pip \
-    set -eu; \
-    python3 -m venv .venv; \
-    source .venv/bin/activate; \
-    pip3 install -r ./requirements.txt;
+    sudo chown doom:doom $USER_HOME/.cache/pip; \
+    pip3 install --user --break-system-packages -r ./requirements.txt;
 
     # cp /etc/zshrc $APP_HOME/.zshrc;
 CMD ["zsh", "./entry.zsh"]

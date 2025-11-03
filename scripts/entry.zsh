@@ -7,25 +7,20 @@ set -eu
 case "${RUNNER_TYPE:-runner}" in
     "chron")
     cd "$APP_HOME/jobrunner"
-    exec php ./redisJobChronService --config-file=config.json
+    php ./redisJobChronService --config-file=config.json
     ;;
 
     "runner")
     cd "$APP_HOME/jobrunner"
-    exec php ./redisJobRunnerService --config-file=config.json
+    php ./redisJobRunnerService --config-file=config.json
     ;;
 
     "scheduler")
-    exec supercronic $APP_HOME/wiki.crontab
-    ;;
-
-    "sshd")
-    echo "www-data:$ATTU_SSH_PASSWORD" | chpasswd
-    exec /usr/sbin/sshd -D
+    exec supercronic $USER_HOME/wiki.crontab
     ;;
 
     "update")
     cd "$APP_HOME/mediawiki"
-    exec php maintenance/run.php update --quick
+    php maintenance/run.php update --quick
     ;;
 esac

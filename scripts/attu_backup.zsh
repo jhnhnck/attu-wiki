@@ -46,6 +46,3 @@ if [[ $(date +%u) -eq 6 ]]; then
         exec "$bot_container" sqlite3 "$bot_database_path" .dump \
         > "$sqlite_backup_file"
 fi
-
-# TODO: give this its own timer
-echo "/usr/bin/zsh ${wiki_path}/scripts/attu_updates.zsh" | at now +2 hours

@@ -7,6 +7,10 @@ current_date=$(date +%Y-%m-%d)
 backup_path="$APP_HOME/backups"
 images_backup_name="attu-images-backup_${current_date}"
 
+# make sure everything is readable by us
+sudo chown www-data:www-data -Rc "$APP_HOME/mediawiki/images"
+sudo chmod g+r -Rc "$APP_HOME/mediawiki/images"
+
 cd "$APP_HOME/mediawiki"
 new_files_count="$(find images -daystart -mtime -3 -type f | wc -l)"
 # ^ TODO: that could probably do with excluding thumbnails
@@ -14,4 +18,3 @@ new_files_count="$(find images -daystart -mtime -3 -type f | wc -l)"
 if [ "new_files_count" -gt 0 ]; then
     tar -cjf "${backup_path}/${images_backup_name}.tar.bz2" images/
 fi
-
