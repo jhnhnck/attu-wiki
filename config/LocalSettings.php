@@ -37,7 +37,7 @@ $wgContentNamespaces[] = NS_STORY;
 # URL configuration
 $wgScriptPath = '';
 $wgServer = 'https://attuproject.org';
-$wgInternalServer = 'http://mediawiki';
+$wgInternalServer = 'http://mediawiki:8080';
 $wgResourceBasePath = $wgScriptPath;
 $wgArticlePath = '/wiki/$1';
 $wgScript = '/wiki';
