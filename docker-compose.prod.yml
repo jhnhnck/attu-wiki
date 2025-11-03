@@ -6,9 +6,16 @@ networks:
         name: attu_prod
 services:
     database:
+        env_file:
+            - .env
+        environment:
+            - MARIADB_DATABASE=attu_wiki
+            - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
+            - MARIADB_RANDOM_ROOT_PASSWORD=true
+            - MARIADB_USER=attu
         healthcheck:
-            interval: 5s
-            retries: 5
+            interval: 10s
+            retries: 10
             start_period: 5s
             test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
@@ -76,7 +83,7 @@ services:
             driver: journald
         networks:
             - attu
-        restart: 'no'
+        restart: no
         volumes:
             - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images
@@ -98,7 +105,6 @@ services:
         ports:
             - 127.0.0.1:6010:8080
         restart: always
-        scale: 2
         volumes_from:
             - job-update
     redis:
@@ -118,6 +124,32 @@ services:
         restart: always
         volumes:
             - redis-data-prod:/data
+    scheduler:
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: scheduler
+        depends_on:
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            - RUNNER_TYPE=scheduler
+        logging:
+            driver: journald
+        mem_limit: 1024m
+        networks:
+            - attu
+        restart: always
+        volumes_from:
+            - job-update
+        volumes:
+            - ./images:/app/mediawiki/images
+            - /etc/machine-id:/etc/machine-id:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /var/log/journal:/var/log/journal:ro
     yourls:
         depends_on:
             database:

@@ -182,12 +182,6 @@ RUN set -eux; \
 FROM php-base AS jobrunner
 
 USER root
-RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
-    set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        openssh-server \
-        sshpass;
 
 USER www-data
 WORKDIR $APP_HOME/jobrunner
@@ -202,3 +196,38 @@ COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/confi
 COPY --chown=www-data:www-data --chmod=770 ./scripts/entry.zsh $APP_HOME/jobrunner/entry.zsh
 
 CMD ["zsh", "./entry.zsh"]
+
+# supercronic builder
+FROM golang:latest AS gobuilder
+RUN go install github.com/aptible/supercronic@latest
+
+# Scheduler
+FROM php-base AS scheduler
+
+ENV TZ='America/New_York'
+ENV APP_HOME='/app'
+
+USER root
+WORKDIR $APP_HOME
+
+RUN set -eux; \
+    apt-get install -y --no-install-recommends \
+        bzip2 \
+        mariadb-client \
+        sudo-rs; \
+    usermod --groups adm,sudo www-data; \
+    sed -i '/%sudo/d' /etc/sudoers; \
+    echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-group;
+
+COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
+COPY --chown=doom:doom --chmod=770 ./scripts $APP_HOME/scripts/
+COPY --chown=doom:doom ./config/wiki.crontab $APP_HOME/wiki.crontab
+
+RUN set -eux; \
+    python -m venv .venv; \
+    source .venv/bin/activate; \
+    pip install -r scripts/requirements.txt; \
+    cp /etc/zshrc $APP_HOME/.zshrc;
+
+USER www-data
+CMD ["zsh", "./scripts/entry.zsh"]
