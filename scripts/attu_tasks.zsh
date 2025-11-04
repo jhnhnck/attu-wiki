@@ -8,12 +8,18 @@ if [ "${BUILD_TYPE:-}" = 'dev' ]; then
     exit 0
 fi
 
-# failed task alerts
+# task alerts
 heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${TASKS_HEARTBEAT_KEY}"
+
+send_success() {
+    printf '%s\n' "Success!"
+    curl -fsS "${heartbeat_url}" > /dev/null
+    exit 0
+}
 
 exit_trap() {
     printf '%s\n' "caught error; sending fail hook"
-    curl -fsS "${heartbeat_url}/fail" >/dev/null
+    curl -fsS "${heartbeat_url}/fail" > /dev/null
     exit 1
 }
 
@@ -23,12 +29,12 @@ set -eu
 case "$1" in
     'backup:database')
     printf '%s\n' "Running backup: wiki database"
-    zsh -eu $USER_HOME/backups/wiki_database_backup.zsh
+    zsh -eu $USER_HOME/backups/wiki_database_backup.zsh && send_success
     ;;
 
     'backup:images')
     printf '%s\n' "Running backup: wiki images"
-    zsh -eu $USER_HOME/backups/wiki_images_backup.zsh
+    zsh -eu $USER_HOME/backups/wiki_images_backup.zsh && send_success
     ;;
 
     'chore:bundle-backups')
