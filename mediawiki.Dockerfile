@@ -21,11 +21,13 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     set -eu; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
+        locales \
         git \
         python3-minimal \
         python3-pip \
         sudo \
-        zsh;
+        zsh; \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8;
 
 SHELL [ "/usr/bin/zsh", "-euc" ]
 
@@ -55,9 +57,12 @@ RUN set -eu; \
         "%sudo ALL=(ALL) NOPASSWD: ALL" \
         | tee -a /etc/sudoers.d/doom-group; \
     printf '%s\n' \
-        "LANG=${LANG}" \
-        "PS1='%F{blue}%B%~%b%f %F{green}❯%f '" \
-        "autoload -U compinit && compinit" \
+        "export LANG=${LANG}" \
+        'export TERM=xterm-256color' \
+        "export PS1='%F{#c2c2bf}%n@%m%f %F{#fd971f}%B%~%b%f %F{#c2c2bf}%B❯%b%f '" \
+        'bindkey "^[[1;5C" forward-word' \
+        'bindkey "^[[1;5D" backward-word' \
+        'autoload -U compinit && compinit' \
         | tee -a /root/.zshrc $APP_HOME/.zshrc $USER_HOME/.zshrc; \
     chown -Rc www-data:www-data $APP_HOME; \
     chown -Rc doom:doom $USER_HOME; \
