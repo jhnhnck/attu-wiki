@@ -25,7 +25,7 @@ set -eu
 current_date="$(date +%Y-%-m-%-d)"
 
 # doom-bot config
-heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${BACKUPS_HEARTBEAT_KEY}"
+heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${TASKS_HEARTBEAT_KEY}"
 bot_backup_path='/srv/backups/attu-bot'
 bot_path='/srv/services/doom-bot'
 bot_database_path='assets/markers.db'
