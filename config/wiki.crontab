@@ -8,15 +8,15 @@
 # *  *  *  *  * command to be executed
 
 # Tasks
-*/15 * * * *    zsh $APP_HOME/scripts/attu_tasks.zsh "task:error-rate-monitor"
+*/15 * * * *    zsh $USER_HOME/attu_tasks.zsh "task:error-rate-monitor"
 
 # Backups
-0 18 * * *      zsh $APP_HOME/scripts/attu_tasks.zsh "backup:database"
-0 18 */3 * *    zsh $APP_HOME/scripts/attu_tasks.zsh "backup:images"
+0 18 * * *      zsh $USER_HOME/attu_tasks.zsh "backup:database"
+0 18 */3 * *    zsh $USER_HOME/attu_tasks.zsh "backup:images"
 
 # Chores
-30 0 * * *      zsh $APP_HOME/scripts/attu_tasks.zsh "chore:clean-upload-stash"
-0 20 1 * *      zsh $APP_HOME/scripts/attu_tasks.zsh "chore:bundle-backups"
-0 20 */3 * *    zsh $APP_HOME/scripts/attu_tasks.zsh "chore:spam-list-refresh"
-0 20 */7 * *    zsh $APP_HOME/scripts/attu_tasks.zsh "chore:templates-refresh"
-0 20 * * *      zsh $APP_HOME/scripts/attu_tasks.zsh "chore:regenerate-sitemap"
+0 20 1 * *      zsh $USER_HOME/attu_tasks.zsh "chore:bundle-backups"
+30 0 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:clean-upload-stash"
+0 20 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:regenerate-sitemap"
+0 20 */3 * *    zsh $USER_HOME/attu_tasks.zsh "chore:spam-list-refresh"
+0 20 */7 * *    zsh $USER_HOME/attu_tasks.zsh "chore:templates-refresh"

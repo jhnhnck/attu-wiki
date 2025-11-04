@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# Attu Project Wiki - Automatic backups script
+# Attu Project Wiki - What's left of the system backups script, currently only for jhnhnck/attu-bot
 # This file is licensed under the MIT License; See LICENSE for full text.
 
 # I can't seem to stop systend from running this at boot
@@ -24,12 +24,8 @@ set -eu
 
 current_date="$(date +%Y-%-m-%-d)"
 
-# attu wiki config
-backup_path='/srv/backups/attu-wiki'
-heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${BACKUPS_HEARTBEAT_KEY}"
-wiki_path="$PWD"  # /srv/services/attu-wiki-prod
-
 # doom-bot config
+heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${BACKUPS_HEARTBEAT_KEY}"
 bot_backup_path='/srv/backups/attu-bot'
 bot_path='/srv/services/doom-bot'
 bot_database_path='assets/markers.db'

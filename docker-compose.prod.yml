@@ -149,6 +149,7 @@ services:
             - /etc/machine-id:/etc/machine-id:ro
             - /run/log/journal:/run/log/journal:ro
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /srv/backups/attu-wiki:/app/backups
             - /var/log/journal:/var/log/journal:ro
     yourls:
         depends_on:

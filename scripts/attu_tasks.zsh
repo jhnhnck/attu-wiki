@@ -8,10 +8,6 @@ if [ "${BUILD_TYPE:-}" = 'dev' ]; then
     exit 0
 fi
 
-# config
-spam_list_link='https://www.stopforumspam.com/downloads/listed_ip_30_all.zip'
-spam_list_output="${APP_HOME}/mediawiki/files/listed_ip_30_all.txt"
-
 # failed task alerts
 heartbeat_url="https://uptime.betterstack.com/api/v1/heartbeat/${TASKS_HEARTBEAT_KEY}"
 
@@ -24,7 +20,7 @@ exit_trap() {
 trap 'exit_trap' ZERR
 set -eu
 
-case '$1' in
+case "$1" in
     'backup:database')
     printf '%s\n' "Running backup: wiki database"
     zsh -eu $USER_HOME/backups/wiki_database_backup.zsh
@@ -42,15 +38,15 @@ case '$1' in
 
     'chore:clean-upload-stash')
     printf '%s\n' "Running chore: maintenance script cleanupUploadStash"
-    sudo -u www-data -- \
-        cd $APP_HOME/mediawiki && \
+    cd $APP_HOME/mediawiki;
+    sudo --preserve-env -u www-data -- \
         php maintenance/run.php cleanupUploadStash
     ;;
 
     'chore:regenerate-sitemap')
     printf '%s\n' "Running chore: maintenance script generateSitemap"
-    sudo -u www-data -- \
-        cd $APP_HOME/mediawiki && \
+    cd $APP_HOME/mediawiki;
+    sudo --preserve-env -u www-data -- \
         php maintenance/run.php generateSitemap \
             --fspath=$APP_HOME/mediawiki/sitemap/ \
             --identifier=attuproject.org \
@@ -62,42 +58,12 @@ case '$1' in
 
     'chore:spam-list-refresh')
     printf '%s\n' "Running chore: update StopForumSpam list"
-    spam_list_temp=$(mktemp --suffix=.zip)
-    trap 'rm -vf "$spam_list_temp"' EXIT
-
-    curl -LsSf "$spam_list_link" -o $spam_list_temp
-    unzip -p $spam_list_temp > "$spam_list_output"
-    sudo chmod a+r "$spam_list_output"
+    zsh -eu $USER_HOME/chores/spam_list_refresh.zsh
     ;;
 
     'chore:templates-refresh')
     printf '%s\n' "Running chore: update templates from wikipedia"
-    templates_xml=$(mktemp --suffix=.xml)
-    trap 'rm -vf "$templates_xml"' EXIT
-
-    # Disabled:'Template:IPA'
-    template_list() {
-        printf '%s%%0A' \
-            'Template:Composition bar' \
-            'Template:Taxobox' \
-            'Template:Did you mean box' \
-            'Template:Infobox military unit' \
-            'Template:Infobox' \
-            'Template:MessageBox' \
-            'Template:Color box' \
-            'Template:Main' \
-            'Template:Cquote'
-    }
-
-    printf '%s\n' "Fetching new templates"
-    curl -LsSf 'https://en.wikipedia.org/w/index.php?title=Special:Export' \
-        -d "&pages=$(template_list)&curonly=1&action=submit&templates=1" \
-        -o "$templates_xml"
-    sudo chmod a+r "$templates_xml"
-
-    sudo -u www-data -- \
-        cd $APP_HOME/mediawiki && \
-        maintenance/run.php importDump --username-prefix 'w' $templates_xml
+    zsh -eu $USER_HOME/chores/templates_refresh.zsh
     ;;
 
     'task:error-rate-monitor')
