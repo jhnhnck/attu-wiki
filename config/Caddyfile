@@ -12,7 +12,7 @@
 	}
 
 	servers :8080 {
-		protocols h2c
+		protocols h1 h2c
 		trusted_proxies static private_ranges
 	}
 }
