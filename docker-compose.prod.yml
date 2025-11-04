@@ -6,13 +6,22 @@ networks:
         name: attu_prod
 services:
     database:
+        cap_add:
+            - SYS_NICE
+        env_file:
+            - .env
+        environment:
+            - MARIADB_DATABASE=attu_wiki
+            - MARIADB_PASSWORD=${ATTU_DB_PASSWORD}
+            - MARIADB_RANDOM_ROOT_PASSWORD=true
+            - MARIADB_USER=attu
         healthcheck:
-            interval: 5s
-            retries: 5
+            interval: 10s
+            retries: 10
             start_period: 5s
             test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
-        image: mariadb:lts
+        image: mariadb:12
         logging:
             driver: journald
         networks:
@@ -76,16 +85,16 @@ services:
             driver: journald
         networks:
             - attu
-        restart: 'no'
+        restart: no
         volumes:
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
         build:
             context: .
             dockerfile: ./mediawiki.Dockerfile
-            target: fpm
-        command: bash -c "php maintenance/run.php update --quick; exec php-fpm"
+            target: mediawiki
         depends_on:
             job-update:
                 condition: service_completed_successfully
@@ -95,25 +104,9 @@ services:
             driver: journald
         networks:
             - attu
-        restart: always
-        scale: 2
-        volumes_from:
-            - job-update
-    nginx:
-        build:
-            context: .
-            dockerfile: ./nginx.Dockerfile
-        depends_on:
-            - mediawiki
-        logging:
-            driver: journald
-        networks:
-            - attu
         ports:
-            - 127.0.0.1:6010:80
+            - 127.0.0.1:6010:8080
         restart: always
-        volumes:
-            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
         volumes_from:
             - job-update
     redis:
@@ -133,6 +126,33 @@ services:
         restart: always
         volumes:
             - redis-data-prod:/data
+    scheduler:
+        build:
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: scheduler
+        depends_on:
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            - RUNNER_TYPE=scheduler
+        logging:
+            driver: journald
+        mem_limit: 1024m
+        networks:
+            - attu
+        restart: always
+        volumes_from:
+            - job-update
+        volumes:
+            - ./images:/app/mediawiki/images
+            - /etc/machine-id:/etc/machine-id:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /srv/backups/attu-wiki:/app/backups
+            - /var/log/journal:/var/log/journal:ro
     yourls:
         depends_on:
             database:
@@ -142,8 +162,8 @@ services:
         environment:
             - YOURLS_DB_HOST=database
             - YOURLS_DB_NAME=attu_links
-            - YOURLS_DB_USER=attu
             - YOURLS_DB_PASS=${ATTU_DB_PASSWORD}
+            - YOURLS_DB_USER=attu
             - YOURLS_SITE=https://links.attuproject.org
             - YOURLS_USER=doom
         image: yourls:latest
@@ -155,8 +175,8 @@ services:
             - 127.0.0.1:6009:8080
         restart: always
         volumes:
-            - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
             - ./config/yourls/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
+            - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
             - ./files/dotfiles/.well-known:/var/www/mediawiki/.well-known
 volumes:
-    redis-data-prod:
+    redis-data-prod: {}

@@ -6,6 +6,8 @@ networks:
         name: attu_dev
 services:
     database:
+        cap_add:
+            - SYS_NICE
         env_file:
             - .env
         environment:
@@ -19,7 +21,7 @@ services:
             start_period: 5s
             test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
-        image: mariadb:lts
+        image: mariadb:12
         logging:
             driver: journald
         networks:
@@ -30,7 +32,7 @@ services:
     job-chron:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -52,7 +54,7 @@ services:
     job-runner:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -74,7 +76,7 @@ services:
     job-update:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
             target: jobrunner
@@ -95,15 +97,16 @@ services:
         restart: 'no'
         volumes:
             - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord:ro
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
             - ./images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
         build:
             args:
-              - BUILD_TYPE=dev
+                - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
-            target: fpm
+            target: mediawiki
         depends_on:
             job-update:
                 condition: service_completed_successfully
@@ -115,29 +118,11 @@ services:
             driver: journald
         networks:
             - attu
+        ports:
+            - 127.0.0.1:6008:8080
         restart: always
-        scale: 1
         volumes_from:
             - job-update
-    nginx:
-        build:
-            context: .
-            dockerfile: ./nginx.Dockerfile
-        depends_on:
-            - mediawiki
-        environment:
-            - BUILD_TYPE=dev
-        logging:
-            driver: journald
-        networks:
-            - attu
-        ports:
-            - 127.0.0.1:6008:80
-        restart: always
-        volumes:
-            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
-            - ./images:/app/mediawiki/images
-            - ./sitemap:/app/mediawiki/sitemap
     redis:
         command: [ "redis-server", "--loglevel", "warning" ]
         healthcheck:
@@ -153,3 +138,32 @@ services:
         networks:
             - attu
         restart: always
+    scheduler:
+        build:
+            args:
+                - BUILD_TYPE=dev
+            context: .
+            dockerfile: ./mediawiki.Dockerfile
+            target: scheduler
+        depends_on:
+            job-update:
+                condition: service_completed_successfully
+        env_file:
+            - .env
+        environment:
+            - BUILD_TYPE=dev
+            - RUNNER_TYPE=scheduler
+        logging:
+            driver: journald
+        mem_limit: 1024m
+        networks:
+            - attu
+        restart: always
+        volumes_from:
+            - job-update
+        volumes:
+            - ./images:/app/mediawiki/images
+            - /etc/machine-id:/etc/machine-id:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /var/log/journal:/var/log/journal:ro

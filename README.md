@@ -6,7 +6,8 @@ This repository includes the scripts, configs, and other bits that run the [Attu
 
 Below is a selection of *vague* instructions on how to get set the wiki built and running (mostly for me, but help yourself)
 
-.env
+### Environment Variables
+
 ```env
 # Wiki Secrets
 ATTU_SECRET_KEY
@@ -18,8 +19,7 @@ ATTU_WIKI_WEBHOOK_ALT
 ATTU_SCRIPTS_WEBHOOK
 
 # BetterStack
-BACKUPS_HEARTBEAT_KEY
-UPDATES_HEARTBEAT_KEY
+TASKS_HEARTBEAT_KEY
 
 # Database
 ATTU_DB_PASSWORD
@@ -36,18 +36,11 @@ TURNSTILE_SECRET_KEY
 YOURLS_PASS
 ```
 
-```
-BUILD_TYPE=
-$ ln -s docker-compose.${BUILD_TYPE}.yml docker-compose.yml
-$ docker compose up -d --build
-```
-
-### Scripts
+### Building
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r scripts/requirements.txt
+BUILD_TYPE='dev' ln -s docker-compose.${BUILD_TYPE}.yml docker-compose.yml
+docker compose up -d --build
 ```
 
 ## Credits

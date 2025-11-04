@@ -5,4 +5,18 @@
 # |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
 # |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
 # |  |  |  |  |
-# *  *  *  *  * user-name  command to be executed
+# *  *  *  *  * command to be executed
+
+# Tasks
+*/15 * * * *    zsh $USER_HOME/attu_tasks.zsh "task:error-rate-monitor"
+
+# Backups
+0 18 * * *      zsh $USER_HOME/attu_tasks.zsh "backup:database"
+0 18 */3 * *    zsh $USER_HOME/attu_tasks.zsh "backup:images"
+
+# Chores
+0 20 1 * *      zsh $USER_HOME/attu_tasks.zsh "chore:bundle-backups"
+30 0 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:clean-upload-stash"
+0 20 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:regenerate-sitemap"
+0 20 */3 * *    zsh $USER_HOME/attu_tasks.zsh "chore:spam-list-refresh"
+0 20 */7 * *    zsh $USER_HOME/attu_tasks.zsh "chore:templates-refresh"

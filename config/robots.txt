@@ -17,7 +17,7 @@ Disallow: /wiki/Help:
 Disallow: /wiki/Template:
 
 # Allow search engines to index the main content
-Allow: /wiki/Attu_Project:Main
+Allow: /wiki/Attu_Project:
 Allow: /wiki/Meta:
 Allow: /wiki/Story:
 

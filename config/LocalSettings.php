@@ -51,9 +51,10 @@ $wgNamespacesToBeSearchedDefault = [
 # URL configuration
 $wgScriptPath = '';
 $wgServer = 'https://attuproject.org';
-$wgInternalServer = 'http://nginx';
+$wgInternalServer = 'http://mediawiki:8080';
 $wgResourceBasePath = $wgScriptPath;
 $wgArticlePath = '/wiki/$1';
+$wgScript = '/wiki';
 $wgUsePathInfo = true;
 $wgForceHTTPS = true;
 
@@ -261,6 +262,7 @@ wfLoadExtension('CategoryTree');
 wfLoadExtension('Drafts');
 
 wfLoadExtension('Thumbro');
+$wgGenerateThumbnailOnParse = true;
 $wgThumbnailEpoch = 20250601000000;
 // $wgThumbroOptions['value']['image/png'] = [
 //     'enabled' => true,
@@ -285,8 +287,6 @@ $wgRightsUrl = '';
 $wgRightsText = '';
 $wgRightsIcon = '';
 $wgDiff3 = '/usr/bin/diff3';
-ini_set('post_max_size', '100M');
-ini_set('upload_max_filesize', '100M');
 
 $attuIsWikiDiff2Enabled = extension_loaded('wikidiff2');
 if ( $attuIsWikiDiff2Enabled ) {
