@@ -89,10 +89,10 @@ entries = get_journal_entries()
 
 # --- Calc ---
 
-total, errors = 0, 0
+total, errors = 1, 0  # avoid div by zero by being slightly less accurate
 alerts: set[str] = set()
 
-for entry in entries:
+def check_and_store_alert(entry: CaddyLogEntry):
     if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers['User-Agent'][0]:
         total += 1
 
@@ -104,6 +104,12 @@ for entry in entries:
 
             alerts.add(f'[{entry.status}] {entry.request.method} {entry.request.uri} (from {cf_ip_country})')
             errors += 1
+
+for entry in entries:
+    try:
+        check_and_store_alert(entry)
+    except:  # noqa: E722, S110
+        pass
 
 now_text = datetime.now().strftime('%F,%T')
 error_rate = errors / total
