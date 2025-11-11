@@ -5,18 +5,8 @@
 set -eu
 
 case "${RUNNER_TYPE:-runner}" in
-    "chron")
-    cd "$APP_HOME/jobrunner"
-    php ./redisJobChronService --config-file=config.json
-    ;;
-
-    "runner")
-    cd "$APP_HOME/jobrunner"
-    php ./redisJobRunnerService --config-file=config.json
-    ;;
-
     "scheduler")
-    exec supercronic $USER_HOME/wiki.crontab
+    exec supercronic -overlapping -json $USER_HOME/wiki.crontab
     ;;
 
     "update")

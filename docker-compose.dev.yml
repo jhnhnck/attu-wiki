@@ -29,57 +29,13 @@ services:
         restart: always
         volumes:
             - ./attu-wiki-backup.sql:/docker-entrypoint-initdb.d/init.sql
-    job-chron:
-        build:
-            args:
-                - BUILD_TYPE=dev
-            context: .
-            dockerfile: ./mediawiki.Dockerfile
-            target: jobrunner
-        depends_on:
-            job-update:
-                condition: service_completed_successfully
-        env_file:
-            - .env
-        environment:
-            - BUILD_TYPE=dev
-            - RUNNER_TYPE=chron
-        logging:
-            driver: journald
-        networks:
-            - attu
-        restart: always
-        volumes_from:
-            - job-update
-    job-runner:
-        build:
-            args:
-                - BUILD_TYPE=dev
-            context: .
-            dockerfile: ./mediawiki.Dockerfile
-            target: jobrunner
-        depends_on:
-            job-update:
-                condition: service_completed_successfully
-        env_file:
-            - .env
-        environment:
-            - BUILD_TYPE=dev
-            - RUNNER_TYPE=runner
-        logging:
-            driver: journald
-        networks:
-            - attu
-        restart: always
-        volumes_from:
-            - job-update
     job-update:
         build:
             args:
                 - BUILD_TYPE=dev
             context: .
             dockerfile: ./mediawiki.Dockerfile
-            target: jobrunner
+            target: scheduler
         depends_on:
             database:
                 condition: service_healthy

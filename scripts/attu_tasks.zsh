@@ -2,7 +2,9 @@
 # Attu Project Wiki - Scheduled tasks script
 # This file is licensed under the MIT License; See LICENSE for full text.
 
-if [ "${BUILD_TYPE:-}" = 'dev' ]; then
+zparseopts -D -E -- -allow-dev=ALLOW_DEV_FLAG
+
+if [[ "${BUILD_TYPE:-}" = "dev" && ${#ALLOW_DEV_FLAG} -eq 0 ]]; then
     printf 'Dev Build: Simulating [%s]\n' "$1"
     sleep 5
     exit 0
@@ -75,6 +77,18 @@ case "$1" in
     'task:error-rate-monitor')
     printf '%s\n' "Running task: error rate monitor"
     python3 $USER_HOME/tasks/attu_error_rate.py
+    ;;
+
+    'task:run-jobs')
+    printf '%s\n' "Running task: job runner"
+    cd $APP_HOME/mediawiki;
+    for i in {1..3}; do
+        sudo --preserve-env -u www-data -- \
+            php maintenance/run.php runJobs \
+                --maxtime 300 \
+                --memory-limit 300M &
+    done
+    wait
     ;;
 
     *)

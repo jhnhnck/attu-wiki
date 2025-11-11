@@ -9,6 +9,7 @@
 
 # Tasks
 */15 * * * *    zsh $USER_HOME/attu_tasks.zsh "task:error-rate-monitor"
+*/2 * * * *     zsh $USER_HOME/attu_tasks.zsh "task:run-jobs" --allow-dev
 
 # Backups
 0 18 * * *      zsh $USER_HOME/attu_tasks.zsh "backup:database"

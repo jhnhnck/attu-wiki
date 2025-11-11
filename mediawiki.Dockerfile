@@ -215,23 +215,6 @@ COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
 RUN frankenphp validate --config /etc/frankenphp/Caddyfile; \
     ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
-# Job runner
-FROM php-base AS jobrunner
-
-USER www-data
-WORKDIR $APP_HOME/jobrunner
-
-# https://www.mediawiki.org/wiki/Redis
-RUN git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
-    git apply $APP_HOME/patches/jobrunner-e_strict.patch; \
-    composer require 'wikimedia/ip-utils:5.0.*'; \
-    composer install --no-dev;
-
-COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
-COPY --chown=www-data:www-data --chmod=770 ./scripts/entry.zsh $APP_HOME/jobrunner/entry.zsh
-
-CMD ["zsh", "./entry.zsh"]
-
 # supercronic builder
 FROM golang:latest AS gobuilder
 RUN go install github.com/aptible/supercronic@latest
@@ -256,5 +239,5 @@ RUN --mount=type=cache,target=$USER_HOME/.cache/pip \
     sudo chown doom:doom $USER_HOME/.cache/pip; \
     pip3 install --user --break-system-packages -r ./requirements.txt;
 
-    # cp /etc/zshrc $APP_HOME/.zshrc;
+# cp /etc/zshrc $APP_HOME/.zshrc;
 CMD ["zsh", "./entry.zsh"]
