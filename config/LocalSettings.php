@@ -225,12 +225,18 @@ wfLoadExtension('InputBox');
 wfLoadExtension('Cite');
 
 # Notifications
+$wgAllowHTMLEmail = true;
 wfLoadExtension('Echo');
 $wgEchoUseJobQueue = true;
 $wgEchoWatchlistNotifications = true;
+$wgEchoAgentBlacklist = [ 'DoomBot' ];
+$wgEchoEmailFooterAddress = "Powered by DoomBot.";
+$wgNotificationSenderName = "{$wgSitename} Wiki";
+$wgEchoMaxUpdateCount = 99999 + 1;
 
 wfLoadExtension('SyntaxHighlight_GeSHi');
 
+# btw this ones mine -jhn
 wfLoadExtension('NovaDiscord');
 $wgDiscordNoBots = false;
 
