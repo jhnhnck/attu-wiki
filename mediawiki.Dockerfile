@@ -223,6 +223,8 @@ WORKDIR $APP_HOME/jobrunner
 
 # https://www.mediawiki.org/wiki/Redis
 RUN git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/services/jobrunner .; \
+    git apply $APP_HOME/patches/jobrunner-e_strict.patch; \
+    composer require 'wikimedia/ip-utils:5.0.*'; \
     composer install --no-dev;
 
 COPY --chown=www-data:www-data ./config/jobrunner.json $APP_HOME/jobrunner/config.json
