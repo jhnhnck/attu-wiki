@@ -4,23 +4,22 @@ Attu Project Wiki - Error rate monitoring script
 This file is licensed under the MIT License; See LICENSE for full text.
 """
 
-from os import getenv
-import asyncio
 import sys
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Union
+from os import getenv
 
 from cysystemd.reader import JournalOpenMode, JournalReader, Rule
 from pydantic import BaseModel, Field
 
 # --- Init ---
 
-webhook_url: str = getenv('ATTU_SCRIPTS_WEBHOOK')
+webhook_url = getenv('ATTU_SCRIPTS_WEBHOOK')
 threshold = 0.015
 threshold_min = 10
 
+# this should be impossible btw
 if webhook_url is None:
-    print('error_rate: error: ATTU_SCRIPTS_WEBHOOK not set', file=sys.stderr)
+    print('error="ATTU_SCRIPTS_WEBHOOK not set"', file=sys.stderr)
     sys.exit(1)
 
 # --- Log Processing ---
@@ -42,7 +41,7 @@ class CaddyRequestInfo(BaseModel):
     method: str
     host: str
     uri: str
-    headers: Dict[str, List[str]]
+    headers: dict[str, list[str]]
     tls: CaddyTLSInfo
 
 class CaddyLogEntry(BaseModel):
@@ -52,11 +51,11 @@ class CaddyLogEntry(BaseModel):
     msg: str
     request: CaddyRequestInfo
     bytes_read: int = Field(..., alias="bytes_read")
-    user_id: Optional[str] = Field(None, alias="user_id")
+    user_id: str | None = Field(None, alias="user_id")
     duration: float
     size: int
     status: int
-    resp_headers: Dict[str, List[str]] = Field(..., alias="resp_headers")
+    resp_headers: dict[str, list[str]] = Field(..., alias="resp_headers")
 
 # wraps up dealing with journald and parsing everything out
 def get_journal_entries() -> list[CaddyLogEntry]:
@@ -93,20 +92,19 @@ total, errors = 1, 0  # avoid div by zero by being slightly less accurate
 alerts: set[str] = set()
 
 def check_and_store_alert(entry: CaddyLogEntry):
+    global total, errors  # noqa: PLW0603
+
     if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers['User-Agent'][0]:
         total += 1
 
         if entry.status // 100 == 5:
-            if entry.request.headers["Cf-Ipcountry"] is not None:
-                cf_ip_country = ','.join(entry.request.headers["Cf-Ipcountry"])
-            else:
-                cf_ip_country = 'unknown'
+            cf_ip_country = ','.join(entry.request.headers['Cf-Ipcountry']) if entry.request.headers['Cf-Ipcountry'] is not None else 'unknown'
 
             alerts.add(f'[{entry.status}] {entry.request.method} {entry.request.uri} (from {cf_ip_country})')
             errors += 1
 
 for entry in entries:
-    try:
+    try:  # noqa: SIM105
         check_and_store_alert(entry)
     except:  # noqa: E722, S110
         pass
@@ -114,13 +112,14 @@ for entry in entries:
 now_text = datetime.now().strftime('%F,%T')
 error_rate = errors / total
 
-print(f'error_rate: {now_text},{error_rate:.4f},{errors},{total}')
+print(f'error_rate={error_rate:.4f},error_count={errors},total_count={total},time="{now_text}"')
 
 # --- Send Alerts ---
 
 # feels inefficient but more straight-forward I think -jhn
 def break_at_newline(lines: set[str], maximum: int = 2000, begin: str = '', end: str = '') -> str:
-    everything = lambda lines_left: f'{begin}{"\n".join(lines_left)}\n{end}'
+    def everything(lines_left):
+        return f'{begin}{"\n".join(lines_left)}\n{end}'
 
     while True:
         if len(everything(lines)) <= maximum:
