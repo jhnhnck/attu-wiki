@@ -20,8 +20,17 @@ send_success() {
 }
 
 exit_trap() {
-    printf '%s\n' "caught error; sending fail hook"
-    curl -fsS "${heartbeat_url}/fail" > /dev/null
+    printf '%s\n' "caught error; sending fail notification"
+    discord.sh --webhook-url="$ATTU_SCRIPTS_WEBHOOK" \
+        --username 'Wiki Service Alert' \
+        --avatar "$ATTU_WEBHOOK_ICON" \
+        --title 'An error occurred running a scheduled task.' \
+        --description "**Identifier:** \`${1}\`" \
+        --field "Build Type;${BUILD_TYPE:-prod}" \
+        --field "Hostname;${HOSTNAME}" \
+        --color "0xff4941" \
+        --footer "${0}" \
+        --timestamp
     exit 1
 }
 

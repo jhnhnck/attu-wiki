@@ -229,7 +229,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     sudo apt-get update; \
     sudo apt-get install -y --no-install-recommends \
         bzip2 \
-        mariadb-client;
+        jq \
+        mariadb-client; \
+    sudo curl -sSL -o /usr/local/bin/discord.sh https://github.com/fieu/discord.sh/releases/download/v2.0.1/discord.sh; \
+    sudo chmod a+x /usr/local/bin/discord.sh;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
 COPY --chown=doom:doom --chmod=770 ./scripts $USER_HOME/

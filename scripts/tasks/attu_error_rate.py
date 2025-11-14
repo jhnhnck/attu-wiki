@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Attu Project Wiki - Error rate monitoring script
 This file is licensed under the MIT License; See LICENSE for full text.
@@ -14,12 +14,18 @@ from pydantic import BaseModel, Field
 # --- Init ---
 
 webhook_url = getenv('ATTU_SCRIPTS_WEBHOOK')
+webhook_icon = getenv('ATTU_WEBHOOK_ICON')
+
 threshold = 0.015
 threshold_min = 10
 
 # this should be impossible btw
 if webhook_url is None:
     print('error="ATTU_SCRIPTS_WEBHOOK not set"', file=sys.stderr)
+    sys.exit(1)
+
+elif webhook_icon is None:
+    print('error="ATTU_WEBHOOK_ICON not set"', file=sys.stderr)
     sys.exit(1)
 
 # --- Log Processing ---
@@ -131,17 +137,23 @@ def break_at_newline(lines: set[str], maximum: int = 2000, begin: str = '', end:
 
 
 def send_webhook_alert():
-    import requests  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
 
-    def webhook(text: str):
-        requests.post(webhook_url, json={'content': text, 'username': 'DoomBot', 'allowed_mentions': {'parse': []}})
+    body = break_at_newline(alerts, begin='```\n', end='```', maximum=4096)
+    error_field = f'Error Rate;{error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
 
-    heading = f':warning: **Wiki Service Warning**\nIncreased error rate for attuproject.org: {error_rate * 100:.2f}% > {threshold * 100:.1f}% ({errors}/{total})'
-    webhook(heading)
-
-    body = break_at_newline(alerts, begin='```\n', end='```')
-    webhook(body)
-
+    subprocess.run([  # noqa: S603
+        '/usr/local/bin/discord.sh',
+        f'--webhook-url={webhook_url}',
+        '--username', 'Wiki Service Alert',
+        '--avatar', webhook_icon,
+        '--title', 'An increased error rate was detected.',
+        '--description', body.replace('\n', '\\n'),  # have to send literal \n's
+        '--field', error_field,
+        '--color', '0xff4941',
+        '--footer', __file__,
+        '--timestamp',
+    ], check=True)
 
 if error_rate > threshold and errors > threshold_min:
     # print all alerts
