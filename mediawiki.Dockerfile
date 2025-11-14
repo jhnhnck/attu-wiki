@@ -1,10 +1,8 @@
 FROM dunglas/frankenphp:1-php8.4 AS php-base
 
-ENV TZ='America/New_York'
-ENV LANG='en_US.UTF-8'
+ENV TZ='America/New_York' \
+    LANG='en_US.UTF-8'
 
-ENV APP_HOME='/app'
-ENV USER_HOME='/doom'
 WORKDIR $APP_HOME/logs
 # ^ no reason for this other than to make the directory
 
@@ -40,6 +38,11 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     fi;
 
 # configure users
+ENV APP_HOME='/app' \
+    USER_HOME='/doom' \
+    XDG_CONFIG_HOME=$APP_HOME/.config \
+    XDG_DATA_HOME=$APP_HOME/.local/share
+
 RUN set -eu; \
     usermod \
         --home $APP_HOME \
@@ -224,6 +227,9 @@ FROM php-base AS scheduler
 
 USER doom
 WORKDIR $USER_HOME
+
+ENV XDG_CONFIG_HOME=$USER_HOME/.config \
+    XDG_DATA_HOME=$USER_HOME/.local/share
 
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     sudo apt-get update; \
