@@ -34,6 +34,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     if [ "${BUILD_TYPE:-}" = "dev" ]; then \
         apt-get update; \
         apt-get install -y --no-install-recommends \
+            iproute2 \
             neovim; \
     fi;
 
@@ -149,6 +150,7 @@ RUN set -eu; \
         rm -r ./.git; \
     else \
         composer update; \
+        rm -rf ./.git/objects ./.git/modules; \
     fi;
 
 # --- skins ---
@@ -193,6 +195,7 @@ RUN set -eu; \
     git clone --depth=1 https://github.com/StarCitizenTools/mediawiki-extensions-Thumbro.git Thumbro;
 
 # https://github.com/jhnhnck/mediawiki-extensions-Discord
+# TODO: Remove any objects or modules here too
 RUN set -eu; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://github.com/jhnhnck/mediawiki-extensions-NovaDiscord NovaDiscord; \
@@ -238,6 +241,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         jq \
         mariadb-client; \
     sudo curl -sSL -o /usr/local/bin/discord.sh https://github.com/fieu/discord.sh/releases/download/v2.0.1/discord.sh; \
+    echo '01619fc6b89dd88fef7386d14f3b1db9aaaf9b5a8501d263f24228924fe0d528  /usr/local/bin/discord.sh' | sha256sum -c; \
     sudo chmod a+x /usr/local/bin/discord.sh;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
