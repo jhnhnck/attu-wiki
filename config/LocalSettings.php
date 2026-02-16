@@ -82,6 +82,10 @@ $wgEmailAuthentication = true;
 $wgEnotifUserTalk = true;
 $wgEnotifWatchlist = true;
 
+// edit protection
+$wgEmailConfirmToEdit = true;
+$wgAllowConfirmedEmail = true;
+
 # Not well documented; code reference: <https://github.com/pear/Mail/blob/master/Mail/smtp.php>
 $wgSMTP = [
     'host' => 'smtp.protonmail.ch',
@@ -105,7 +109,7 @@ $wgSharedTables[] = 'actor';
 # Cache settings
 $attuRedisServer = 'redis';
 $wgCachePrefix = 'attu_wiki';
-$wgSessionName = 'brch_sesssion';
+$wgSessionName = 'brch_session';
 
 define('CACHE_REDIS', 'redis');
 $wgMainCacheType = CACHE_REDIS;
@@ -123,17 +127,16 @@ $wgTmpDirectory =  "/tmp";
 $wgSecretKey = "{$_ENV['ATTU_SECRET_KEY']}";
 $wgUpgradeKey = "{$_ENV['ATTU_UPGRADE_KEY']}";
 $wgAuthenticationTokenVersion = '1';
-$wgEmailConfirmToEdit = true;
-$wgAllowConfirmedEmail = true;
-$wgGroupPermissions['*']['edit'] = false;
-$wgGroupPermissions['user']['move-rootuserpages'] = true;
-$wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
-$wgGroupPermissions['sysop']['tboverride'] = false;
+$wgShowExceptionDetails = false;
+
+// Upstream info
 $wgUsePrivateIPs = true;
 $wgCdnServersNoPurge = ['172.16.0.0/12', '10.22.0.254'];
-$wgAutoblockExemptions = ['127.0.0.0/8', '172.16.0.0/12', '10.0.0.0/8', '100.64.0.0/10'];
 $wgUseCdn = true;
-$wgShowExceptionDetails = false;
+
+// blocking
+$wgAutoblockExemptions = ['127.0.0.0/8', '172.16.0.0/12', '10.0.0.0/8', '100.64.0.0/10'];
+$wgBlockAllowsUTEdit = false;  // disable ban appeals
 
 # Development Mode Overrides
 $attuDevMode = !empty($_ENV['BUILD_TYPE']) && $_ENV['BUILD_TYPE'] == 'dev';
@@ -165,29 +168,19 @@ $wgJobTypeConf['default'] = [
     'daemonized' => true,
  ];
 
-# CAPTCHA and ConfirmEdit
+// Roles
+$wgGroupPermissions['*']['edit'] = false;  // anon edits
+$wgGroupPermissions['member']['move-rootuserpages'] = true;
+$wgGroupPermissions['member']['edit'] = true;
+
+$wgGroupPermissions['destroyer']['delete'] = true;
+
+// CAPTCHA and ConfirmEdit
+$wgGroupPermissions['autoconfirmed']['skipcaptcha'] = true;
 wfLoadExtensions(['ConfirmEdit', 'ConfirmEdit/Turnstile']);
 $wgCaptchaClass = MediaWiki\Extension\ConfirmEdit\Turnstile\Turnstile::class;
 $wgTurnstileSiteKey = "{$_ENV['TURNSTILE_SITE_KEY']}";
 $wgTurnstileSecretKey = "{$_ENV['TURNSTILE_SECRET_KEY']}";
-
-// # Title blacklist
-// wfLoadExtension('TitleBlacklist');
-// $wgTitleBlacklistSources = [
-// 	[
-// 		'type' => 'localpage',
-// 		'src'  => 'MediaWiki:TitleBlacklist'
-// 	],
-// 	[
-// 		'type' => 'url',
-// 		'src'  => 'https://meta.wikimedia.org/w/index.php?title=Title_blacklist&action=raw'
-// 	]
-// ];
-
-# Roles
-$wgGroupPermissions['destroyer']['delete'] = true;
-# Uncomment to restrict account creation
-# $wgGroupPermissions['*']['createaccount'] = false;
 
 # Skins
 wfLoadSkin('Citizen');
@@ -270,16 +263,6 @@ wfLoadExtension('Drafts');
 wfLoadExtension('Thumbro');
 $wgGenerateThumbnailOnParse = true;
 $wgThumbnailEpoch = 20250601000000;
-// $wgThumbroOptions['value']['image/png'] = [
-//     'enabled' => true,
-//     'library' => 'libvips',
-//     'inputOptions' => [],
-//     'outputOptions' => [
-//         'strip' => 'true',
-//         'filter' => 'VIPS_FOREIGN_PNG_FILTER_ALL',
-//         'resize' => 'x1500>'
-//     ]
-// ];
 
 wfLoadExtension('Interwiki');
 $wgGroupPermissions['sysop']['interwiki'] = true;
