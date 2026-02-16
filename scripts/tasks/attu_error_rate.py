@@ -56,12 +56,12 @@ class CaddyLogEntry(BaseModel):
     logger: str
     msg: str
     request: CaddyRequestInfo
-    bytes_read: int = Field(..., alias="bytes_read")
-    user_id: str | None = Field(None, alias="user_id")
+    bytes_read: int = Field(..., alias='bytes_read')
+    user_id: str | None = Field(None, alias='user_id')
     duration: float
     size: int
     status: int
-    resp_headers: dict[str, list[str]] = Field(..., alias="resp_headers")
+    resp_headers: dict[str, list[str]] = Field(..., alias='resp_headers')
 
 # wraps up dealing with journald and parsing everything out
 def get_journal_entries() -> list[CaddyLogEntry]:
@@ -84,8 +84,8 @@ def get_journal_entries() -> list[CaddyLogEntry]:
             # else:
                 # print(f'error_rate: skipping: {message}', file=sys.stderr)
 
-        except:  # noqa: E722, S110
-            # print(f'error_rate: error parsing entry: {str(err).lower()}', file=sys.stderr)
+        except Exception:  # noqa: S110
+            # non-JSON journal lines (e.g. systemd messages) are expected here, skip them
             pass
 
     return entries
@@ -100,7 +100,7 @@ alerts: set[str] = set()
 def check_and_store_alert(entry: CaddyLogEntry):
     global total, errors  # noqa: PLW0603
 
-    if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers['User-Agent'][0]:
+    if entry.request.host.lower() == 'attuproject.org' and 'Better Uptime Bot' not in entry.request.headers.get('User-Agent', [''])[0]:
         total += 1
 
         if entry.status // 100 == 5:
@@ -113,6 +113,7 @@ for entry in entries:
     try:  # noqa: SIM105
         check_and_store_alert(entry)
     except:  # noqa: E722, S110
+        # skip entries with missing or malformed fields (e.g. no User-Agent header)
         pass
 
 now_text = datetime.now().strftime('%F,%T')
