@@ -232,5 +232,5 @@ sitemap/
 trash/
 *.sql
 docker-compose.yml
-
 repos/
+notes/
