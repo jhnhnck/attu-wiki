@@ -24,6 +24,7 @@ services:
         image: mariadb:12
         logging:
             driver: journald
+        mem_limit: 2048m
         networks:
             - attu
         restart: always
@@ -62,8 +63,15 @@ services:
                 condition: service_completed_successfully
         env_file:
             - .env
+        healthcheck:
+            interval: 30s
+            retries: 3
+            start_period: 15s
+            test: [ "CMD", "curl", "-fsS", "http://localhost:8080/wiki/Main_Page" ]
+            timeout: 5s
         logging:
             driver: journald
+        mem_limit: 2048m
         networks:
             - attu
         ports:
@@ -100,6 +108,12 @@ services:
             - .env
         environment:
             - RUNNER_TYPE=scheduler
+        healthcheck:
+            interval: 30s
+            retries: 3
+            start_period: 10s
+            test: [ "CMD", "pgrep", "-f", "supercronic" ]
+            timeout: 5s
         logging:
             driver: journald
         mem_limit: 1024m
