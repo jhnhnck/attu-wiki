@@ -15,6 +15,8 @@
 		protocols h1 h2c
 		trusted_proxies static private_ranges
 	}
+
+	metrics
 }
 
 (max-body-100mb) {
@@ -55,6 +57,8 @@
 	handle @denied_files {
 		respond 403
 	}
+
+	# TODO: deny ip block list from cloudflare
 
 	# never admit to using php -jhn
 	# this might redirect to a 404 in some cases but who cares
