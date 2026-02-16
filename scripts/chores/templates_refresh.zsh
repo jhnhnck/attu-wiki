@@ -28,6 +28,6 @@ curl -LsSf 'https://en.wikipedia.org/w/index.php?title=Special:Export' \
 sudo chmod a+r "$templates_xml"
 
 # import to wiki
-cd $APP_HOME/mediawiki;
+cd "$APP_HOME/mediawiki";
 sudo --preserve-env -u www-data -- \
-    php maintenance/run.php importDump --username-prefix 'w' $templates_xml
+    php maintenance/run.php importDump --username-prefix 'w' "$templates_xml"

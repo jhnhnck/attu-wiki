@@ -6,7 +6,7 @@ set -eu
 
 case "${RUNNER_TYPE:-runner}" in
     "scheduler")
-    exec supercronic -overlapping -json $USER_HOME/wiki.crontab
+    exec supercronic -overlapping -json "$USER_HOME/wiki.crontab"
     ;;
 
     "update")

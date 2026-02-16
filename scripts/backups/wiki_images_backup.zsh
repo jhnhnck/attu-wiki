@@ -17,7 +17,7 @@ sudo chmod g+r -Rc './images'
 sudo rm -rvf './images/folk-vending-cucumber'
 
 # ensure backup directory exists
-sudo zsh -c "mkdir -vp $backup_path && chown -c doom:doom $backup_path"
+sudo zsh -c 'mkdir -vp "$1" && chown -c doom:doom "$1"' -- "$backup_path"
 
 new_files_count="$(find ./images -path ./images/thumb -prune -o -daystart -mtime -3 -type f -print | wc -l)"
 

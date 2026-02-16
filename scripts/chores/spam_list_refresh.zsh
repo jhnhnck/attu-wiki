@@ -11,6 +11,6 @@ spam_list_temp=$(mktemp --suffix=.zip)
 trap 'rm -vf "$spam_list_temp"' EXIT
 
 # download file
-curl -LsSf "$spam_list_link" -o $spam_list_temp
-unzip -p $spam_list_temp > "$spam_list_output"
+curl -LsSf "$spam_list_link" -o "$spam_list_temp"
+unzip -p "$spam_list_temp" > "$spam_list_output"
 sudo chmod a+r "$spam_list_output"

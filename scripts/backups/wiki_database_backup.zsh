@@ -11,10 +11,10 @@ current_date=$(date +%Y-%m-%d)
 db_backup_file="${backup_path}/attu-wiki-backup_${current_date}.sql.bz2"
 
 # ensure backup directory exists
-sudo zsh -c "mkdir -vp $backup_path && chown -c doom:doom $backup_path"
+sudo zsh -c 'mkdir -vp "$1" && chown -c doom:doom "$1"' -- "$backup_path"
 
 # dump db and compress
-mariadb-dump --user=attu --password="$ATTU_DB_PASSWORD" --host="$db_host" --databases attu_wiki --single-transaction --quick \
+MYSQL_PWD="$ATTU_DB_PASSWORD" mariadb-dump --user=attu --host="$db_host" --databases attu_wiki --single-transaction --quick \
     | bzip2 > "$db_backup_file"
 
 # verify backup size

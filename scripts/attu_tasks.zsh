@@ -40,32 +40,32 @@ set -eu
 case "$1" in
     'backup:database')
     printf '%s\n' "Running backup: wiki database"
-    zsh -eu $USER_HOME/backups/wiki_database_backup.zsh && send_success
+    zsh -eu "$USER_HOME/backups/wiki_database_backup.zsh" && send_success
     ;;
 
     'backup:images')
     printf '%s\n' "Running backup: wiki images"
-    zsh -eu $USER_HOME/backups/wiki_images_backup.zsh && send_success
+    zsh -eu "$USER_HOME/backups/wiki_images_backup.zsh" && send_success
     ;;
 
     'chore:bundle-backups')
     printf '%s\n' "Running chore: bundle database backups"
-    zsh -eu $USER_HOME/chores/bundle_db_backups.zsh
+    zsh -eu "$USER_HOME/chores/bundle_db_backups.zsh"
     ;;
 
     'chore:clean-upload-stash')
     printf '%s\n' "Running chore: maintenance script cleanupUploadStash"
-    cd $APP_HOME/mediawiki;
+    cd "$APP_HOME/mediawiki";
     sudo --preserve-env -u www-data -- \
         php maintenance/run.php cleanupUploadStash
     ;;
 
     'chore:regenerate-sitemap')
     printf '%s\n' "Running chore: maintenance script generateSitemap"
-    cd $APP_HOME/mediawiki;
+    cd "$APP_HOME/mediawiki";
     sudo --preserve-env -u www-data -- \
         php maintenance/run.php generateSitemap \
-            --fspath=$APP_HOME/mediawiki/sitemap/ \
+            --fspath="$APP_HOME/mediawiki/sitemap/" \
             --identifier=attuproject.org \
             --urlpath=/sitemap/ \
             --compress=no \
@@ -75,22 +75,22 @@ case "$1" in
 
     'chore:spam-list-refresh')
     printf '%s\n' "Running chore: update StopForumSpam list"
-    zsh -eu $USER_HOME/chores/spam_list_refresh.zsh
+    zsh -eu "$USER_HOME/chores/spam_list_refresh.zsh"
     ;;
 
     'chore:templates-refresh')
     printf '%s\n' "Running chore: update templates from wikipedia"
-    zsh -eu $USER_HOME/chores/templates_refresh.zsh
+    zsh -eu "$USER_HOME/chores/templates_refresh.zsh"
     ;;
 
     'task:error-rate-monitor')
     printf '%s\n' "Running task: error rate monitor"
-    python3 $USER_HOME/tasks/attu_error_rate.py
+    python3 "$USER_HOME/tasks/attu_error_rate.py"
     ;;
 
     'task:run-jobs')
     printf '%s\n' "Running task: job runner"
-    cd $APP_HOME/mediawiki;
+    cd "$APP_HOME/mediawiki";
     for i in {1..3}; do
         sudo --preserve-env -u www-data -- \
             php maintenance/run.php runJobs \
