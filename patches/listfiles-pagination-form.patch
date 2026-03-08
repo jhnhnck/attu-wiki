@@ -1,0 +1,13 @@
+diff --git a/includes/specials/pagers/ImageListPager.php b/includes/specials/pagers/ImageListPager.php
+index 40f7c41c..e6c0e158 100644
+--- a/includes/specials/pagers/ImageListPager.php
++++ b/includes/specials/pagers/ImageListPager.php
+@@ -662,6 +662,8 @@ class ImageListPager extends TablePager {
+
+ 		$query = $this->getRequest()->getQueryValues();
+ 		unset( $query['title'] );
++		unset( $query['offset'] );
++		unset( $query['dir'] );
+ 		unset( $query['limit'] );
+ 		unset( $query['ilsearch'] );
+ 		unset( $query['ilshowall'] );

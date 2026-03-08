@@ -1,0 +1,13 @@
+diff --git a/includes/specials/pagers/ImageListPager.php b/includes/specials/pagers/ImageListPager.php
+--- a/includes/specials/pagers/ImageListPager.php
++++ b/includes/specials/pagers/ImageListPager.php
+@@ -399,8 +399,9 @@ public function reallyDoQueryOld( $offset, $limit, $order ) {
+ 		$imageRes = $dbr->newSelectQueryBuilder()
+ 			->tables( is_array( $tables ) ? $tables : [ $tables ] )
+ 			->fields( $fields )
+ 			->conds( $conds )
+ 			->caller( $fname )
+ 			->options( $options )
+ 			->joinConds( $join_conds )
++			->ignoreIndex( [ 'image' => 'img_timestamp' ] )
+ 			->fetchResultSet();

@@ -144,6 +144,8 @@ RUN set -eu; \
         extensions/VisualEditor \
         extensions/WikiEditor; \
     git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
+    git apply $APP_HOME/patches/listfiles-pagination-form.patch; \
+    git apply $APP_HOME/patches/listfiles-pagination-order.patch; \
     mkdir ./trash; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         composer update --no-dev; \
