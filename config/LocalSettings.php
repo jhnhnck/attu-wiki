@@ -232,13 +232,19 @@ wfLoadExtension('SyntaxHighlight_GeSHi');
 # btw this ones mine -jhn
 wfLoadExtension('NovaDiscord');
 $wgDiscordNoBots = false;
+$wgDiscordPrivateExceptionAlerts = true;
+
+$wgDiscordWebhooks = [['url' => "{$_ENV['ATTU_WIKI_WEBHOOK_ERROR']}", 'hooks' => ['LogException']]];
 
 if (!$attuDevMode) {
-    $wgDiscordWebhookURL = ["{$_ENV['ATTU_WIKI_WEBHOOK']}"];
+    $wgDiscordWebhooks[] = ['url' => "{$_ENV['ATTU_WIKI_WEBHOOK']}"];
     $wgDiscordDisabledUsers = ['127.0.0.1'];
 } else {
-    $wgDiscordWebhookURL = ["{$_ENV['ATTU_WIKI_WEBHOOK_ALT']}"];
+    $wgDiscordWebhooks[] = ['url' => "{$_ENV['ATTU_WIKI_WEBHOOK_ALT']}"];
 }
+
+// route exceptions to a dedicated log file in both dev and prod
+$wgDebugLogGroups['exception'] = "{$_ENV['APP_HOME']}/logs/exception-{$wgDBname}.log";
 
 wfLoadExtension('OpenGraphMeta');
 wfLoadExtension('Math');
