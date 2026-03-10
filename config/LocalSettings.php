@@ -250,7 +250,7 @@ wfLoadExtension('OpenGraphMeta');
 wfLoadExtension('Math');
 
 wfLoadExtension('StopForumSpam');
-$wgSFSIPListLocation = "{$wgInternalServer}/resources/listed_ip_30_all.txt";
+$wgSFSIPListLocation = "$IP/resources/listed_ip_30_all.txt";
 
 wfLoadExtension('EasyTimeline');
 $wgTimelineFontDirectory = $_ENV['APP_HOME'] . '/fonts/freefont';
