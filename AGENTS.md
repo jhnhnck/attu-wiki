@@ -120,7 +120,7 @@ To rebuild after config changes: `docker compose up -d --build --force-recreate`
 7. **Custom namespace IDs:** Story=100/101, Record=102/103, Dict=104/105; Talk namespace is renamed to "Meta" (alias `Talk` preserved for compatibility)
 8. **`job-update` must complete successfully** before `mediawiki` or `scheduler` start; if it fails, the wiki won't come up - check `docker compose logs job-update`
 9. **Scheduler mounts journald sockets read-only** (`/run/log/journal`, `/var/log/journal`, `/run/systemd/journal/socket`, `/etc/machine-id`) so `attu_error_rate.py` can read Caddy access logs via `cysystemd`
-10. **`discord.sh` is SHA256-verified at build time** - if upgrading the binary, update the checksum in `mediawiki.Dockerfile`
+10. **`discord.sh` is SHA256-verified at build time** - used by wiki scripts (not by NovaDiscord, which uses HttpRequestFactory); if upgrading the binary, update the checksum in `mediawiki.Dockerfile`
 11. **`PageMoveComplete` not `TitleMoveComplete`** is the correct hook name for NovaDiscord; using the wrong name silently disables the hook without errors
 12. **Wikipedia template imports use username prefix `'w'`** - maintain this when adding new templates to `templates_refresh.zsh`
 
@@ -131,7 +131,6 @@ To rebuild after config changes: `docker compose up -d --build --force-recreate`
 | File | Contents |
 | :--- | :--- |
 | `notes/scheduled-tasks.md` | Full task table, dispatcher pattern, dev mode, how to add or run a task |
-| `notes/novadiscord-mw144-migration.md` | MW 1.44 hook handler migration, DI pattern, test fix patterns |
 | `notes/audit-2026-02-09.md` | Security audit results, rationale for skipped items, list of all fixed issues |
 | `notes/.meta.md` | Guide to this documentation system - when to create notes, writing style |
 
