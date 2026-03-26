@@ -100,6 +100,11 @@ case "$1" in
     wait
     ;;
 
+    'chore:certbot-renew')
+    printf '%s\n' "Running chore: renew SSL certificates"
+    zsh -eu "$USER_HOME/chores/certbot_renew.zsh" && send_success
+    ;;
+
     *)
     printf 'Caught invalid task: %s\n' "$1"
     exit 1

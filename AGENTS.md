@@ -123,6 +123,7 @@ To rebuild after config changes: `docker compose up -d --build --force-recreate`
 10. **`discord.sh` is SHA256-verified at build time** - used by wiki scripts (not by NovaDiscord, which uses HttpRequestFactory); if upgrading the binary, update the checksum in `mediawiki.Dockerfile`
 11. **`PageMoveComplete` not `TitleMoveComplete`** is the correct hook name for NovaDiscord; using the wrong name silently disables the hook without errors
 12. **Wikipedia template imports use username prefix `'w'`** - maintain this when adding new templates to `templates_refresh.zsh`
+13. **Certbot renewal uses hardcoded GID `976` for `chown :caddy`** - the `caddy` group doesn't exist inside the Debian container, so `certbot_renew.zsh` uses the numeric GID from the host; if it changes, update the script. Certbot volume mounts (`/srv/services/certbot/config`, `cloudflare.ini`) are prod-only - dev simulates the task
 
 ---
 
@@ -165,6 +166,7 @@ attu-wiki-dev/
 │   │   └── wiki_images_backup.zsh
 │   ├── chores/
 │   │   ├── bundle_db_backups.zsh
+│   │   ├── certbot_renew.zsh            ← renews all LE certs; uses certbot config outside repo
 │   │   ├── spam_list_refresh.zsh
 │   │   └── templates_refresh.zsh
 │   ├── misc/
