@@ -111,7 +111,6 @@ A small set of patches are applied at build time to upstream code:
 
 - `mediawiki-deprecated-sidebar.patch` — MediaWiki core
 - `citizen-viewport.patch` — Citizen skin
-- `drafts-url-expand.patch`, `drafts-namespaced-types.patch` — Drafts extension
 - `jobrunner-e_strict.patch` — Job runner
 
 ## Credits

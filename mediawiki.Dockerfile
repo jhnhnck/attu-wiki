@@ -180,7 +180,6 @@ RUN set -eu; \
 # https://www.mediawiki.org/wiki/Extension:Thumbro
 RUN set -eu; \
     git clone --depth=1 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
-    git -C Drafts apply $APP_HOME/patches/drafts-url-expand.patch; \
     \
     git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
     \

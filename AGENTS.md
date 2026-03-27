@@ -177,13 +177,8 @@ attu-wiki-dev/
 │   └── NovaDiscord/                 ← custom MediaWiki extension; bind-mounted :ro in dev
 ├── patches/
 │   ├── citizen-viewport.patch
-│   ├── drafts-namespaced-types.patch
-│   ├── drafts-url-expand.patch
 │   ├── jobrunner-e_strict.patch
 │   └── mediawiki-deprecated-sidebar.patch
-├── repos/
-│   ├── mediawiki-extensions-Drafts/ ← patched upstream; copied into image at build
-│   └── mediawiki-skins-Citizen/     ← patched upstream; copied into image at build
 ├── files/
 │   ├── assets/                      ← favicon and other static assets
 │   ├── dotfiles/                    ← .well-known and similar served files

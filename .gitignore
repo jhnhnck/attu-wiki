@@ -39,6 +39,7 @@ sitemap/
 docker-compose.yml
 repos/
 devel/
+.claude/
 
 ### Notes (selective) ###
 notes/
