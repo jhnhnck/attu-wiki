@@ -114,7 +114,6 @@ A small set of patches are applied at build time to upstream code:
 - `listfiles-pagination-order.patch` — MediaWiki core (Special:ListFiles next-page)
 - `search-skip-invalid-title.patch` — MediaWiki core (Special:Search precondition)
 - `citizen-viewport.patch` — Citizen skin
-- `jobrunner-e_strict.patch` — Job runner
 
 ## Credits
 
