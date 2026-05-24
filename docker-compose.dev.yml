@@ -124,7 +124,7 @@ services:
             interval: 30s
             retries: 3
             start_period: 10s
-            test: [ "CMD", "pgrep", "-f", "supercronic" ]
+            test: [ "CMD-SHELL", "grep -q '^supercronic$$' /proc/1/comm" ]
             timeout: 5s
         logging:
             driver: journald
