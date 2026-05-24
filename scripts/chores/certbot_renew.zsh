@@ -12,6 +12,9 @@ certbot renew \
   --work-dir /tmp/certbot-work \
   --logs-dir /tmp/certbot-logs
 
+# GID 976 = caddy group on the host; the caddy package isn't installed in this
+# scheduler container, so we can't `chown :caddy` by name. verify the host's
+# caddy GID matches if you migrate or change hosts: `getent group caddy`.
 find "${certbot_config}" -type f -name '*.pem' \
   -exec sudo chown :976 -c {} \+ \
   -exec sudo chmod -c g+r {} \+
