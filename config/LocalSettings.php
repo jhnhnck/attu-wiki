@@ -243,6 +243,20 @@ if (!$attuDevMode) {
     $wgDiscordWebhooks[] = ['url' => "{$_ENV['ATTU_WIKI_WEBHOOK_ALT']}"];
 }
 
+$wgDiscordExceptionDenyList = [
+    // Host workstation reboot windows; brief 5xx until DB container is healthy.
+    // Going away with the planned server migration.
+    ['class' => 'Wikimedia\Rdbms\DBConnectionError',
+     'messageContains' => 'Connection refused'],
+    ['class' => 'Wikimedia\Rdbms\DBQueryDisconnectedError',
+     'messageContains' => 'MySQL server has gone away'],
+
+    // Race between parallel runJobs.php workers updating page_links_updated.
+    // Benign — link tables already updated, only the timestamp UPDATE collided.
+    ['class' => 'Wikimedia\Rdbms\DBQueryError',
+     'messageContains' => 'Error 1020'],
+];
+
 // route exceptions to a dedicated log file in both dev and prod
 $wgDebugLogGroups['exception'] = "{$_ENV['APP_HOME']}/logs/exception-{$wgDBname}.log";
 
