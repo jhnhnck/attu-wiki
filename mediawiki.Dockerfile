@@ -146,6 +146,7 @@ RUN set -eu; \
     git apply $APP_HOME/patches/mediawiki-deprecated-sidebar.patch; \
     git apply $APP_HOME/patches/listfiles-pagination-form.patch; \
     git apply $APP_HOME/patches/listfiles-pagination-order.patch; \
+    git apply $APP_HOME/patches/search-skip-invalid-title.patch; \
     mkdir ./trash; \
     if [ "${BUILD_TYPE:-}" != "dev" ]; then \
         composer update --no-dev; \

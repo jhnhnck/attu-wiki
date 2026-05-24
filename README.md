@@ -110,6 +110,9 @@ The wiki defines three custom content namespaces: **Story** (100), **Record** (1
 A small set of patches are applied at build time to upstream code:
 
 - `mediawiki-deprecated-sidebar.patch` — MediaWiki core
+- `listfiles-pagination-form.patch` — MediaWiki core (Special:ListFiles next-page)
+- `listfiles-pagination-order.patch` — MediaWiki core (Special:ListFiles next-page)
+- `search-skip-invalid-title.patch` — MediaWiki core (Special:Search precondition)
 - `citizen-viewport.patch` — Citizen skin
 - `jobrunner-e_strict.patch` — Job runner
 
