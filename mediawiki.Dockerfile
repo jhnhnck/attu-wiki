@@ -180,9 +180,9 @@ RUN set -eu; \
 # https://www.mediawiki.org/wiki/Extension:TemplateStylesExtender
 # https://www.mediawiki.org/wiki/Extension:Thumbro
 RUN set -eu; \
-    git clone --depth=1 https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
+    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://github.com/wikimedia/mediawiki-extensions-Drafts.git Drafts; \
     \
-    git clone --depth=1 https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
+    git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/CreatePageUw CreatePageUw; \
     \
     git clone --depth=1 --branch "$MEDIAWIKI_BRANCH" https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git EasyTimeline; \
     \
