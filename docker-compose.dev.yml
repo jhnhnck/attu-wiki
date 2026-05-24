@@ -9,8 +9,6 @@ networks:
         name: attu_dev
 services:
     database:
-        cap_add:
-            - SYS_NICE
         env_file:
             - .env
         environment:
@@ -20,7 +18,7 @@ services:
             - MARIADB_USER=attu
         healthcheck:
             interval: 10s
-            retries: 10
+            retries: 20
             start_period: 5s
             test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
             timeout: 3s
