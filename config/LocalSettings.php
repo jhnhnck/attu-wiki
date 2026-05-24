@@ -265,6 +265,8 @@ wfLoadExtension('PageImages');
 wfLoadExtension('TextExtracts');
 wfLoadExtension('CategoryTree');
 wfLoadExtension('Drafts');
+$wgParsoidCacheConfig['StashType'] = CACHE_REDIS;
+$wgParsoidCacheConfig['StashDuration'] = 7 * 24 * 60 * 60;
 
 wfLoadExtension('Thumbro');
 $wgGenerateThumbnailOnParse = true;
