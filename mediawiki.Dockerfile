@@ -220,7 +220,12 @@ WORKDIR $APP_HOME/mediawiki
 
 # add and validate caddy config
 COPY ./config/Caddyfile /etc/frankenphp/Caddyfile
-RUN frankenphp validate --config /etc/frankenphp/Caddyfile; \
+COPY ./config/Caddyfile.trees /tmp/Caddyfile.trees
+RUN if [ "${BUILD_TYPE:-}" = "dev" ]; then \
+        cp /tmp/Caddyfile.trees /etc/frankenphp/Caddyfile.trees; \
+    fi; \
+    rm -f /tmp/Caddyfile.trees; \
+    frankenphp validate --config /etc/frankenphp/Caddyfile; \
     ln -svf $APP_HOME/mediawiki/sitemap/sitemap-attuproject.org-NS_0-0.xml $APP_HOME/mediawiki/sitemap.xml;
 
 # supercronic builder

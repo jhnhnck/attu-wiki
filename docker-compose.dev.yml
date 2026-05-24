@@ -1,4 +1,7 @@
 ---
+include:
+    - path: ./devel/FamilyTreeEditor/docker-compose.yml
+      project_directory: ./devel/FamilyTreeEditor
 name: attu-dev
 networks:
     attu:

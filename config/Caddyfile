@@ -58,6 +58,10 @@
 		respond 403
 	}
 
+	# trees route only included when /etc/frankenphp/Caddyfile.trees exists
+	# (dev only; prod build skips the COPY). glob no-ops on no match.
+	import /etc/frankenphp/Caddyfile.trees*
+
 	# TODO: deny ip block list from cloudflare
 
 	# never admit to using php -jhn

@@ -1,0 +1,6 @@
+# dev-only: family tree editor reverse proxy
+# included from Caddyfile via `import /etc/frankenphp/Caddyfile.trees*`
+# only present in dev builds (see mediawiki.Dockerfile BUILD_TYPE gate)
+handle_path /trees/* {
+	reverse_proxy attu-tree:8000
+}
