@@ -1,0 +1,51 @@
+---
+# docker-compose.override.yml for attu-wiki-prod on the migration target.
+# Generated/installed by scripts/migrate.zsh; rsynced into place as
+# `docker-compose.override.yml` next to docker-compose.prod.yml.
+#
+# - Switches the heavy bind mounts (./database, ./images) to named volumes
+#   with hyphen-only names (explicit `name:` bypasses Compose's
+#   <project>_<volname> underscore convention).
+# - Renames the redis volume from the source's compose-default
+#   attu-prod_redis-data-prod to attu-prod-redis-data.
+# - Remaps published ports to fit moon's Caddy upstream loopback IPs (see
+#   system-setup repo caddy/README.md).
+#
+# Requires Compose >= 2.20 for the `!override` tag, which replaces the
+# matching list in docker-compose.prod.yml rather than appending to it.
+services:
+    database:
+        volumes: !override
+            - attu-prod-database:/var/lib/mysql
+            - ./scripts/migration/db-init.sql:/docker-entrypoint-initdb.d/db-init.sql:ro
+    redis:
+        volumes: !override
+            - attu-prod-redis-data:/data
+    job-update:
+        volumes: !override
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
+            - attu-prod-images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
+    mediawiki:
+        ports: !override
+            - 127.0.1.3:8080:8080
+    scheduler:
+        volumes: !override
+            - attu-prod-images:/app/mediawiki/images
+            - /etc/machine-id:/etc/machine-id:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /srv/backups/attu-wiki:/app/backups
+            - /var/log/journal:/var/log/journal:ro
+            - /srv/services/certbot/config:/srv/services/certbot/config
+            - /srv/services/certbot/cloudflare.ini:/srv/services/certbot/cloudflare.ini:ro
+    yourls:
+        ports: !override
+            - 127.0.1.4:8080:8080
+volumes:
+    attu-prod-database:
+        name: attu-prod-database
+    attu-prod-images:
+        name: attu-prod-images
+    attu-prod-redis-data:
+        name: attu-prod-redis-data

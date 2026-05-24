@@ -1,0 +1,31 @@
+---
+# docker-compose.override.yml for attu-wiki-dev on the migration target.
+# Generated/installed by scripts/migrate.zsh; rsynced into place as
+# `docker-compose.override.yml` next to docker-compose.dev.yml.
+#
+# Dev's database stays in-container ephemeral (re-loaded from
+# attu-wiki-backup.sql via /docker-entrypoint-initdb.d/ on every fresh
+# container), so only ./images moves to a named volume here. The mediawiki
+# port shifts to moon's loopback IP for Caddy.
+#
+# Requires Compose >= 2.20 for the `!override` tag.
+services:
+    job-update:
+        volumes: !override
+            - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord:ro
+            - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
+            - attu-dev-images:/app/mediawiki/images
+            - ./sitemap:/app/mediawiki/sitemap
+    mediawiki:
+        ports: !override
+            - 127.0.1.5:8080:8080
+    scheduler:
+        volumes: !override
+            - attu-dev-images:/app/mediawiki/images
+            - /etc/machine-id:/etc/machine-id:ro
+            - /run/log/journal:/run/log/journal:ro
+            - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
+            - /var/log/journal:/var/log/journal:ro
+volumes:
+    attu-dev-images:
+        name: attu-dev-images
