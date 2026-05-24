@@ -8,13 +8,18 @@ Self-hosted MediaWiki 1.44 wiki for the [Attu Project](https://attuproject.org),
 
 ## 2. Rules
 
-- Don't commit secrets - `.env` is gitignored; all credentials live there
-- Don't push or deploy without asking first
-- MediaWiki maintenance scripts must run as `www-data` via `sudo --preserve-env -u www-data`; running as root breaks file ownership
-- Don't edit files inside `repos/` directly - they hold patched upstream sources applied at build time
-- Don't edit `devel/NovaDiscord/` inside the container - it's a read-only bind mount for live editing on the host
-- All containers log to journald; don't redirect logs elsewhere
-- In dev, all scheduled tasks are simulated (print-and-sleep) except `task:run-jobs`, which uses `--allow-dev` in the crontab
+1. do not edit the rules.
+1. do not push or deploy without asking first.
+1. do not create commits without being explicitly asked to.
+1. do not perform any interactions with Discord without asking.
+1. do not commit secrets - `.env` is gitignored; all credentials live there.
+1. do not edit files inside `repos/` directly - they hold patched upstream sources applied at build time.
+1. do not edit `devel/NovaDiscord/` inside the container - it's a read-only bind mount for live editing on the host.
+1. all `# noqa` comments must include a valid reason.
+1. mediawiki maintenance scripts must run as `www-data` via `sudo --preserve-env -u www-data`; running as root breaks file ownership.
+1. all containers log to journald; don't redirect logs elsewhere.
+1. in dev, all scheduled tasks are simulated (print-and-sleep) except `task:run-jobs`, which uses `--allow-dev` in the crontab.
+1. check the current time at the start of each conversation. if it is past 12:30 AM ET, suggest a natural stopping point before continuing any task.
 
 ---
 
@@ -30,9 +35,8 @@ Self-hosted MediaWiki 1.44 wiki for the [Attu Project](https://attuproject.org),
 | `yourls` | URL shortener at `links.attuproject.org` (prod only, port 6009) |
 | `config/` | Caddyfile, LocalSettings.php, wiki.crontab, robots.txt, yourls config |
 | `scripts/` | All operational scripts: task dispatcher, backups, chores, error monitor |
-| `devel/` | Local development copies of extensions; `NovaDiscord` is bind-mounted into containers |
+| `devel/` | Reference checkouts and bind-mounts: `Citizen`, `Drafts`, `MediaWiki`, `NovaDiscord` (bind-mounted into dev), `FamilyTreeEditor` |
 | `patches/` | Patch files applied to upstream code at build time |
-| `repos/` | Cloned upstream repos (Citizen skin, Drafts extension) with patches applied |
 | `files/` | Static assets: spam IP list, fonts, favicon, dotfiles served by the wiki |
 
 ---
@@ -129,11 +133,18 @@ To rebuild after config changes: `docker compose up -d --build --force-recreate`
 
 ## 9. Reference Notes
 
-| File | Contents |
-| :--- | :--- |
-| `notes/scheduled-tasks.md` | Full task table, dispatcher pattern, dev mode, how to add or run a task |
-| `notes/audit-2026-02-09.md` | Security audit results, rationale for skipped items, list of all fixed issues |
-| `notes/.meta.md` | Guide to this documentation system - when to create notes, writing style |
+**`notes/style/`** - conventions
+- [`notes/style/commit_style.md`](notes/style/commit_style.md) - commit message format, types, and tone
+
+**`notes/features/`** - feature and system docs
+- [`notes/features/scheduled-tasks.md`](notes/features/scheduled-tasks.md) - full task table, dispatcher pattern, dev mode, how to add or run a task
+
+**`notes/`**
+- [`notes/.meta.md`](notes/.meta.md) - guide to this documentation system
+
+**NovaDiscord extension** (in `devel/NovaDiscord/`)
+- [`devel/NovaDiscord/notes/agents.md`](devel/NovaDiscord/notes/agents.md) - extension dev guide (class architecture, coding conventions, testing)
+- [`devel/NovaDiscord/notes/features/novadiscord.md`](devel/NovaDiscord/notes/features/novadiscord.md) - wiki integration config (LocalSettings.php, config reference, hook catalog)
 
 ---
 
@@ -141,7 +152,7 @@ To rebuild after config changes: `docker compose up -d --build --force-recreate`
 
 ```txt
 attu-wiki-dev/
-├── AGENTS.md                        ← this file
+├── notes/agents.md                  ← this file
 ├── LICENSE.md
 ├── README.md
 ├── mediawiki.Dockerfile             ← multi-stage: php-base, mediawiki, scheduler
@@ -149,18 +160,23 @@ attu-wiki-dev/
 ├── docker-compose.prod.yml
 ├── docker-compose.yml               ← symlink to active compose file
 ├── pyproject.toml                   ← ruff + basedpyright config
-├── attu-wiki-backup.sql             ← gitignored;  SQL dump for dev DB init
+├── attu-wiki-backup.sql             ← gitignored; SQL dump for dev DB init
 ├── config/
 │   ├── Caddyfile                    ← FrankenPHP/Caddy web server rules
+│   ├── Caddyfile.trees              ← dev-only trees route snippet (imported via glob)
 │   ├── LocalSettings.php            ← MediaWiki config; reads secrets from $_ENV
 │   ├── robots.txt
 │   ├── wiki.crontab                 ← Supercronic schedule
 │   └── yourls/                      ← YOURLS config (prod only)
 ├── scripts/
 │   ├── attu_tasks.zsh               ← task dispatcher; all scheduled tasks route through here
-│   ├── attu_backup.zsh              ← host-side backup orchestrator (runs via systemd on host)
 │   ├── entry.zsh                    ← container entrypoint (scheduler or update mode)
 │   ├── requirements.txt             ← Python deps for scripts
+│   ├── migrate.zsh                  ← host migration orchestrator (source-side)
+│   ├── migration/
+│   │   ├── override.dev.yml         ← compose override applied on target (dev stack)
+│   │   ├── override.prod.yml        ← compose override applied on target (prod stack)
+│   │   └── remote.zsh               ← target-side runner invoked by migrate.zsh
 │   ├── backups/
 │   │   ├── wiki_database_backup.zsh
 │   │   └── wiki_images_backup.zsh
@@ -170,25 +186,38 @@ attu-wiki-dev/
 │   │   ├── spam_list_refresh.zsh
 │   │   └── templates_refresh.zsh
 │   ├── misc/
-│   │   └── bundle_backups.zsh       ← manual backup compaction tool
+│   │   ├── bundle_backups.zsh       ← manual backup compaction tool
+│   │   └── rotate_env_secrets.zsh   ← rotates ATTU_DB_PASSWORD; writes .env.bak
 │   └── tasks/
 │       └── attu_error_rate.py       ← reads journald, calculates Caddy 5xx rate, alerts Discord
 ├── devel/
-│   └── NovaDiscord/                 ← custom MediaWiki extension; bind-mounted :ro in dev
+│   ├── Citizen/                     ← reference checkout of Citizen skin (patched at build)
+│   ├── Drafts/                      ← reference checkout of Drafts extension
+│   ├── FamilyTreeEditor/            ← active dev; included into dev stack via include:
+│   ├── MediaWiki/                   ← reference checkout of MediaWiki core
+│   └── NovaDiscord/                 ← custom extension; bind-mounted :ro in dev
+│       └── notes/                   ← extension dev notes; agents.md is the primary guide
 ├── patches/
 │   ├── citizen-viewport.patch
-│   ├── jobrunner-e_strict.patch
-│   └── mediawiki-deprecated-sidebar.patch
+│   ├── listfiles-pagination-form.patch
+│   ├── listfiles-pagination-order.patch
+│   ├── mediawiki-deprecated-sidebar.patch
+│   └── search-skip-invalid-title.patch
 ├── files/
 │   ├── assets/                      ← favicon and other static assets
 │   ├── dotfiles/                    ← .well-known and similar served files
 │   ├── freefont-ttf/                ← fonts for EasyTimeline extension
 │   ├── listed_ip_30_all.txt         ← StopForumSpam IP blocklist (refreshed every 3 days)
-│   └── ploticus                     ← binary for EasyTimeline
+│   └── ploticus                     ← binary for EasyTimeline (planned: Phase 3 reorg)
 ├── notes/
+│   ├── agents.md                    ← this file
 │   ├── .meta.md                     ← documentation system guide
-
-│   └── scheduled-tasks.md
+│   ├── .template.to-do.md           ← to-do list template
+│   ├── to-do.md                     ← open items
+│   ├── style/
+│   │   └── commit_style.md
+│   └── features/
+│       └── scheduled-tasks.md
 ├── images/                          ← gitignored; MediaWiki user uploads
 └── sitemap/                         ← gitignored; generated XML sitemaps
 ```
@@ -200,6 +229,16 @@ attu-wiki-dev/
 - lowercase inline comments; no trailing periods
 - link non-obvious references inline: `# not well documented; code reference: <url>`
 - personal attribution: `# btw this ones mine -jhn`
-- terse - prefer one short comment over a paragraph
+- terse - prefer one short comment over a paragraph; prefer brief statements over long explanations
 - use semicolons or regular dashes (-); never em-dashes
+- do not include any extraneous punctuation
 - use american english spelling and grammar
+- use spaces for indentation always; avoid formats that require tabs
+
+---
+
+## metadata
+
+```yaml
+last_updated: 2 May 2026
+```

@@ -37,11 +37,8 @@ sitemap/
 
 ### Local / runtime ###
 docker-compose.yml
-repos/
 devel/
 .claude/
 
-### Notes (selective) ###
-notes/
-!notes/novadiscord.md
-!notes/scheduled-tasks.md
+### Notes ###
+notes/plans/
