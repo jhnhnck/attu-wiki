@@ -39,7 +39,7 @@ sitemap/
 ### Local / runtime ###
 docker-compose.yml
 devel/
-.claude/
+.claude/worktrees/
 
 ### Notes ###
 notes/plans/
