@@ -1,18 +1,23 @@
-# commit style
+commit-message conventions for this repo: conventional commits, lowercase, no body.
 
 ## message format
 
-conventional commits - `type(scope): description`, all lowercase, no body.
+`type(scope): description`, all lowercase, no body.
 
-**types**: `feat`, `fix`, `patch`, `refactor`, `chore`, `test`
-- `fix` - actual bug
-- `patch` - minor tweak that isn't a bug (wording, small tuning, typo)
-- `feat` - addition; also used for removals and intentional behavior changes with negative/ironic framing
-- `chore` - linting, formatting, housekeeping; always isolated from other work
+| type | meaning |
+|---|---|
+| `feat` | addition; also used for removals and intentional behavior changes with negative or ironic framing |
+| `fix` | actual bug |
+| `patch` | minor tweak that is not a bug (wording, small tuning, typo) |
+| `refactor` | structural change with no behavior change |
+| `chore` | linting, formatting, housekeeping; always isolated from other work |
+| `test` | tests added or changed without changing the thing under test |
 
-**scope**: the most relevant one when multiple are touched - pick the primary, don't list them.
+**scope**: the most relevant one when multiple are touched; pick the primary, do not list them.
 
-**description**: plain noun phrases or casual statements. describe what changed, not what was done to achieve it. no formal imperative verbs ("implement", "introduce", "centralize"). personality and humor where it fits naturally - don't force it.
+**description**: plain noun phrases or casual statements. describe what changed, not what was done to achieve it. no formal imperative verbs (`implement`, `introduce`, `centralize`). personality and humor where it fits naturally; do not force it.
+
+## examples
 
 ```
 fix(hatch): enable one week early; i'm impatient :tieteran:   ← honest why via semicolon
@@ -25,29 +30,34 @@ feat(hatch): less aggressive trade timeout                     ← ironic feat f
 feat(hatch): no more screaming snakes                          ← negative framing for a removal
 ```
 
----
-
-## making a commit
+## when to commit
 
 do not create commits unless explicitly asked to. finish the work first; ask if the scope is unclear.
 
-the working tree will often have changes from multiple tasks in progress at once. that's fine - deployment only happens from a clean tree, so intermediate states don't matter. the job is to pick out the hunks that belong together and commit them as one complete unit.
+the working tree will often have changes from multiple tasks in progress at once. that is fine; deployment only happens from a clean tree, so intermediate states do not matter. the job is to pick out the hunks that belong together and commit them as one complete unit.
 
-**what makes a unit complete** depends on what it is:
+## what makes a unit complete
 
-- **feat** - implementation + tests + notes/docs + config/assets, all in one. it's done when the thing it describes is actually done, not when the code compiles.
-- **fix / patch** - the change itself plus any test that covers it. if making it work right required touching the db layer or a script, that goes in too.
-- **refactor** - every file that references the thing being changed, swept in one commit. no partial refactors left dangling.
-- **data or config change** - minimal: just the value and its docs. nothing else.
-- **chore** - linting and formatting never ride along with other work. collect them separately.
-- **tests** - can go in with the feature they cover, or as a standalone commit filling coverage later. both are fine. if no tests are included, a to-do entry should be added in the test section,
+| change type | unit |
+|---|---|
+| `feat` | implementation + tests + notes/docs + config/assets, all in one; done when the thing it describes is actually done, not when the code compiles |
+| `fix` / `patch` | the change itself plus any test that covers it; if making it work right required touching the DB layer or a script, that goes in too |
+| `refactor` | every file that references the thing being changed, swept in one commit; no partial refactors left dangling |
+| data / config | minimal: just the value and its docs; nothing else |
+| `chore` | linting and formatting never ride along with other work; collect them separately |
+| `test` | can go in with the feature it covers, or as a standalone commit filling coverage later; both are fine. if no tests are included, add a to-do entry in the test section |
 
-after a large feature commit, small `fix` or `patch` commits for issues that surface in use are normal and expected - don't try to anticipate everything upfront.
+after a large feature commit, small `fix` or `patch` commits for issues that surface in use are normal and expected; do not try to anticipate everything upfront.
+
+## see also
+
+- [../agents.md](../agents.md) - rule 3: do not create commits without being explicitly asked
+- [../.meta.md](../.meta.md) - notes-system conventions
 
 ---
 
 ## metadata
 
 ```yaml
-last_updated: 30 March 2026
+last_updated: 24 May 2026
 ```

@@ -1,12 +1,14 @@
-# RevisionSearchResultTrait::initFromTitle hits PreconditionException for invalid Title rows from Special:Search
+MediaWiki 1.44 `Special:Search` throws `PreconditionException` when a result row's `(page_namespace, page_title)` cannot be reconstructed into a proper Title; we carry a local patch and would happily upstream the diff.
 
-**MediaWiki version:** 1.44 (REL1_44)
+## affected version
 
-## Summary
+MediaWiki 1.44 (REL1_44).
 
-`Special:Search` triggers a `Wikimedia\Assert\PreconditionException` when the SearchMySQL result set contains rows whose `(page_namespace, page_title)` cannot be reconstructed into a proper Title — for example, a page whose `page_title` begins with the textual prefix of a custom namespace defined later (so `page_namespace = 0` but `Title::makeTitle(0, 'Record:_Foo')->canExist()` is false).
+## summary
 
-## Stack trace
+`Special:Search` triggers a `Wikimedia\Assert\PreconditionException` when the `SearchMySQL` result set contains rows whose `(page_namespace, page_title)` cannot be reconstructed into a proper Title. example: a page whose `page_title` begins with the textual prefix of a custom namespace defined later, so `page_namespace = 0` but `Title::makeTitle(0, 'Record:_Foo')->canExist()` is false.
+
+## stack trace
 
 ```
 PreconditionException: This Title instance does not represent a proper page, but merely a link target.
@@ -22,20 +24,20 @@ PreconditionException: This Title instance does not represent a proper page, but
 ... up through SearchEngine->maybePaginate / SpecialSearch->showResults
 ```
 
-## Reproduction
+## reproduction
 
-1. Define a custom namespace, e.g. `$wgExtraNamespaces[102] = 'Record'`.
-2. Create a page with `page_namespace = 0` and `page_title = 'Record:_Foo'` (e.g. via raw SQL or by importing a dump from before the namespace was defined).
-3. Run a search whose result set is large enough to include that row (e.g. `?limit=500&profile=all&search=<term-matching-the-row>`).
-4. Special:Search returns HTTP 500.
+1. define a custom namespace, e.g. `$wgExtraNamespaces[102] = 'Record'`
+1. create a page with `page_namespace = 0` and `page_title = 'Record:_Foo'` (e.g. via raw SQL, or by importing a dump from before the namespace was defined)
+1. run a search whose result set is large enough to include that row (e.g. `?limit=500&profile=all&search=<term-matching-the-row>`)
+1. `Special:Search` returns HTTP 500
 
-## Expected behavior
+## expected behavior
 
-A row whose Title can't be reconstructed should be treated like any other broken / missing-revision row (`isBrokenTitle()`, `isMissingRevision()`), not throw a fatal precondition exception that takes the whole page down.
+a row whose Title cannot be reconstructed should be treated like any other broken or missing-revision row (`isBrokenTitle()`, `isMissingRevision()`), not throw a fatal precondition exception that takes the whole page down.
 
-## Suggested fix
+## suggested fix
 
-Guard the body of `RevisionSearchResultTrait::initFromTitle` with `$title->canExist()` so that downstream `getRevisionByTitle` is only attempted on Titles that can plausibly map to a page row. The existing `isMissingRevision()` flow then handles the case correctly.
+guard the body of `RevisionSearchResultTrait::initFromTitle` with `$title->canExist()` so that downstream `getRevisionByTitle` is only attempted on Titles that can plausibly map to a page row. the existing `isMissingRevision()` flow then handles the case correctly.
 
 ```diff
  protected function initFromTitle( $title ) {
@@ -44,6 +46,19 @@ Guard the body of `RevisionSearchResultTrait::initFromTitle` with `$title->canEx
 +    if ( $title !== null && $title->canExist() ) {
 ```
 
-## Notes
+## local mitigation
 
-We carry this as a local patch (`patches/search-skip-invalid-title.patch`) on the [Attu Project Wiki](https://attuproject.org); happy to upstream the diff if there's a preferred channel.
+we carry the diff as `patches/search-skip-invalid-title.patch` on the [Attu Project Wiki](https://attuproject.org). it applies cleanly against REL1_44; happy to upstream if there is a preferred channel.
+
+## see also
+
+- [drafts-stash-not-the-cause.md](drafts-stash-not-the-cause.md) - other upstream MediaWiki 1.44 issue captured here
+- [../../patches/search-skip-invalid-title.patch](../../patches/search-skip-invalid-title.patch) - the carried patch
+
+---
+
+## metadata
+
+```yaml
+last_updated: 24 May 2026
+```
