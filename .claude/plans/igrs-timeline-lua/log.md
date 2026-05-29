@@ -42,9 +42,40 @@ Plan title and goals updated to reflect CSS-div approach throughout.
 ### residual debt
 - `Module:TimelineTest` + `Project:TimelineTest` + `Project:OsTest` on dev wiki are probe artifacts; can stay as scratch pad or be deleted during Phase 1 cleanup · routed to bugs.md as CLEANUP-001
 
+## starting phase 1 — 2026-05-29
+
+**worktree:** `.claude/worktrees/igrs-timeline-lua/`
+**branch:** `phase/igrs-timeline-lua/0` (continuing; no inter-phase merge)
+
+**confirmed DoD:**
+1. `Module:AttuCalendar` on dev wiki: `parse_date()` handles PC/TT; `present` returns `current_year()`; boundary dates verified.
+2. `Module:Timeline` on dev wiki: reads data subpage, parses all `{{TimelineBar|...}}` lines, renders complete CSS-div timeline for all 74 IgRS speakers.
+3. Full-bar segments and narrow overlays both render correctly.
+4. Year axis: major labels every 5 years, minor ticks every 1 year, correct PC year numbers.
+5. Legend: 4-column grid, correct nation names and colors.
+6. `period_end=present` renders to current year (80 PC) and updates automatically.
+7. NewPP profiling confirms within Scribunto CPU/memory limits.
+8. Visual parity: information density matches EasyTimeline rendered PNG.
+
 ## revision after phase 0 (design update) — 2026-05-29
 
 Design decision post-pivot: data architecture changed from Lua data module (`Module:Timeline/IgRS`) to template-call subpage (`{{TimelineBar|...}}` lines on `<Article>/Timeline`). Haracalnde calendar (`d-m y PC/TT`) adopted throughout; `present` sentinel resolves via `Module:AttuCalendar`. Epoch data in `Module:AttuCalendar` mirrors `scripts/misc/current_year.py`.
 
 - phase 1 (module development): **revise** — architecture now: `Module:AttuCalendar` + `Module:Timeline` + `Template:TimelineBar` (no-op) + data subpage. Conversion script (`scripts/misc/convert_timeline.py`) added to scope to auto-generate initial subpage from EasyTimeline block.
 - phase 2 (wiki integration): **valid** — no structural change; subpage creation is part of Phase 2 deploy.
+
+## phase 1 retro — 2026-05-29
+
+### spec delta
+- delivered: all 8 DoD items met
+- missed: none
+- extra: `frame.args` fix (empty-parent-args bug in `M.main` — `next()` guard added); credential auto-regeneration in `wiki.py` (fixed stale `.botpass` flow)
+
+### surprises
+- `frame:getParent().args` returns empty table (truthy) for direct `{{#invoke:...}}` calls → `next()` guard required to distinguish empty parent from no parent
+- DNS for `dev.attuproject.org` now resolves via Tailscale — no longer need IP override in wiki.py
+- `.botpass` was stale; `_login()` auto-regenerated credentials via SQL DELETE + `createBotPassword` — no manual intervention needed
+- 129 segments across 71 bars all rendered; Scribunto: 0.010s / 7s CPU, 5.1 MB / 50 MB memory
+
+### residual debt
+- CLEANUP-001 (Phase 0 probe pages on dev/prod) deferred to Phase 2 per bugs.md

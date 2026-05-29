@@ -21,7 +21,7 @@
 Phase 0 confirmed SVG is blocked; CSS-div approach verified working. Data is now template-call-based on a subpage, parsed by the module from raw wikitext — the parse is a controlled flat format (`{{TimelineBar|5 positional args}}`), far simpler than the rejected EasyTimeline syntax. Remaining risks: (low) `mw.title:getContent()` on the data subpage adds one extra API call per render — monitor via NewPP profiling; (low) Haracalnde date parsing edge cases (TT dates near year boundary, month/day > valid range) — validate in Phase 1 with a test suite in the module.
 
 ## phase 0 — research + walking skeleton
-**status:** closed (pending merge)
+**status:** closed
 **definition of done:**
 1. ✅ CSS-div probe confirmed: `position:absolute/relative`, `background:`, pixel dimensions all survive MediaWiki's sanitizer. `<svg>` confirmed blocked across all Scribunto output paths.
 2. ✅ Pivot: SVG blocked → CSS-div adopted; `plan-revise` called.
@@ -34,7 +34,7 @@ Phase 0 confirmed SVG is blocked; CSS-div approach verified working. Data is now
 
 ## phase 1 — module development
 <!-- phase 1: CSS-div approach; template-call data on subpage; Haracalnde calendar via Module:AttuCalendar -->
-**status:** open
+**status:** closed
 
 **architecture:**
 ```
@@ -79,5 +79,16 @@ Row order = display order. One line per term. `present` = live current year.
 
 ## phase 2 — wiki integration
 **status:** open
-**definition of done:** Prod wiki `List_of_IgRS_Speakers_by_time_as_Speaker` uses `Module:Timeline`; EasyTimeline block replaced by invoke + data subpage; CSS-div timeline renders correctly in browser; zero JS console errors.
-**scope:** *(to be detailed at end of Phase 1)*
+**definition of done:**
+- Prod wiki `Module:AttuCalendar`, `Module:Timeline`, `Template:TimelineBar` created from `wiki-modules/` source files.
+- Prod wiki `List_of_IgRS_Speakers_by_time_as_Speaker/Timeline` data subpage created.
+- Prod wiki `List_of_IgRS_Speakers_by_time_as_Speaker` article: `{{#tag:timeline|...}}` block replaced with `{{#invoke:Timeline|main|data=...|period_start=1-1 1 PC|period_end=present}}`.
+- CSS-div timeline renders correctly in browser (Citizen skin); zero JS console errors.
+- Phase 0 probe artifacts cleaned up: `Module:TimelineTest`, `Project:TimelineTest`, `Project:OsTest` deleted from dev and prod wikis.
+
+**scope:**
+- Push `wiki-modules/Module-AttuCalendar.lua`, `wiki-modules/Module-Timeline.lua`, `wiki-modules/Template-TimelineBar.txt` to prod wiki.
+- Run `scripts/misc/convert_timeline.py` against prod API (already done; output is `wiki-modules/igrs-timeline-data.txt`) and push to prod as data subpage.
+- Edit prod article to replace `{{#tag:timeline|...}}` with Lua invoke (same replacement as dev).
+- Verify render on prod via `action=parse` API; spot-check against dev render.
+- Delete Phase 0 probe pages from dev and prod wikis.
