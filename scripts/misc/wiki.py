@@ -5,12 +5,16 @@ Run with the project venv: ./.venv/bin/python scripts/wiki.py <subcommand> ...
 
 Subcommands wrap the operations that recur across sessions so each one no longer
 needs the requests/mwparserfromhell boilerplate inlined.
+
+Use --wiki dev to target dev.attuproject.org; the edit subcommand is only
+available on the dev wiki.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from typing import Iterable, Iterator
@@ -18,8 +22,21 @@ from typing import Iterable, Iterator
 import requests
 import mwparserfromhell as mwp
 
-API = "https://attuproject.org/api.php"
-WIKI = "https://attuproject.org/wiki/"
+WIKIS = {
+    "prod": {
+        "api": "https://attuproject.org/api.php",
+        "wiki": "https://attuproject.org/wiki/",
+    },
+    "dev": {
+        "api": "https://dev.attuproject.org/api.php",
+        "wiki": "https://dev.attuproject.org/wiki/",
+    },
+}
+
+# Set by main() based on --wiki; referenced by api() and title_url().
+API = WIKIS["prod"]["api"]
+WIKI = WIKIS["prod"]["wiki"]
+
 UA = "tietero-tools/1.0 (jhn, attuproject)"
 
 SESSION = requests.Session()
@@ -82,6 +99,36 @@ def fetch_wikitext(titles: list[str]) -> dict[str, str | None]:
                 continue
             out[t] = page["revisions"][0]["slots"]["main"]["content"]
     return out
+
+
+# ---------- auth (dev wiki only) ----------
+
+
+def _login() -> str:
+    """Authenticate and return a CSRF token. Reads WIKI_USERNAME / WIKI_PASSWORD."""
+    username = os.environ.get("WIKI_USERNAME")
+    password = os.environ.get("WIKI_PASSWORD")
+    if not username or not password:
+        print("edit requires WIKI_USERNAME and WIKI_PASSWORD env vars", file=sys.stderr)
+        raise SystemExit(4)
+
+    login_token = api(action="query", meta="tokens", type="login")["query"]["tokens"]["logintoken"]
+
+    r = SESSION.post(API, data={
+        "format": "json",
+        "formatversion": "2",
+        "action": "login",
+        "lgname": username,
+        "lgpassword": password,
+        "lgtoken": login_token,
+    }, timeout=30)
+    r.raise_for_status()
+    result = r.json()["login"]
+    if result["result"] != "Success":
+        print(f"login failed: {result['result']}", file=sys.stderr)
+        raise SystemExit(4)
+
+    return api(action="query", meta="tokens")["query"]["tokens"]["csrftoken"]
 
 
 # ---------- subcommands ----------
@@ -266,6 +313,57 @@ def cmd_url(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_edit(args: argparse.Namespace) -> int:
+    if args.wiki != "dev":
+        print("edit: only allowed with --wiki dev", file=sys.stderr)
+        return 4
+
+    csrf = _login()
+
+    if args.text is not None:
+        text = args.text
+    elif args.file:
+        with open(args.file) as f:
+            text = f.read()
+    else:
+        text = sys.stdin.read()
+
+    params: dict = {
+        "action": "edit",
+        "title": args.title,
+        "token": csrf,
+        "format": "json",
+        "formatversion": "2",
+    }
+    if args.append:
+        params["appendtext"] = text
+    elif args.prepend:
+        params["prependtext"] = text
+    else:
+        params["text"] = text
+
+    if args.summary:
+        params["summary"] = args.summary
+    if args.section is not None:
+        params["section"] = args.section
+    if args.sectiontitle:
+        params["sectiontitle"] = args.sectiontitle
+    if args.minor:
+        params["minor"] = "1"
+    if args.bot:
+        params["bot"] = "1"
+
+    r = SESSION.post(API, data=params, timeout=30)
+    r.raise_for_status()
+    result = r.json()
+    edit = result.get("edit", {})
+    if edit.get("result") == "Success":
+        print(f"ok: {args.title} (rev {edit.get('newrevid', '?')})")
+        return 0
+    print(f"edit failed: {result}", file=sys.stderr)
+    return 3
+
+
 # ---------- entrypoint ----------
 
 
@@ -273,6 +371,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="wiki",
         description="Attu Project wiki CLI (MediaWiki Action API wrapper).",
+    )
+    p.add_argument(
+        "--wiki",
+        choices=("prod", "dev"),
+        default="prod",
+        help="target wiki: prod (attuproject.org) or dev (dev.attuproject.org); default: prod",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -325,11 +429,28 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("titles", nargs="+")
     s.set_defaults(func=cmd_url)
 
+    s = sub.add_parser("edit", help="edit a page (--wiki dev only)")
+    s.add_argument("title")
+    s.add_argument("--text", help="new page text; reads stdin if omitted")
+    s.add_argument("--file", help="read new page text from this file")
+    s.add_argument("--summary", "-s", help="edit summary")
+    s.add_argument("--section", help="section to edit: number, 0 for lead, or 'new'")
+    s.add_argument("--sectiontitle", help="title for a new section")
+    s.add_argument("--append", action="store_true", help="append text instead of replacing")
+    s.add_argument("--prepend", action="store_true", help="prepend text instead of replacing")
+    s.add_argument("--minor", action="store_true", help="mark as minor edit")
+    s.add_argument("--bot", action="store_true", help="mark as bot edit")
+    s.set_defaults(func=cmd_edit)
+
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    global API, WIKI
+    cfg = WIKIS[args.wiki]
+    API = cfg["api"]
+    WIKI = cfg["wiki"]
     try:
         return args.func(args)
     except requests.HTTPError as e:
