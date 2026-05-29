@@ -22,7 +22,6 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         locales \
         git \
         python3-minimal \
-        python3-pip \
         sudo \
         zsh; \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8;
@@ -81,8 +80,9 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
 
 # Python packages
 # for SyntaxHighlight code highlighting
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip3 install Pygments --break-system-packages;
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system Pygments;
 
 # PHP extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
@@ -252,12 +252,14 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     sudo chmod a+x /usr/local/bin/discord.sh;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
+COPY --chown=doom:doom ./pyproject.toml ./uv.lock $USER_HOME/
 COPY --chown=doom:doom --chmod=770 ./scripts $USER_HOME/
 COPY --chown=doom:doom ./config/wiki.crontab $USER_HOME/wiki.crontab
 
-RUN --mount=type=cache,target=$USER_HOME/.cache/pip \
-    sudo chown doom:doom $USER_HOME/.cache/pip; \
-    pip3 install --user --break-system-packages -r ./requirements.txt;
+RUN --mount=type=cache,uid=1000,gid=1000,target=$USER_HOME/.cache/uv \
+    uv sync --no-dev --frozen;
+
+ENV PATH="$USER_HOME/.venv/bin:$PATH"
 
 # cp /etc/zshrc $APP_HOME/.zshrc;
 CMD ["zsh", "./entry.zsh"]

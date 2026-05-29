@@ -1,3 +1,19 @@
+[project]
+name = "attu-wiki-scripts"
+version = "0"
+requires-python = "==3.13.*"
+dependencies = [
+    "cysystemd",
+    "pydantic",
+    "certbot",
+    "certbot-dns-cloudflare",
+    "requests",
+    "mwparserfromhell",
+]
+
+[tool.uv]
+package = false
+
 [tool.ruff]
 exclude = ["scripts/.venv/", "*.wip.py", "devel/"]
 target-version = "py313"
