@@ -31,7 +31,7 @@ Pass `--wiki dev` before the subcommand to target `dev.attuproject.org`. Subcomm
 | `exists <title>...` | Bulk existence check; titles via args or stdin. Exit 1 if any missing. |
 | `batch <title>... \| --from-category <cat>` | Bulk wikitext as `{title: wikitext}` JSON. Reads stdin if no args. |
 | `url <title>...` | Print canonical wiki URL(s). |
-| `edit <title> [--text TEXT \| --file F] [-s SUMMARY] [--section N] [--append\|--prepend] [--minor] [--bot]` | Edit a page. **`--wiki dev` required.** Reads stdin if no `--text`/`--file`. Authenticates via `WIKI_USERNAME` / `WIKI_PASSWORD` (bot password). |
+| `edit <title> [--text TEXT \| --file F] [-s SUMMARY] [--section N] [--append\|--prepend] [--minor] [--bot]` | Edit a page. **`--wiki dev` required.** Reads stdin if no `--text`/`--file`. Auth is automatic. |
 
 Examples:
 
@@ -42,9 +42,8 @@ uv run scripts/misc/wiki.py members "Tietero pages" | head
 uv run scripts/misc/wiki.py batch --from-category "Tietero pages" > /tmp/tietero.json
 printf 'Zamenhof\nAvanguardo\n' | uv run scripts/misc/wiki.py exists
 
-# edit on dev wiki
-WIKI_USERNAME=MyBot@BotName WIKI_PASSWORD=secret \
-  uv run scripts/misc/wiki.py --wiki dev edit "Sandbox" --text "hello" -s "test edit"
+# edit on dev wiki (auth is automatic)
+uv run scripts/misc/wiki.py --wiki dev edit "Sandbox" --text "hello" -s "test edit"
 ```
 
 The script handles UA headers, `formatversion=2`, `redirects=1`, normalization, `continue` pagination, and 50-title batching for you. Drop into the raw Python below only when you need an operation the CLI does not cover (e.g. `recentchanges`, `action=parse` HTML, link graph traversal).
@@ -296,4 +295,4 @@ When citing Meta content, label it as out-of-universe commentary; do not blend i
 - **Batch up to 50 titles** with pipe-separated `titles=A|B|C` — far cheaper than N round-trips.
 - **Pagination:** when a response includes a top-level `continue` object, pass its fields back on the next request (`**data["continue"]`). The `category_members` helper above shows the pattern.
 - **Don't hammer it.** This is a small community wiki — keep batches modest and cache locally if you're doing more than a handful of reads.
-- **Editing is dev-only.** `wiki.py edit` only runs with `--wiki dev`. Set `WIKI_USERNAME` / `WIKI_PASSWORD` to a bot password from `Special:BotPasswords` on the dev wiki.
+- **Editing is dev-only.** `wiki.py edit` only runs with `--wiki dev`; auth is handled automatically.
