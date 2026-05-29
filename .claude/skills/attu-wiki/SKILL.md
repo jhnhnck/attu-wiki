@@ -1,6 +1,6 @@
 ---
 name: attu-wiki
-description: Query the Attu Project wiki (https://attuproject.org/) via its MediaWiki API and parse wikitext with mwparserfromhell. Use when the user asks about Attu Project lore, nations, characters, places, infobox fields, categories, or otherwise wants to look something up or extract structured data from attuproject.org.
+description: Query or edit the Attu Project wiki via its MediaWiki API and mwparserfromhell. Use when the user asks about Attu Project lore, nations, characters, places, infobox fields, categories, wants to look something up or extract structured data, or wants to edit pages on the dev wiki (dev.attuproject.org).
 ---
 
 # Attu Project wiki — MediaWiki API + mwparserfromhell
@@ -51,8 +51,8 @@ The script handles UA headers, `formatversion=2`, `redirects=1`, normalization, 
 
 ## Endpoint and gotchas
 
-- **API endpoint:** `https://attuproject.org/api.php` (note: **not** `/w/api.php` — that path returns 403).
-- **Article URL pattern:** `https://attuproject.org/wiki/<Title_With_Underscores>`.
+- **API endpoints:** prod `https://attuproject.org/api.php` · dev `https://dev.attuproject.org/api.php` (note: **not** `/w/api.php` — that path returns 403).
+- **Article URL pattern:** `https://attuproject.org/wiki/<Title_With_Underscores>` (dev: `https://dev.attuproject.org/wiki/...`).
 - **User-Agent is mandatory.** The site returns `403 Forbidden` to default `curl`, `wget`, and Claude Code's `WebFetch` tool. Always send a real browser/identifying UA. Because of this, **prefer `curl` via Bash (or `requests`) over the WebFetch tool** for this site.
 - **Titles:** spaces become `_` or `%20`; the API normalizes either. Case-sensitive after the first letter (`case=first-letter`).
 - **Format:** pass `format=json` and prefer `formatversion=2` (cleaner shape: list-shaped `pages`, content under `content` instead of `*`).
