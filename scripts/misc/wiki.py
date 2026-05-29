@@ -16,7 +16,10 @@ import argparse
 import json
 import os
 import re
+import secrets
+import subprocess
 import sys
+from pathlib import Path
 from typing import Iterable, Iterator
 
 import requests
@@ -38,6 +41,10 @@ API = WIKIS["prod"]["api"]
 WIKI = WIKIS["prod"]["wiki"]
 
 UA = "tietero-tools/1.0 (jhn, attuproject)"
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_BOTPASS_FILE = _PROJECT_ROOT / ".botpass"
+_BOT_APPID = "wiki-cli"
 
 SESSION = requests.Session()
 SESSION.headers["User-Agent"] = UA
@@ -104,16 +111,45 @@ def fetch_wikitext(titles: list[str]) -> dict[str, str | None]:
 # ---------- auth (dev wiki only) ----------
 
 
-def _login() -> str:
-    """Authenticate and return a CSRF token. Reads WIKI_USERNAME / WIKI_PASSWORD."""
-    username = os.environ.get("WIKI_USERNAME")
-    password = os.environ.get("WIKI_PASSWORD")
-    if not username or not password:
-        print("edit requires WIKI_USERNAME and WIKI_PASSWORD env vars", file=sys.stderr)
-        raise SystemExit(4)
+def _load_botpass() -> tuple[str, str] | None:
+    if not _BOTPASS_FILE.exists():
+        return None
+    try:
+        d = json.loads(_BOTPASS_FILE.read_text())
+        return d["username"], d["password"]
+    except Exception:
+        return None
 
+
+def _save_botpass(username: str, password: str) -> None:
+    _BOTPASS_FILE.write_text(json.dumps({"username": username, "password": password}))
+    _BOTPASS_FILE.chmod(0o600)
+
+
+def _generate_bot_password(account: str) -> tuple[str, str]:
+    """Create/replace the wiki-cli bot password for account via docker compose."""
+    password = secrets.token_hex(16)  # exactly 32 hex chars
+    result = subprocess.run(
+        [
+            "docker", "compose", "run", "--rm", "--quiet-build",
+            "mediawiki", "php", "maintenance/run.php", "createBotPassword",
+            "--appid", _BOT_APPID,
+            "--grants", "editpage,createeditmovepage",
+            account, password,
+        ],
+        cwd=_PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(result.stderr.strip(), file=sys.stderr)
+        raise SystemExit(f"createBotPassword failed (exit {result.returncode})")
+    return f"{account}@{_BOT_APPID}", password
+
+
+def _do_login(username: str, password: str) -> str | None:
+    """Return CSRF token on success, None on auth failure."""
     login_token = api(action="query", meta="tokens", type="login")["query"]["tokens"]["logintoken"]
-
     r = SESSION.post(API, data={
         "format": "json",
         "formatversion": "2",
@@ -123,12 +159,51 @@ def _login() -> str:
         "lgtoken": login_token,
     }, timeout=30)
     r.raise_for_status()
-    result = r.json()["login"]
-    if result["result"] != "Success":
-        print(f"login failed: {result['result']}", file=sys.stderr)
+    if r.json()["login"]["result"] != "Success":
+        return None
+    return api(action="query", meta="tokens")["query"]["tokens"]["csrftoken"]
+
+
+def _login() -> str:
+    """Return a CSRF token. Auto-fetches and caches bot credentials for the dev wiki.
+
+    First run: set WIKI_USERNAME=<account> to bootstrap. Subsequent runs use .botpass.
+    If credentials go stale (e.g. DB reseed), regenerates automatically.
+    """
+    creds = _load_botpass()
+
+    if creds:
+        csrf = _do_login(*creds)
+        if csrf:
+            return csrf
+        account = creds[0].split("@")[0]
+        print(f"credentials stale; regenerating for {account!r}…", file=sys.stderr)
+        creds = _generate_bot_password(account)
+        _save_botpass(*creds)
+        csrf = _do_login(*creds)
+        if csrf:
+            return csrf
+        print("login failed after regeneration", file=sys.stderr)
         raise SystemExit(4)
 
-    return api(action="query", meta="tokens")["query"]["tokens"]["csrftoken"]
+    account = os.environ.get("WIKI_USERNAME", "")
+    if "@" in account:
+        account = account.split("@")[0]
+    if not account:
+        print(
+            "edit: no .botpass found; set WIKI_USERNAME=<account> to bootstrap dev credentials",
+            file=sys.stderr,
+        )
+        raise SystemExit(4)
+
+    print(f"bootstrapping bot credentials for {account!r}…", file=sys.stderr)
+    creds = _generate_bot_password(account)
+    _save_botpass(*creds)
+    csrf = _do_login(*creds)
+    if csrf:
+        return csrf
+    print("login failed after bootstrap", file=sys.stderr)
+    raise SystemExit(4)
 
 
 # ---------- subcommands ----------
