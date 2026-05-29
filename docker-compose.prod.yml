@@ -29,7 +29,8 @@ services:
             - attu
         restart: always
         volumes:
-            - ./database:/var/lib/mysql
+            - attu-prod-database:/var/lib/mysql
+            - ./scripts/migration/db-init.sql:/docker-entrypoint-initdb.d/db-init.sql:ro
     job-update:
         build:
             context: .
@@ -51,7 +52,7 @@ services:
         restart: no
         volumes:
             - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
-            - ./images:/app/mediawiki/images
+            - attu-prod-images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
         build:
@@ -75,7 +76,7 @@ services:
         networks:
             - attu
         ports:
-            - 127.0.0.1:6010:8080
+            - 127.0.1.3:8080:8080
         restart: always
         volumes_from:
             - job-update
@@ -95,7 +96,7 @@ services:
             - attu
         restart: always
         volumes:
-            - redis-data-prod:/data
+            - attu-prod-redis-data:/data
     scheduler:
         build:
             context: .
@@ -123,7 +124,7 @@ services:
         volumes_from:
             - job-update
         volumes:
-            - ./images:/app/mediawiki/images
+            - attu-prod-images:/app/mediawiki/images
             - /etc/machine-id:/etc/machine-id:ro
             - /run/log/journal:/run/log/journal:ro
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
@@ -150,11 +151,19 @@ services:
         networks:
             - attu
         ports:
-            - 127.0.0.1:6009:8080
+            - 127.0.1.4:8080:8080
         restart: always
         volumes:
             - ./config/yourls/remoteip.load:/etc/apache2/mods-enabled/remoteip.load
             - ./files/assets/favicon.ico:/var/www/mediawiki/favicon.ico
             - ./files/dotfiles/.well-known:/var/www/mediawiki/.well-known
 volumes:
-    redis-data-prod: {}
+    attu-prod-database:
+        name: attu-prod-database
+        external: true
+    attu-prod-images:
+        name: attu-prod-images
+        external: true
+    attu-prod-redis-data:
+        name: attu-prod-redis-data
+        external: true

@@ -56,7 +56,7 @@ services:
         volumes:
             - ./devel/NovaDiscord:/app/mediawiki/extensions/NovaDiscord:ro
             - ./files/listed_ip_30_all.txt:/app/mediawiki/resources/listed_ip_30_all.txt
-            - ./images:/app/mediawiki/images
+            - attu-dev-images:/app/mediawiki/images
             - ./sitemap:/app/mediawiki/sitemap
     mediawiki:
         build:
@@ -84,7 +84,7 @@ services:
         networks:
             - attu
         ports:
-            - 127.0.0.1:6008:8080
+            - 127.0.1.5:8080:8080
         restart: always
         volumes_from:
             - job-update
@@ -133,8 +133,12 @@ services:
         volumes_from:
             - job-update
         volumes:
-            - ./images:/app/mediawiki/images
+            - attu-dev-images:/app/mediawiki/images
             - /etc/machine-id:/etc/machine-id:ro
             - /run/log/journal:/run/log/journal:ro
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
             - /var/log/journal:/var/log/journal:ro
+volumes:
+    attu-dev-images:
+        name: attu-dev-images
+        external: true
