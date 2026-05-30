@@ -303,7 +303,7 @@ function M.main(frame)
         -- Alternating light stripe; even rows (0-indexed) get shading.
         if i % 2 == 0 then
             stripes[#stripes + 1] = string.format(
-                '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:#EBEBEB;"></div>',
+                '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:#D5D5D5;"></div>',
                 top, CANVAS_W, ROW_H
             )
         end
