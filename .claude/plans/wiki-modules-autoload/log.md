@@ -32,6 +32,39 @@
 - Phase 1 adds templates to wiki/; load_modules.zsh picks them up automatically — no changes to the loading mechanism needed
 - Phase 1 should verify forked templates render correctly after a load_modules run (mirrors DoD item 3 from phase 0 DoD)
 
+## starting phase 1 — 2026-05-30
+
+**Branch:** `phase/igrs-timeline-lua/0` (continued)
+
+**Confirmed DoD:**
+- Each forked template has `<!-- CC BY-SA 4.0, source: ... -->` attribution on line 1
+- Before each fork: live-wiki version diffed against Wikipedia; local edits documented
+- `templates_refresh.zsh` `template_list()` contains only entries that can't be forked
+- Forked templates load cleanly on dev wiki after a load_modules run
+- Pivot: >5 transitive deps → defer that template's fork
+
+## phase 1 retro — 2026-05-30
+
+### spec delta
+- delivered: audit complete; 2 unused templates removed from templates_refresh.zsh; audit note at notes/templates/audit.md
+- missed / deferred: all 7 in-use template forks deferred — pivot criterion triggered for every candidate (range: 25–116 transitive deps; threshold was 5)
+- extra: none
+
+### surprises
+- plan assumed some templates would be simple leaf templates → reality: even `Cquote` has 102 transitive deps and `Did you mean box` has 25 — Wikipedia template infrastructure is far heavier than the plan anticipated → pivot triggered for all; no wiki/ files added this phase
+- `hastemplate:` search syntax unsupported on this wiki; `embeddedin` API call was the correct approach
+
+### residual debt
+- full-tree template forking documented in notes/templates/audit.md as a follow-up path; no immediate action needed · not added to bugs.md (it's a future option, not a defect)
+
+### implications for downstream phases
+- Phase 2 (documentation cleanup) scope is unchanged: audit wiki/ for stale prose docs and move to notes/
+
+## revision after phase 1 — 2026-05-30
+
+- phase 1 (template audit & fork): DoD rewritten to match actual deliverables — pivot triggered for all candidates; unused templates removed, audit note written
+- phase 2 (documentation cleanup): valid — unchanged
+
 ## revision after phase 0 — 2026-05-30
 
 - phase 1 (template audit & fork): revise — attribution comments in `.txt` files must use `<!-- -->` HTML comment format; plain-text comments would render visibly in wiki output. Spec and DoD unchanged; attribution format clarified in 1b.

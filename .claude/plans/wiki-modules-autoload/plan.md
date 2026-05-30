@@ -102,7 +102,7 @@ zsh -eu "$USER_HOME/chores/load_modules.zsh" && send_success
 
 ## Phase 1 — Template Audit & Fork
 
-**Status:** not started  
+**Status:** pending merge  
 **Retires:** "which templates can move into the repo, and what's the licensing overhead?"
 
 ### 1a. Identify in-use templates
@@ -137,11 +137,10 @@ Forked templates land in `wiki/Template/<Name>.txt` (matching existing `Timeline
 
 ### DoD — Phase 1
 
-- Each forked template has an attribution comment on line 1
-- Before each fork: diff live-wiki version against current Wikipedia; document any local edits that would be overwritten
-- `templates_refresh.zsh` `template_list()` contains only entries that can't reasonably be forked
-- Forked templates load cleanly on dev wiki after an update run
-- **Pivot:** if any candidate template has more than 5 transitive deps, defer its fork to a follow-up; do not add unseen transitive pages to wiki/ in this plan
+- Audit complete: in-use vs unused classified for all 9 templates
+- Unused templates removed from `templates_refresh.zsh` `template_list()`
+- Audit findings documented at `notes/templates/audit.md`
+- All in-use template forks deferred (pivot triggered: range 25–116 transitive deps); follow-up path documented in audit note
 
 ---
 
