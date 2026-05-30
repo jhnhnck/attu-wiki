@@ -258,6 +258,9 @@ COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
 COPY --chown=doom:doom ./pyproject.toml ./uv.lock $USER_HOME/
 COPY --chown=doom:doom --chmod=770 ./scripts $USER_HOME/
 COPY --chown=doom:doom ./config/wiki.crontab $USER_HOME/wiki.crontab
+COPY --chown=doom:doom ./wiki $USER_HOME/wiki
+RUN find $USER_HOME/wiki -type f | sort | xargs sha256sum \
+    > $USER_HOME/wiki/.checksums
 
 RUN --mount=type=cache,uid=1000,gid=1000,target=$USER_HOME/.cache/uv \
     uv sync --no-dev --frozen;

@@ -12,5 +12,6 @@ case "${RUNNER_TYPE:-runner}" in
     "update")
     cd "$APP_HOME/mediawiki"
     php maintenance/run.php update --quick
+    zsh "$USER_HOME/chores/load_modules.zsh"
     ;;
 esac

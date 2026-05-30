@@ -105,6 +105,11 @@ case "$1" in
     zsh -eu "$USER_HOME/chores/certbot_renew.zsh" && send_success
     ;;
 
+    'chore:load-modules')
+    printf '%s\n' "Running chore: sync wiki modules from repo"
+    zsh -eu "$USER_HOME/chores/load_modules.zsh" && send_success
+    ;;
+
     *)
     printf 'Caught invalid task: %s\n' "$1"
     exit 1
