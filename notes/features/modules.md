@@ -1,6 +1,6 @@
 # Wiki modules
 
-Lua modules and templates tracked in this repo under `wiki/`. Source files are pushed to the wiki manually via `wiki.py`; the files here are the canonical version.
+Lua modules and templates tracked in this repo under `wiki/`. The files here are the canonical version; they are automatically synced to the wiki on every `job-update` run (via `scripts/chores/load_modules.zsh`). Use `wiki.py edit` for one-off manual pushes during development.
 
 ## Directory layout
 
@@ -13,6 +13,10 @@ wiki/
 Main-namespace pages (no prefix) live under `wiki/Main/`. Subpages use actual subdirectories.
 
 ## Pushing updates
+
+Normal flow: edit the file in `wiki/`, rebuild the image, run `docker compose run job-update`. The `load_modules.zsh` chore detects the changed checksum and pushes automatically.
+
+For immediate one-off pushes to dev during development:
 
 ```bash
 uv run scripts/misc/wiki.py --wiki dev edit "Module:AttuCalendar" \

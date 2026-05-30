@@ -60,6 +60,32 @@
 ### implications for downstream phases
 - Phase 2 (documentation cleanup) scope is unchanged: audit wiki/ for stale prose docs and move to notes/
 
+## starting phase 2 — 2026-05-30
+
+**Branch:** `phase/igrs-timeline-lua/0` (continued)
+
+**Confirmed DoD:**
+- No `.txt` files in `wiki/` contain prose documentation (only actual wikitext/Lua)
+- `notes/` has corresponding `.md` files with attribution where relevant
+
+## phase 2 retro — 2026-05-30
+
+### spec delta
+- delivered: wiki/ audited — no stale prose docs found; notes/features/modules.md updated to reflect auto-sync (stale "manually via wiki.py" line)
+- missed / deferred: none
+- extra: none
+
+### surprises
+- phase 2 premise assumed template forks would produce /doc subpages to clean up → phase 1 pivot meant no such docs existed → phase 2 scope collapsed to a single doc update
+
+### residual debt
+- none
+
+## revision after phase 2 — 2026-05-30
+
+- phase 2 (documentation cleanup): delivered as-scoped; no downstream phases remain
+- plan complete; ready for merge
+
 ## revision after phase 1 — 2026-05-30
 
 - phase 1 (template audit & fork): DoD rewritten to match actual deliverables — pivot triggered for all candidates; unused templates removed, audit note written

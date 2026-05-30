@@ -146,7 +146,7 @@ Forked templates land in `wiki/Template/<Name>.txt` (matching existing `Timeline
 
 ## Phase 2 — Documentation Cleanup
 
-**Status:** not started  
+**Status:** pending merge  
 **Retires:** "are there stale docs / template READMEs cluttering the repo?"
 
 ### 2a. Audit for stale docs
