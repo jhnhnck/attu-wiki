@@ -314,6 +314,18 @@ function M.main(frame)
     local parts = stripes
     for _, v in ipairs(bar_parts) do parts[#parts + 1] = v end
 
+    -- Vertical line at the TT/PC boundary (start of 1 PC = fractional year 1.0).
+    -- Note: parse_date maps TT→negative, PC→positive with no year 0; a chart
+    -- spanning both eras has ~1 phantom unit of gap between -1 and 1 in pixel space.
+    local span = pe_num - ps_num
+    if span > 0 and ps_num <= 1 and pe_num >= 1 then
+        local boundary_x = frac_to_x((1.0 - ps_num) / span)
+        parts[#parts + 1] = string.format(
+            '<div style="position:absolute;left:%dpx;top:0;width:2px;height:%dpx;background:#2C3E50;"></div>',
+            boundary_x, bars_h
+        )
+    end
+
     local axis_html, axis_extra = render_axis(ps_num, pe_num, bars_h)
     parts[#parts + 1] = axis_html
 
