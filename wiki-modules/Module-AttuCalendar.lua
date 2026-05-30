@@ -47,6 +47,26 @@ function M.parse_date(s)
     return y + frac
 end
 
+-- Wikitext-callable: years between two Haracalnde dates (absolute value).
+-- {{#invoke:AttuCalendar|years_between|<date1>|<date2>[|<decimals>]}}
+-- Either date may be "present". decimals defaults to 0.
+function M.years_between(frame)
+    local args     = frame.args
+    local d1_str   = mw.text.trim(args[1] or "")
+    local d2_str   = mw.text.trim(args[2] or "")
+    local decimals = math.max(0, math.floor(tonumber(mw.text.trim(args[3] or "")) or 0))
+
+    if d1_str == "" or d2_str == "" then
+        return '<span class="error">AttuCalendar: years_between requires two date arguments</span>'
+    end
+    local ok1, d1 = pcall(M.parse_date, d1_str)
+    local ok2, d2 = pcall(M.parse_date, d2_str)
+    if not ok1 then return '<span class="error">AttuCalendar: ' .. tostring(d1) .. '</span>' end
+    if not ok2 then return '<span class="error">AttuCalendar: ' .. tostring(d2) .. '</span>' end
+
+    return string.format("%." .. decimals .. "f", math.abs(d2 - d1))
+end
+
 -- Convert a date string to a fraction in [0, 1] relative to [period_start, period_end].
 -- Returns nil if the date falls outside the period (clamped to 0 or 1 would hide bugs).
 function M.to_frac(date_str, period_start_str, period_end_str)
