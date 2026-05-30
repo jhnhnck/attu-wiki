@@ -28,18 +28,18 @@ local COLORS = {
     okrit      = "#1E8449",  -- forest green
     tietero    = "#1A5276",  -- dark blue
     niueyjar   = "#7D3C98",  -- purple
-    deysachin  = "#E64A19",  -- vivid orange
+    deysachin  = "#D35400",  -- burnt orange
     nongba     = "#E87C8A",  -- rose
-    eee        = "#FFD600",  -- bright yellow
+    eee        = "#C9A800",  -- dark amber
     casea      = "#2E86C1",  -- medium sky blue
-    faltir     = "#5C6BC0",  -- slate blue
+    faltir     = "#9E7B5A",  -- tan/brown
     kel        = "#2E4057",  -- dark slate
     spyron     = "#7F8C8D",  -- steel gray
-    joy        = "#FF8F00",  -- vivid amber
+    joy        = "#B7770D",  -- dark gold
     larossa    = "#1A237E",  -- navy
     kalam      = "#0E9AA7",  -- cyan-teal
     hapsaw     = "#B03A7A",  -- deep rose/magenta
-    steam      = "#558B2F",  -- leaf green
+    steam      = "#6B6B00",  -- olive
     tvaqi      = "#2AA198",  -- solarized cyan (distinct from akaria/kalam)
     walst      = "#7B241C",  -- dark maroon
 }
@@ -303,7 +303,7 @@ function M.main(frame)
         -- Alternating light stripe; even rows (0-indexed) get shading.
         if i % 2 == 0 then
             stripes[#stripes + 1] = string.format(
-                '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:#D5D5D5;"></div>',
+                '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:#C8D4E8;"></div>',
                 top, CANVAS_W, ROW_H
             )
         end
