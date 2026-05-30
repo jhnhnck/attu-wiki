@@ -21,27 +21,27 @@ local ROW_H    = 20    -- px: row height (barincrement)
 local BAR_H    = 16    -- px: full bar (ROW_H - 2*2)
 local NARROW_H = 6     -- px: narrow overlay height
 
--- Nation colour map (mirrors EasyTimeline ColourMap).
+-- Nation colour map — muted palette derived from flag hues.
 local COLORS = {
-    utlia      = "#FF0000",
-    akaria     = "#008080",
-    okrit      = "#00FF00",
-    tietero    = "#0000FF",
-    niueyjar   = "#800080",
-    deysachin  = "#FFA500",
-    nongba     = "#FFB6C1",
-    eee        = "#FFFF00",
-    casea      = "#87CEEB",
-    faltir     = "#D2B48C",
-    kel        = "#404040",
-    spyron     = "#808080",
-    joy        = "#C8A060",
-    larossa    = "#000080",
-    kalam      = "#00FFFF",
-    hapsaw     = "#FF00FF",
-    steam      = "#808000",
-    tvaqi      = "#4DB3B3",
-    walst      = "#B34D4D",
+    utlia      = "#C0392B",  -- deep red
+    akaria     = "#148F77",  -- dark teal
+    okrit      = "#1E8449",  -- forest green
+    tietero    = "#1A5276",  -- dark blue
+    niueyjar   = "#7D3C98",  -- purple
+    deysachin  = "#D35400",  -- burnt orange
+    nongba     = "#E87C8A",  -- rose
+    eee        = "#C9A800",  -- dark amber
+    casea      = "#2E86C1",  -- medium sky blue
+    faltir     = "#9E7B5A",  -- tan/brown
+    kel        = "#2E4057",  -- dark slate
+    spyron     = "#7F8C8D",  -- steel gray
+    joy        = "#B7770D",  -- dark gold
+    larossa    = "#1A237E",  -- navy
+    kalam      = "#0E9AA7",  -- cyan-teal
+    hapsaw     = "#B03A7A",  -- deep rose/magenta
+    steam      = "#6B6B00",  -- olive
+    tvaqi      = "#2AA198",  -- solarized cyan (distinct from akaria/kalam)
+    walst      = "#7B241C",  -- dark maroon
 }
 
 -- Nation display names in legend order.
@@ -138,7 +138,9 @@ end
 -- ---------- renderers ----------
 
 local function render_segs(seg_list, row_top, ps_num, pe_num)
-    local out = {}
+    -- Render full bars before narrow bars so narrow overlays draw on top.
+    local full = {}
+    local narrow = {}
     for _, seg in ipairs(seg_list) do
         local ok, f1 = pcall(frac_of, seg.start, ps_num, pe_num)
         local ok2, f2 = pcall(frac_of, seg.stop,  ps_num, pe_num)
@@ -156,13 +158,16 @@ local function render_segs(seg_list, row_top, ps_num, pe_num)
                 h       = BAR_H
                 top_off = row_top + 2
             end
-            out[#out + 1] = string.format(
+            local div = string.format(
                 '<div style="position:absolute;left:%dpx;top:%dpx;width:%dpx;height:%dpx;background:%s;"></div>',
                 x, top_off, w, h, bg
             )
+            if seg.narrow then narrow[#narrow + 1] = div
+            else               full[#full + 1]   = div
+            end
         end
     end
-    return table.concat(out)
+    return table.concat(full) .. table.concat(narrow)
 end
 
 local function render_label(label, row_top)
@@ -289,22 +294,25 @@ function M.main(frame)
     -- Build the bar canvas.
     local n_rows  = #rows
     local bars_h  = n_rows * ROW_H
-    local parts   = {}
-
-    -- Background rectangle for the bar area.
-    parts[#parts + 1] = string.format(
-        '<div style="position:absolute;left:%dpx;top:0;width:%dpx;height:%dpx;background:#F2F2F2;"></div>',
-        LABEL_W, BAR_W, bars_h
-    )
-
-    -- Alternating row backgrounds (every other row slightly darker) — optional polish.
-    -- (skipped for now; add in Phase 2 if needed)
+    -- Stripes rendered first so bars and labels draw on top.
+    local stripes = {}
+    local bar_parts = {}
 
     for i, row in ipairs(rows) do
         local top = (i - 1) * ROW_H
-        parts[#parts + 1] = render_label(row.label, top)
-        parts[#parts + 1] = render_segs(segs[row.id] or {}, top, ps_num, pe_num)
+        -- Alternating light stripe; even rows (0-indexed) get shading.
+        if i % 2 == 0 then
+            stripes[#stripes + 1] = string.format(
+                '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:#EBEBEB;"></div>',
+                top, CANVAS_W, ROW_H
+            )
+        end
+        bar_parts[#bar_parts + 1] = render_label(row.label, top)
+        bar_parts[#bar_parts + 1] = render_segs(segs[row.id] or {}, top, ps_num, pe_num)
     end
+
+    local parts = stripes
+    for _, v in ipairs(bar_parts) do parts[#parts + 1] = v end
 
     local axis_html, axis_extra = render_axis(ps_num, pe_num, bars_h)
     parts[#parts + 1] = axis_html
