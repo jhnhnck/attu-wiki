@@ -1,0 +1,52 @@
+<div class="res-img">
+[[File:Header.png|1000px|center|frameless]]
+</div>
+
+The '''Attu Project''' is a collaborative worldbuilding project where a group of individually controlled islands come together to create a shared world. The story and lore develop through this wiki and interactions between nation leaders on our Discord server.
+
+If you are looking to learn more about the project, you can join us [https://links.attuproject.org/invite here]!
+
+== Current Events ==
+Current Year: {{#invoke:AttuCalendar|current_year}} PC
+
+*Grand Magister [[Adisa Aram]] publicly resigns after she is exposed for election fraud.
+*[[Cuscorrado Papregoli]] has been sworn in as [[Dux]] of [[La Rossa]].
+*The government of the [[Collective Kelelemi Republic]] has collapsed following a vote of no confidence.
+*The [[Qoeul-bo Hrnad]] has been scattered to the wind following the raid of [[Qoeul-bosken-ut]] and the capture and subsequent execution of [[Imam]] [[Sheg Praani]].
+*[[42-Digging-Princepate/Historic-2627b5]] dropped his [[air frier]] courtside
+
+== Tales of the Archipelago ==
+
+Want to read from the perspective of someone in the Attu Archipelago? Check out [[:Category:Tales of the Archipelago|Attu Stories]]!
+
+== Islands ==
+<div class="res-img">
+<gallery mode="packed">
+File:AkariaFlag.png|Akaria|link=Category:Akaria
+File:CASEA.png|Caseic Archipelago|link=Category:Caseic Archipelago
+File:deysachin_flag.png|Deysachin|link=Category:Deysachin
+File:Eee flag.png|eee|link=Category:Eee
+File:Flag of Faltir.png|Faltir|link=Category:Faltir
+File:Hapshaw_lobster_emblem.png|Hapšâw|link=Category:Hapšâw
+File:IoJ flag.png|Isles of Joy|link=Category:Isles of Joy
+File:Kalam_Flag.png|Kalam|link=Category:Kalam
+File:Kel flag.png|Kelelemi|link=Category:Kelelemi
+File:LaRossaFlag.png|La Rossa|link=Category:La Rossa
+File:CNN Flag.png|Niueyjar|link=Category:Niueyjar
+File:YDFFLAG.png|Nongba|link=Category:Nongba
+File:Okrit flag.png|Okrit|link=Category:Okrit
+File:Highland Badge.png|Rockhome|link=Category:Rockhome
+File:Spyron.png|Spyron|link=Category:Spyron
+File:Steamworks.png|Steamworks|link=Category:Steamworks
+File:FlagTelaria.png|Telar|link=Telar:_Categorization
+File:Flag of the Kingdom of Tietero.png|Tietero|link=Category:Tietero
+File:T'vaqi flag.png|T'vaqi|link=Category:T'vaqi
+File:Wadada.jpeg|Utlia|link=Category:Utlia
+File:FlagOfWalstanland.png|Wälstanland|link=Category:Wälstanland
+</gallery>
+</div>
+
+== Map of the known world ==
+<div class="res-img">
+[[File:Attu60PC.png|frameless|center|1020px]]
+</div>
