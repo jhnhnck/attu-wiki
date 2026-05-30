@@ -339,6 +339,7 @@ function M.main(frame)
     ) .. table.concat(parts) .. '</div>'
 
     return '<div style="overflow-x:auto;padding-bottom:16px;">' .. canvas .. render_legend(used_colors) .. '</div>'
+        .. '[[Category:Pages with timelines]]'
 end
 
 return M
