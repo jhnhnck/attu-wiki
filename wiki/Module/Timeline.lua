@@ -229,13 +229,16 @@ local function render_legend(used_colors)
     end
 
     local cols    = 4
-    local col_w   = math.floor(CANVAS_W / cols)
+    local col_w   = 180   -- content width per column
+    local gap     = 8     -- gap between columns
+    local slot_w  = col_w + gap
     local n_rows  = math.ceil(#items / cols)
     local leg_h   = n_rows * 20
+    local leg_w   = cols * slot_w - gap
     local out     = {
         string.format(
             '<div style="position:relative;width:%dpx;height:%dpx;margin-top:8px;">',
-            CANVAS_W, leg_h
+            leg_w, leg_h
         )
     }
     for i, item in ipairs(items) do
@@ -243,8 +246,8 @@ local function render_legend(used_colors)
         local row = math.floor((i - 1) / cols)
         out[#out + 1] = string.format(
             '<div style="position:absolute;left:%dpx;top:%dpx;width:%dpx;'
-            .. 'font-size:11px;overflow:hidden;">%s</div>',
-            col * col_w, row * 20, col_w - 4, item
+            .. 'font-size:11px;white-space:nowrap;">%s</div>',
+            col * slot_w, row * 20, col_w, item
         )
     end
     out[#out + 1] = '</div>'
@@ -335,7 +338,7 @@ function M.main(frame)
         CANVAS_W, total_h
     ) .. table.concat(parts) .. '</div>'
 
-    return '<div style="overflow-x:auto;">' .. canvas .. render_legend(used_colors) .. '</div>'
+    return '<div style="overflow-x:auto;padding-bottom:16px;">' .. canvas .. render_legend(used_colors) .. '</div>'
 end
 
 return M
