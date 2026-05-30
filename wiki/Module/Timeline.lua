@@ -315,7 +315,7 @@ function M.main(frame)
         CANVAS_W, total_h
     ) .. table.concat(parts) .. '</div>'
 
-    return canvas .. render_legend(used_colors)
+    return '<div style="overflow-x:auto;">' .. canvas .. render_legend(used_colors) .. '</div>'
 end
 
 return M
