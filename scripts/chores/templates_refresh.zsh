@@ -7,14 +7,14 @@ templates_xml=$(mktemp --suffix=.xml)
 trap 'rm -vf "$templates_xml"' EXIT
 
 # Disabled:'Template:IPA'
+# Removed: Template:Taxobox (unused), Template:MessageBox (unused)
+# Deferred forks: all remaining templates exceed 5 transitive deps; see notes/templates/audit.md
 template_list() {
     printf '%s%%0A' \
         'Template:Composition bar' \
-        'Template:Taxobox' \
         'Template:Did you mean box' \
         'Template:Infobox military unit' \
         'Template:Infobox' \
-        'Template:MessageBox' \
         'Template:Color box' \
         'Template:Main' \
         'Template:Cquote'
