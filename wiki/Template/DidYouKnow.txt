@@ -1,0 +1,20 @@
+{{Mbox
+| text = 💡 '''Did you know...?'''<br>{{#invoke:RandomLine|line|{{{1}}}}}
+| type = notice
+| style = background-color: var(--background-color-neutral-subtle, #f8f9fa)
+}}
+<noinclude>
+<templatedata>
+{
+	"params": {
+		"1": {
+			"label": "Facts page",
+			"description": "Wiki page to pull random facts from",
+			"type": "wiki-page-name",
+			"required": true
+		}
+	},
+	"format": "inline"
+}
+</templatedata>
+</noinclude>

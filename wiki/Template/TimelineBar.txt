@@ -1,0 +1,31 @@
+<noinclude>
+== TimelineBar ==
+
+Data template for [[Module:Timeline]] timelines. This template renders nothing when
+transcluded directly — it exists so that data subpages (e.g.
+[[List_of_IgRS_Speakers_by_time_as_Speaker/Timeline]]) display cleanly when viewed
+on their own, while [[Module:Timeline]] reads the raw wikitext and parses the calls.
+
+=== Usage ===
+
+One line per speaker term on the data subpage:
+
+<pre>{{TimelineBar|bar_id|Speaker Name|nation_id|start_date|end_date[|narrow]}}</pre>
+
+; bar_id : short identifier matching [[BarData]] row (e.g. <code>Yol</code>)
+; Speaker Name : display label shown in the label column
+; nation_id : colour key from [[Module:Timeline]]'s colour map (e.g. <code>nongba</code>)
+; start_date : Haracalnde date, <code>d-m y PC</code> or <code>d-m y TT</code>
+; end_date : Haracalnde date, or the literal <code>present</code> for active speakers
+; narrow : optional; pass <code>narrow</code> for a narrow overlay segment (secondary affiliation)
+
+=== Example ===
+
+<pre>
+{{TimelineBar|Yyme|Yyme Braia|utlia|18-2 1 PC|3-12 16 PC}}
+{{TimelineBar|Yol|Psaha Yol|nongba|3-1 2 PC|16-11 7 PC}}
+{{TimelineBar|Yol|Psaha Yol|nongba|15-12 16 PC|1-1 26 PC}}
+{{TimelineBar|Alekso|Alekso IV|tietero|8-9 18 PC|present}}
+{{TimelineBar|Vidar|Vidar Astridson|faltir|7-5 18 PC|1-1 20 PC|narrow}}
+</pre>
+</noinclude>
