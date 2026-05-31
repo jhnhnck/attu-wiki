@@ -56,7 +56,7 @@ while IFS= read -r line; do
     printf 'updating %s\n' "$title"
     sudo --preserve-env -u www-data -- \
         php maintenance/run.php edit \
-            -u Doom \
+            -u "DoomBot" \
             -b \
             -s "load_modules: sync" \
             "$title" \
