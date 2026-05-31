@@ -24,6 +24,10 @@ open work items for the Attu wiki repo, grouped by area; see [format](#format) f
 
 - :o: `low priority` `low effort` file MediaWiki search `PreconditionException` issue ([`notes/issues/mediawiki-search-precondition.md`](issues/mediawiki-search-precondition.md))
 
+### wiki
+
+- :o: `low priority` `low effort` delete Phase 0 probe pages (`Module:TimelineTest`, `Project:TimelineTest`, `Project:OsTest`) from dev and prod wikis — 🎯 carried in from plan: igrs-timeline-lua (2026-05-31)
+
 ### recurring
 
 - `high priority` `low effort` assign any to-dos without an effort or category; update priorities; move completed and sort all
