@@ -1,0 +1,23 @@
+<noinclude>
+== TimelineOption ==
+
+Configuration template for [[Module:Timeline]] data subpages. Sets rendering options for the timeline.
+
+This template renders nothing when transcluded directly — it is read as raw wikitext by [[Module:Timeline]].
+
+=== Usage ===
+
+Place at the top of a timeline data subpage:
+
+<pre>{{TimelineOption|key=value}}</pre>
+
+=== Options ===
+
+; calendar : date format used in {{[[Template:TimelineBar|TimelineBar]]}} date fields. Default: <code>haracalnde</code>.
+:* <code>haracalnde</code> — <code>d-m y PC</code> / <code>d-m y TT</code> / <code>present</code>
+:* <code>deysachni</code> — <code>year.month.day</code>, <code>year.month</code>, or <code>year</code> (e.g. <code>80.9.4</code>)
+
+=== Example ===
+
+<pre>{{TimelineOption|calendar=deysachni}}</pre>
+</noinclude>

@@ -8,6 +8,11 @@
 --    |period_start=1-1 1 PC
 --    |period_end=present
 --   }}
+--
+-- Data subpage may contain:
+--   {{TimelineOption|calendar=haracalnde}}  (default; also: deysachni)
+--   {{TimelineColor|id|#RRGGBB|Legend Name}}
+--   {{TimelineBar|bar_id|label|color_id|start|end[|narrow]}}
 
 local Cal = require("Module:AttuCalendar")
 
@@ -67,6 +72,36 @@ local NATIONS = {
     { id = "walst",     name = "Wälstanland" },
 }
 
+-- ---------- date parsers ----------
+
+-- Parse a Deysachni date (year.month.day, year.month, or year) into the same
+-- fractional-year space as Cal.parse_date. Assumes Deysachni years are PC years
+-- with the same 12-month × 30-day structure as Haracalnde. No year 0.
+local function parse_deysachni(s)
+    s = mw.text.trim(s)
+    if s == "present" then return Cal.parse_date("present") end
+    local y, mo, d
+    y, mo, d = s:match("^(-?%d+)%.(%d+)%.(%d+)$")
+    if y then
+        y, mo, d = tonumber(y), tonumber(mo), tonumber(d)
+    else
+        y, mo = s:match("^(-?%d+)%.(%d+)$")
+        if y then y, mo, d = tonumber(y), tonumber(mo), 1 end
+    end
+    if not y then
+        local raw = s:match("^(-?%d+)$")
+        if raw then y, mo, d = tonumber(raw), 1, 1 end
+    end
+    if not y then error("unrecognised Deysachni date: " .. tostring(s)) end
+    local frac = ((mo - 1) * 30 + (d - 1)) / 360
+    if y > 0 then return y + frac else return y - frac end
+end
+
+local DATE_PARSERS = {
+    haracalnde = function(s) return Cal.parse_date(s) end,
+    deysachni  = parse_deysachni,
+}
+
 -- ---------- data subpage ----------
 
 local function get_page_content(title)
@@ -74,17 +109,47 @@ local function get_page_content(title)
     return t and t:getContent() or nil
 end
 
--- Parse {{TimelineBar|bar|label|color|start|end[|narrow]}} lines from raw wikitext.
--- Returns:
---   rows  — list of {id, label} in document order (unique by bar id)
---   segs  — {bar_id → list of {color, start, stop, narrow}}
+-- Parse the data subpage. Recognises three template calls:
+--
+--   {{TimelineOption|calendar=haracalnde}}
+--   {{TimelineColor|id|#hex|Legend Name}}
+--   {{TimelineBar|bar|label|color|start|end[|narrow]}}
+--
+-- Returns rows, segs, ex_colors, ex_nations, options.
 local function parse_data(content)
-    local rows    = {}
-    local row_idx = {}
-    local segs    = {}
+    local rows       = {}
+    local row_idx    = {}
+    local segs       = {}
+    local ex_colors  = {}   -- {id → hex} — page-defined, override hardcoded
+    local ex_nations = {}   -- [{id, name}] in declaration order
+    local options    = { calendar = "haracalnde" }
 
     for line in content:gmatch("[^\n]+") do
-        -- Try 6-arg form first, then 5-arg.
+        -- TimelineOption
+        local opt_body = line:match("^%s*{{TimelineOption|(.-)}}%s*$")
+        if opt_body then
+            for kv in (opt_body .. "|"):gmatch("([^|]+)|") do
+                local k, v = kv:match("^([^=]+)=(.*)$")
+                if k then
+                    options[mw.text.trim(k):lower()] = mw.text.trim(v):lower()
+                end
+            end
+        end
+
+        -- TimelineColor
+        local tc_id, tc_hex, tc_name =
+            line:match("^%s*{{TimelineColor|([^|]+)|([^|]+)|([^|}]+)}}%s*$")
+        if tc_id then
+            tc_id   = mw.text.trim(tc_id):lower()
+            tc_hex  = mw.text.trim(tc_hex)
+            tc_name = mw.text.trim(tc_name)
+            if not ex_colors[tc_id] then
+                ex_colors[tc_id] = tc_hex
+                table.insert(ex_nations, { id = tc_id, name = tc_name })
+            end
+        end
+
+        -- TimelineBar: 6-arg form first, then 5-arg.
         local bar, label, color, start_s, end_s, narrow =
             line:match("^%s*{{TimelineBar|([^|]+)|([^|]+)|([^|]+)|([^|]+)|([^|}]+)|([^|}]*)}}%s*$")
         if not bar then
@@ -112,44 +177,34 @@ local function parse_data(content)
             })
         end
     end
-    return rows, segs
+    return rows, segs, ex_colors, ex_nations, options
 end
 
 -- ---------- pixel helpers ----------
 
--- Convert a fractional position [0,1] to absolute x in the bar area.
 local function frac_to_x(frac)
     return LABEL_W + math.floor(frac * BAR_W)
 end
 
--- Minimum 2px bar width to keep short terms visible.
 local function frac_to_w(f1, f2)
     return math.max(2, math.floor((f2 - f1) * BAR_W))
 end
 
--- Convert a date string to a fraction of [ps_num, pe_num] without re-parsing bounds.
-local function frac_of(date_str, ps_num, pe_num)
-    local d = Cal.parse_date(date_str)
-    local span = pe_num - ps_num
-    if span == 0 then return 0 end
-    return (d - ps_num) / span
-end
-
 -- ---------- renderers ----------
 
-local function render_segs(seg_list, row_top, ps_num, pe_num)
+local function render_segs(seg_list, row_top, frac_of, colors)
     -- Render full bars before narrow bars so narrow overlays draw on top.
-    local full = {}
+    local full   = {}
     local narrow = {}
     for _, seg in ipairs(seg_list) do
-        local ok, f1 = pcall(frac_of, seg.start, ps_num, pe_num)
-        local ok2, f2 = pcall(frac_of, seg.stop,  ps_num, pe_num)
+        local ok,  f1 = pcall(frac_of, seg.start)
+        local ok2, f2 = pcall(frac_of, seg.stop)
         if ok and ok2 and f2 > f1 then
             f1 = math.max(0, math.min(1, f1))
             f2 = math.max(0, math.min(1, f2))
             local x   = frac_to_x(f1)
             local w   = frac_to_w(f1, f2)
-            local bg  = COLORS[seg.color] or "#CCCCCC"
+            local bg  = colors[seg.color] or "#CCCCCC"
             local h, top_off
             if seg.narrow then
                 h       = NARROW_H
@@ -163,7 +218,7 @@ local function render_segs(seg_list, row_top, ps_num, pe_num)
                 x, top_off, w, h, bg
             )
             if seg.narrow then narrow[#narrow + 1] = div
-            else               full[#full + 1]   = div
+            else               full[#full + 1]     = div
             end
         end
     end
@@ -184,7 +239,6 @@ local function render_axis(ps_num, pe_num, bars_h)
     local out      = {}
     local axis_top = bars_h + 4
 
-    -- Draw from the first whole PC year inside the period to the last.
     local y_first = math.ceil(ps_num)
     local y_last  = math.floor(pe_num)
     local span    = pe_num - ps_num
@@ -196,13 +250,11 @@ local function render_axis(ps_num, pe_num, bars_h)
             local is_major = (y % 5 == 0)
             local tick_h   = is_major and 6 or 3
 
-            -- Tick mark
             out[#out + 1] = string.format(
                 '<div style="position:absolute;left:%dpx;top:%dpx;width:1px;height:%dpx;background:#555;"></div>',
                 x, axis_top, tick_h
             )
 
-            -- Year label (major ticks only); centred by subtracting half of a 40px box
             if is_major then
                 out[#out + 1] = string.format(
                     '<div style="position:absolute;left:%dpx;top:%dpx;width:40px;'
@@ -216,21 +268,21 @@ local function render_axis(ps_num, pe_num, bars_h)
     return table.concat(out), 28  -- axis consumes 28px below bar area
 end
 
-local function render_legend(used_colors)
+local function render_legend(used_colors, colors, nations)
     local items = {}
-    for _, n in ipairs(NATIONS) do
+    for _, n in ipairs(nations) do
         if used_colors[n.id] then
             items[#items + 1] = string.format(
                 '<span style="display:inline-block;width:12px;height:12px;'
                 .. 'background:%s;margin-right:4px;vertical-align:middle;"></span>%s',
-                COLORS[n.id] or "#ccc", n.name
+                colors[n.id] or "#ccc", n.name
             )
         end
     end
 
     local cols    = 4
-    local col_w   = 180   -- content width per column
-    local gap     = 8     -- gap between columns
+    local col_w   = 180
+    local gap     = 8
     local slot_w  = col_w + gap
     local n_rows  = math.ceil(#items / cols)
     local leg_h   = n_rows * 20
@@ -274,16 +326,49 @@ function M.main(frame)
             .. mw.text.nowiki(data_page) .. '</span>'
     end
 
-    local rows, segs = parse_data(content)
+    local rows, segs, ex_colors, ex_nations, options = parse_data(content)
     if #rows == 0 then
         return '<span class="error">Timeline: no TimelineBar entries found</span>'
     end
 
-    -- Parse period bounds once.
+    -- Build effective color table: page-defined colors extend (and override) hardcoded.
+    local colors = {}
+    for k, v in pairs(COLORS) do colors[k] = v end
+    for k, v in pairs(ex_colors) do colors[k] = v end
+
+    -- Build legend list: hardcoded nations first, then page-defined in declaration order.
+    local nations = {}
+    local known   = {}
+    for _, n in ipairs(NATIONS) do
+        known[n.id] = true
+        table.insert(nations, n)
+    end
+    for _, n in ipairs(ex_nations) do
+        if not known[n.id] then
+            table.insert(nations, n)
+        end
+    end
+
+    -- Select date parser based on calendar option.
+    local parse_date = DATE_PARSERS[options.calendar]
+    if not parse_date then
+        return '<span class="error">Timeline: unknown calendar "'
+            .. mw.text.nowiki(options.calendar) .. '"</span>'
+    end
+
+    -- Parse period bounds (always Haracalnde regardless of data calendar).
     local ok1, ps_num = pcall(Cal.parse_date, period_start)
     local ok2, pe_num = pcall(Cal.parse_date, period_end)
     if not (ok1 and ok2) then
         return '<span class="error">Timeline: invalid period_start or period_end</span>'
+    end
+
+    -- frac_of: date string → [0,1] fraction within the period.
+    local function frac_of(date_str)
+        local d    = parse_date(date_str)
+        local span = pe_num - ps_num
+        if span == 0 then return 0 end
+        return (d - ps_num) / span
     end
 
     -- Collect used colours for the legend.
@@ -295,15 +380,12 @@ function M.main(frame)
     end
 
     -- Build the bar canvas.
-    local n_rows  = #rows
-    local bars_h  = n_rows * ROW_H
-    -- Stripes rendered first so bars and labels draw on top.
+    local bars_h  = #rows * ROW_H
     local stripes = {}
     local bar_parts = {}
 
     for i, row in ipairs(rows) do
         local top = (i - 1) * ROW_H
-        -- Alternating light stripe; even rows (0-indexed) get shading.
         if i % 2 == 0 then
             stripes[#stripes + 1] = string.format(
                 '<div style="position:absolute;left:0;top:%dpx;width:%dpx;height:%dpx;background:rgba(80,130,200,0.18);"></div>',
@@ -311,15 +393,13 @@ function M.main(frame)
             )
         end
         bar_parts[#bar_parts + 1] = render_label(row.label, top)
-        bar_parts[#bar_parts + 1] = render_segs(segs[row.id] or {}, top, ps_num, pe_num)
+        bar_parts[#bar_parts + 1] = render_segs(segs[row.id] or {}, top, frac_of, colors)
     end
 
     local parts = stripes
     for _, v in ipairs(bar_parts) do parts[#parts + 1] = v end
 
-    -- Vertical line at the TT/PC boundary (start of 1 PC = fractional year 1.0).
-    -- Note: parse_date maps TT→negative, PC→positive with no year 0; a chart
-    -- spanning both eras has ~1 phantom unit of gap between -1 and 1 in pixel space.
+    -- Vertical line at the TT/PC boundary (year 1.0 in fractional space).
     local span = pe_num - ps_num
     if span > 0 and ps_num <= 1 and pe_num >= 1 then
         local boundary_x = frac_to_x((1.0 - ps_num) / span)
@@ -338,7 +418,7 @@ function M.main(frame)
         CANVAS_W, total_h
     ) .. table.concat(parts) .. '</div>'
 
-    return '<div style="overflow-x:auto;padding-bottom:16px;">' .. canvas .. render_legend(used_colors) .. '</div>'
+    return '<div style="overflow-x:auto;padding-bottom:16px;">' .. canvas .. render_legend(used_colors, colors, nations) .. '</div>'
         .. '[[Category:Pages with timelines]]'
 end
 

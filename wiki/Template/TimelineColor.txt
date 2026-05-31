@@ -1,0 +1,27 @@
+<noinclude>
+== TimelineColor ==
+
+Configuration template for [[Module:Timeline]] data subpages. Defines a custom colour entry for use in timeline bars and the legend.
+
+This template renders nothing when transcluded directly — it is read as raw wikitext by [[Module:Timeline]].
+
+=== Usage ===
+
+Place before any {{[[Template:TimelineBar|TimelineBar]]}} lines on a timeline data subpage:
+
+<pre>{{TimelineColor|id|#RRGGBB|Display Name}}</pre>
+
+; id : colour key referenced in <code>{{TimelineBar|...|'''id'''|...}}</code> calls on this subpage
+; #RRGGBB : CSS hex colour (e.g. <code>#C0392B</code>)
+; Display Name : label shown in the legend
+
+Page-defined colours extend the 19-nation palette in [[Module:Timeline]] and override any same-id entry.
+
+=== Example ===
+
+<pre>
+{{TimelineColor|denunzians|#FF4040|Denunzians}}
+{{TimelineColor|isola|#CC0000|Isola}}
+{{TimelineBar|Falcone|Giulio Falcone|denunzians|1-1 5 PC|1-1 15 PC}}
+</pre>
+</noinclude>

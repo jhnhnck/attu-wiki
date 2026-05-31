@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Convert IgRS Speakers EasyTimeline block to {{TimelineBar|...}} template calls.
+"""Convert an EasyTimeline block to {{TimelineBar|...}} template calls.
 
 Usage:
-    uv run scripts/misc/convert_timeline.py
+    uv run scripts/misc/convert_timeline.py "<Page title>"
 
 Output: one {{TimelineBar|...}} line per segment, in BarData display order.
 Dates are converted from mm/dd/yyyy (year-1900=PC) to Haracalnde format (d-m y PC).
-till:end is converted to 'present' (all end-dated speakers are still active;
-the EasyTimeline had a fixed 1963 period cutoff).
+till:end is converted to 'present'.
 Narrow segments (effective width < 11) get a trailing |narrow arg.
 """
 
@@ -19,7 +18,6 @@ from collections import defaultdict
 
 import requests
 
-PAGE = "List_of_IgRS_Speakers_by_time_as_Speaker"
 API  = "https://attuproject.org/api.php"
 UA   = "tietero-tools/1.0 (jhn, attuproject)"
 
@@ -47,6 +45,86 @@ def extract_timeline(wikitext: str) -> str:
     if not m:
         raise SystemExit("No {{#tag:timeline|...}} block found")
     return m.group(1)
+
+
+def parse_date_format(block: str) -> str:
+    m = re.search(r"DateFormat\s*=\s*(\S+)", block)
+    return m.group(1) if m else "mm/dd/yyyy"
+
+
+def parse_period(block: str) -> tuple[str, str]:
+    """Return (from_raw, till_raw) strings from the Period declaration."""
+    m = re.search(r"Period\s*=\s*from:(\S+)\s+till:(\S+)", block)
+    if not m:
+        return ("", "")
+    return m.group(1), m.group(2)
+
+
+# ---------- color extraction ----------
+
+# Color IDs already handled by Module:Timeline's hardcoded palette — skip these
+# so convert_timeline.py doesn't override the module's curated hues.
+_HARDCODED_IDS = {
+    "utlia", "akaria", "okrit", "tietero", "niueyjar", "deysachin",
+    "nongba", "eee", "casea", "faltir", "kel", "spyron", "joy",
+    "larossa", "kalam", "hapsaw", "steam", "tvaqi", "walst",
+}
+
+_NAMED_COLORS: dict[str, str] = {
+    "red":         "#FF0000",
+    "blue":        "#0000FF",
+    "green":       "#008000",
+    "teal":        "#008080",
+    "purple":      "#800080",
+    "orange":      "#FF6600",
+    "pink":        "#FFC0CB",
+    "yellow":      "#FFFF00",
+    "brightgreen": "#00CC00",
+    "skyblue":     "#87CEEB",
+    "tan1":        "#D2B48C",
+    "tan2":        "#8B6914",
+    "black":       "#000000",
+    "white":       "#FFFFFF",
+}
+
+
+def value_to_hex(value: str) -> str | None:
+    """Convert an EasyTimeline color value string to #RRGGBB hex, or None if unknown."""
+    value = value.strip()
+    m = re.match(r"^rgb\(([0-9.]+),([0-9.]+),([0-9.]+)\)$", value)
+    if m:
+        r = min(255, round(float(m.group(1)) * 255))
+        g = min(255, round(float(m.group(2)) * 255))
+        b = min(255, round(float(m.group(3)) * 255))
+        return f"#{r:02X}{g:02X}{b:02X}"
+    m = re.match(r"^gray\(([0-9.]+)\)$", value)
+    if m:
+        v = min(255, round(float(m.group(1)) * 255))
+        return f"#{v:02X}{v:02X}{v:02X}"
+    return _NAMED_COLORS.get(value.lower())
+
+
+def parse_colors(block: str) -> list[tuple[str, str, str]]:
+    """Parse the Colors section. Returns [(id, hex, legend), ...] for non-hardcoded IDs."""
+    m = re.search(r"Colors\s*=(.*?)(?=\n\S|\Z)", block, re.DOTALL)
+    if not m:
+        return []
+    results = []
+    for line in m.group(1).splitlines():
+        m2 = re.match(r"\s*id:(\S+)\s+value:(\S+)(?:\s+legend:(.*))?", line)
+        if not m2:
+            continue
+        color_id = m2.group(1).lower()
+        if color_id in _HARDCODED_IDS or color_id == "bars":
+            continue
+        value  = m2.group(2)
+        legend = (m2.group(3) or color_id).strip().replace("_", " ")
+        hex_color = value_to_hex(value)
+        if hex_color:
+            results.append((color_id, hex_color, legend))
+        else:
+            print(f"WARNING: cannot convert color {color_id!r}: {value!r}", file=sys.stderr)
+    return results
 
 
 # ---------- parse BarData ----------
@@ -97,8 +175,8 @@ def parse_plot_data(block: str) -> dict[str, list[Segment]]:
 
         # Bar entry
         bar_m  = re.search(r"bar:(\S+)", line)
-        from_m = re.search(r"from:(\S+)", line)
-        till_m = re.search(r"till:(\S+)", line)
+        from_m = re.search(r"from:\s*(\S+)", line)
+        till_m = re.search(r"till:\s*(\S+)", line)
         if not (bar_m and from_m and till_m):
             continue
 
@@ -116,35 +194,67 @@ def parse_plot_data(block: str) -> dict[str, list[Segment]]:
 
 # ---------- date conversion ----------
 
-def convert_date(d: str) -> str:
-    """mm/dd/yyyy → d-m y PC. 'end' → 'present'."""
-    d = d.strip()
-    if d.lower() == "end":
-        return "present"
-    m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})$", d)
-    if not m:
-        raise ValueError(f"Unrecognised date: {d!r}")
-    month = int(m.group(1))
-    day   = int(m.group(2))
-    year  = int(m.group(3))
-    return f"{day}-{month} {year - 1900} PC"
-
-
-def date_sort_key(from_str: str) -> tuple[int, int, int]:
-    m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", from_str)
-    if m:
-        return int(m.group(3)), int(m.group(1)), int(m.group(2))
-    return 9999, 0, 0
+def make_converter(date_format: str, period_start: str = "", period_end: str = ""):
+    """Return (convert_date, sort_key) functions for the given DateFormat."""
+    if date_format == "mm/dd/yyyy":
+        def convert(d: str) -> str:
+            d = d.strip()
+            if d.lower() in ("end", "till"):
+                return "present"
+            m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})$", d)
+            if not m:
+                raise ValueError(f"Unrecognised date: {d!r}")
+            return f"{int(m.group(2))}-{int(m.group(1))} {int(m.group(3)) - 1900} PC"
+        def sort_key(d: str) -> tuple[int, int, int]:
+            m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", d)
+            return (int(m.group(3)), int(m.group(1)), int(m.group(2))) if m else (9999, 0, 0)
+    elif date_format == "yyyy":
+        def _yr_to_haracalnde(d: str) -> str:
+            y = int(d)
+            if y > 0:
+                return f"1-1 {y} PC"
+            else:
+                return f"1-1 {abs(y)} TT"
+        def convert(d: str) -> str:
+            d = d.strip()
+            if d.lower() == "end":
+                return "present"
+            if d.lower() == "start":
+                if not period_start:
+                    raise ValueError("'start' keyword used but Period not found")
+                return _yr_to_haracalnde(period_start)
+            if re.match(r"^-?\d+$", d):
+                return _yr_to_haracalnde(d)
+            raise ValueError(f"Unrecognised date: {d!r}")
+        def sort_key(d: str) -> tuple[int, int, int]:
+            if d.lower() in ("start", "end"):
+                y = int(period_start) if d.lower() == "start" else int(period_end or "9999")
+                return (y, 0, 0)
+            return (int(d), 0, 0) if re.match(r"^-?\d+$", d) else (9999, 0, 0)
+    else:
+        raise SystemExit(f"Unsupported DateFormat: {date_format!r}")
+    return convert, sort_key
 
 
 # ---------- main ----------
 
 def main() -> None:
-    print(f"Fetching {PAGE}...", file=sys.stderr)
-    wikitext = fetch_wikitext(PAGE)
-    block    = extract_timeline(wikitext)
+    if len(sys.argv) < 2:
+        raise SystemExit("Usage: convert_timeline.py <page title>")
+    page = sys.argv[1]
+    print(f"Fetching {page}...", file=sys.stderr)
+    wikitext       = fetch_wikitext(page)
+    block          = extract_timeline(wikitext)
+    date_format    = parse_date_format(block)
+    period_start, period_end = parse_period(block)
+    convert_date, date_sort_key = make_converter(date_format, period_start, period_end)
+    print(f"DateFormat: {date_format}  Period: {period_start} – {period_end}", file=sys.stderr)
+    colors   = parse_colors(block)
     bars     = parse_bar_data(block)
     segments = parse_plot_data(block)
+
+    for color_id, hex_color, legend in colors:
+        print(f"{{{{TimelineColor|{color_id}|{hex_color}|{legend}}}}}")
 
     total_lines = 0
     warnings    = 0
@@ -173,6 +283,7 @@ def main() -> None:
         + (f", {warnings} warnings" if warnings else ""),
         file=sys.stderr,
     )
+    print(f"\nSubpage title: {page}/Timeline", file=sys.stderr)
 
 
 if __name__ == "__main__":
