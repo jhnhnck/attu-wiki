@@ -7,8 +7,6 @@ networks:
         name: attu_prod
 services:
     database:
-        cap_add:
-            - SYS_NICE
         env_file:
             - .env
         environment:
