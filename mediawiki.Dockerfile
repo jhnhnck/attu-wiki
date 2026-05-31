@@ -82,7 +82,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
 # for SyntaxHighlight code highlighting
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system Pygments;
+    uv venv /opt/pygments; \
+    VIRTUAL_ENV=/opt/pygments uv pip install Pygments;
+
+ENV PATH="/opt/pygments/bin:$PATH"
 
 # PHP extensions
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
