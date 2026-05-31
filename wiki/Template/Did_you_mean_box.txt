@@ -1,0 +1,10 @@
+<!-- CC BY-SA 4.0, source: https://en.wikipedia.org/wiki/Template:Did_you_mean_box -->
+<div class="pagetitlecorrection">{{fmbox
+ | type  = editnotice
+ | id    = newarticletext
+ | image = [[File:Dialog-information on.svg|40px|link=|alt=]]
+ | textstyle =
+ | text  = Did you mean: '''[[:{{{1|Page name}}}]]{{{2|}}}'''?
+}}</div><noinclude>
+{{documentation}}
+</noinclude>

@@ -1,0 +1,5 @@
+<!-- CC BY-SA 4.0, source: https://en.wikipedia.org/wiki/Template:Infobox -->
+{{#invoke:Infobox|infobox|bodystyle=background: var(--color-surface-2);color: var(--color-base);}}<includeonly>{{template other|{{#ifeq:{{PAGENAME}}|Infobox||{{#ifeq:{{str left|{{SUBPAGENAME}}|7}}|Infobox|[[Category:Infobox templates|{{remove first word|{{SUBPAGENAME}}}}]]}}}}|}}</includeonly><noinclude>
+{{documentation}}
+<!-- Categories go in the /doc subpage, and interwikis go in Wikidata. -->
+</noinclude>

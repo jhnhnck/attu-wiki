@@ -1,0 +1,41 @@
+<!-- CC BY-SA 4.0, source: https://en.wikipedia.org/wiki/Template:Cquote -->
+<noinclude>The template appears as follows in article space:
+{{Blockquote|text={{lorem ipsum}}}}
+and as follows in all other namespaces:
+</noinclude>{{Main other 
+|demospace={{{demospace|}}} 
+|1=<!-- result if in mainspace -->{{Blockquote 
+| text={{{text|{{{content|{{{quotetext|{{{quote|{{{1|<includeonly>{{error|Error: No text given for quotation (or equals sign used in the actual argument to an unnamed parameter)}}</includeonly><noinclude>{{lorem ipsum}}</noinclude>}}} }}} }}} }}} }}}
+| author={{{author|{{{personquoted|}}} }}} 
+| title ={{{title|{{{quotesource|{{{4|}}} }}} }}}
+| source={{{source|{{{publication|{{{5|{{#if:{{{title}}}|{{{quotesource|}}}| }} }}} }}} }}}
+}} 
+|2=<!-- result if elsewhere --> 
+{{(!}} class="cquote pullquote" role="presentation" {{#if:{{{rtl|}}}|dir="rtl"}} style="{{#switch:{{{float|}}}
+  | left = float:left
+  | right = float:right
+  | #default = margin:auto
+  }}; border-collapse: collapse; border: none; {{#if:{{{bgcolor|}}}|background-color: {{{bgcolor}}}; border: 1px solid #aaa;}} width: {{#if: {{{wide|}}} | 100% | {{{width|auto}}}}};"
+{{!}} style="width: 20px; vertical-align: top; border: none; color: {{{qcolor|#B2B7F2}}}; font-size: {{#switch:{{{size|{{{quotewidth|{{{width|{{{2|20px}}}}}}}}}}}}
+|10px=20px
+|30px=60px
+|40px=80px
+|50px=100px
+|60px=120px
+|#default=40px}}; font-family: {{#if:{{{rtl|}}}|Roman|'Times New Roman', Times}}, serif; font-weight: bold; line-height: .6em; text-align: left; padding: {{#if:{{{small|}}}|10px 2px|10px 10px}};" {{!}} {{#if:{{{rtl|}}}|”|“}}
+{{!}} style="vertical-align: top; border: none;{{#if:{{{rtl|}}}|direction:rtl;}} padding: {{#if:{{{small|}}}|4px 2px|4px 10px}}; {{#ifeq:{{{quotealign|}}}|center|text-align:center;}}" {{!}} {{trim quotes|{{{text|{{{content|{{{quotetext|{{{quote|{{{1|<includeonly>{{error|Error: No text given for quotation (or equals sign used in the actual argument to an unnamed parameter)}}</includeonly><noinclude>{{lorem ipsum}}</noinclude>}}}}}}}}}}}}}}}}}
+{{!}} style="width: 20px; vertical-align: bottom; border: none; color: {{{qcolor|#B2B7F2}}}; font-size: {{#switch:{{{size|{{{quotewidth|{{{width|{{{2|20px}}}}}}}}}}}}
+|10px=20px
+|30px=60px
+|40px=80px
+|50px=100px
+|60px=120px
+|#default=40px}}; font-family: {{#if:{{{rtl|}}}|Roman|'Times New Roman', Times}}, serif; font-weight: bold; line-height: .6em; text-align: right; padding: {{#if:{{{small|}}}|10px 2px|10px 10px}};" {{!}} {{#if:{{{rtl|}}}|“|”}}
+{{!-}}
+{{#if:{{{author|{{{personquoted|{{{source|{{{publication|{{{title|{{{quotesource|{{{4|{{{5|}}}}}}}}}}}}}}}}}}}}}}}}|{{#if:{{NAMESPACE}}||[[Category:Articles with attributed pull quotes]]}}
+{{!}} colspan="3" class="cquotecite" style="border: none; padding-right: 4%; font-size: smaller; line-height:normal; text-align: right;" {{!}} <cite>—&#8202;{{#if:{{{author|{{{personquoted|{{{4|}}}}}}}}}|{{trim|1={{{author|{{{personquoted|{{{4}}}}}}}}}}}{{#if:{{{source|{{{publication|{{{title|{{{quotesource|{{{5|}}}}}}}}}}}}}}}|, {{trim|1={{{source|{{{publication|{{{title|{{{quotesource|{{{5}}}}}}}}}}}}}}}}}}}|{{#if:{{{source|{{{publication|{{{title|{{{quotesource|{{{5|}}}}}}}}}}}}}}}|{{trim|1={{{source|{{{publication|{{{title|{{{quotesource|{{{5}}}}}}}}}}}}}}}}}}}}}</cite>
+}}
+{{!)}}
+}}<!-- {{subst:FULLPAGENAME}} --><noinclude>
+{{documentation}}
+</noinclude>
