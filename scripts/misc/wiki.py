@@ -126,23 +126,34 @@ def _save_botpass(username: str, password: str) -> None:
     _BOTPASS_FILE.chmod(0o600)
 
 
-def _generate_bot_password(account: str) -> tuple[str, str]:
-    """Create/replace the wiki-cli bot password for account via docker compose."""
-    password = secrets.token_hex(16)  # exactly 32 hex chars
-    result = subprocess.run(
-        [
-            "docker", "compose", "run", "--rm", "--quiet-build",
-            "mediawiki", "php", "maintenance/run.php", "createBotPassword",
-            "--appid", _BOT_APPID,
-            "--grants", "editpage,createeditmovepage",
-            account, password,
-        ],
+def _maint(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["docker", "compose", "run", "--rm",
+         "mediawiki", "php", "maintenance/run.php", *args],
         cwd=_PROJECT_ROOT,
         capture_output=True,
         text=True,
     )
+
+
+def _generate_bot_password(account: str) -> tuple[str, str]:
+    """Create/replace the wiki-cli bot password for account via docker compose."""
+    password = secrets.token_hex(16)  # exactly 32 hex chars
+    # Delete any existing entry so createBotPassword doesn't fail on duplicate appid.
+    _maint("sql", "--query",
+           f"DELETE FROM bot_passwords"
+           f" WHERE bp_user = (SELECT user_id FROM `user` WHERE user_name = '{account}')"
+           f" AND bp_app_id = '{_BOT_APPID}'")
+    result = _maint(
+        "createBotPassword",
+        "--appid", _BOT_APPID,
+        "--grants", "basic,editpage,createeditmovepage",
+        account, password,
+    )
     if result.returncode != 0:
-        print(result.stderr.strip(), file=sys.stderr)
+        out = (result.stdout + result.stderr).strip()
+        if out:
+            print(out, file=sys.stderr)
         raise SystemExit(f"createBotPassword failed (exit {result.returncode})")
     return f"{account}@{_BOT_APPID}", password
 
