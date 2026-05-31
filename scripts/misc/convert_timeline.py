@@ -12,6 +12,7 @@ Narrow segments (effective width < 11) get a trailing |narrow arg.
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from collections import defaultdict
@@ -91,7 +92,7 @@ _NAMED_COLORS: dict[str, str] = {
 def value_to_hex(value: str) -> str | None:
     """Convert an EasyTimeline color value string to #RRGGBB hex, or None if unknown."""
     value = value.strip()
-    m = re.match(r"^rgb\(([0-9.]+),([0-9.]+),([0-9.]+)\)$", value)
+    m = re.match(r"^rgb\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*\)$", value)
     if m:
         r = min(255, round(float(m.group(1)) * 255))
         g = min(255, round(float(m.group(2)) * 255))
@@ -194,7 +195,8 @@ def parse_plot_data(block: str) -> dict[str, list[Segment]]:
 
 # ---------- date conversion ----------
 
-def make_converter(date_format: str, period_start: str = "", period_end: str = ""):
+def make_converter(date_format: str, period_start: str = "", period_end: str = "",
+                   calendar: str = "haracalnde"):
     """Return (convert_date, sort_key) functions for the given DateFormat."""
     if date_format == "mm/dd/yyyy":
         def convert(d: str) -> str:
@@ -209,12 +211,11 @@ def make_converter(date_format: str, period_start: str = "", period_end: str = "
             m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", d)
             return (int(m.group(3)), int(m.group(1)), int(m.group(2))) if m else (9999, 0, 0)
     elif date_format == "yyyy":
-        def _yr_to_haracalnde(d: str) -> str:
+        def _yr_to_date(d: str) -> str:
+            if calendar == "deysachni":
+                return d  # plain year number; parse_deysachni handles it
             y = int(d)
-            if y > 0:
-                return f"1-1 {y} PC"
-            else:
-                return f"1-1 {abs(y)} TT"
+            return f"1-1 {y} PC" if y > 0 else f"1-1 {abs(y)} TT"
         def convert(d: str) -> str:
             d = d.strip()
             if d.lower() == "end":
@@ -222,9 +223,9 @@ def make_converter(date_format: str, period_start: str = "", period_end: str = "
             if d.lower() == "start":
                 if not period_start:
                     raise ValueError("'start' keyword used but Period not found")
-                return _yr_to_haracalnde(period_start)
+                return _yr_to_date(period_start)
             if re.match(r"^-?\d+$", d):
-                return _yr_to_haracalnde(d)
+                return _yr_to_date(d)
             raise ValueError(f"Unrecognised date: {d!r}")
         def sort_key(d: str) -> tuple[int, int, int]:
             if d.lower() in ("start", "end"):
@@ -239,20 +240,27 @@ def make_converter(date_format: str, period_start: str = "", period_end: str = "
 # ---------- main ----------
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        raise SystemExit("Usage: convert_timeline.py <page title>")
-    page = sys.argv[1]
+    ap = argparse.ArgumentParser(description="Convert EasyTimeline to TimelineBar calls.")
+    ap.add_argument("page", help="Wiki page title")
+    ap.add_argument("--calendar", default="haracalnde",
+                    choices=["haracalnde", "deysachni"],
+                    help="Calendar system for date fields (default: haracalnde)")
+    args = ap.parse_args()
+    page = args.page
+    calendar = args.calendar
     print(f"Fetching {page}...", file=sys.stderr)
     wikitext       = fetch_wikitext(page)
     block          = extract_timeline(wikitext)
     date_format    = parse_date_format(block)
     period_start, period_end = parse_period(block)
-    convert_date, date_sort_key = make_converter(date_format, period_start, period_end)
+    convert_date, date_sort_key = make_converter(date_format, period_start, period_end, calendar)
     print(f"DateFormat: {date_format}  Period: {period_start} – {period_end}", file=sys.stderr)
     colors   = parse_colors(block)
     bars     = parse_bar_data(block)
     segments = parse_plot_data(block)
 
+    if calendar != "haracalnde":
+        print(f"{{{{TimelineOption|calendar={calendar}}}}}")
     for color_id, hex_color, legend in colors:
         print(f"{{{{TimelineColor|{color_id}|{hex_color}|{legend}}}}}")
 

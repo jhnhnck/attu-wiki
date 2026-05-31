@@ -74,12 +74,13 @@ local NATIONS = {
 
 -- ---------- date parsers ----------
 
--- Parse a Deysachni date (year.month.day, year.month, or year) into the same
--- fractional-year space as Cal.parse_date. Assumes Deysachni years are PC years
--- with the same 12-month × 30-day structure as Haracalnde. No year 0.
+-- Parse a Deysachni date (year.month.day, year.month, or year) into a
+-- fractional coordinate. Deysachni years are an independent system with no
+-- fixed offset to PC; the numbers are used as raw coordinates on the axis.
+-- "present" returns math.huge so frac_of clamps it to the end of the period.
 local function parse_deysachni(s)
     s = mw.text.trim(s)
-    if s == "present" then return Cal.parse_date("present") end
+    if s == "present" then return math.huge end
     local y, mo, d
     y, mo, d = s:match("^(-?%d+)%.(%d+)%.(%d+)$")
     if y then
@@ -356,9 +357,9 @@ function M.main(frame)
             .. mw.text.nowiki(options.calendar) .. '"</span>'
     end
 
-    -- Parse period bounds (always Haracalnde regardless of data calendar).
-    local ok1, ps_num = pcall(Cal.parse_date, period_start)
-    local ok2, pe_num = pcall(Cal.parse_date, period_end)
+    -- Parse period bounds using the same calendar as the data.
+    local ok1, ps_num = pcall(parse_date, period_start)
+    local ok2, pe_num = pcall(parse_date, period_end)
     if not (ok1 and ok2) then
         return '<span class="error">Timeline: invalid period_start or period_end</span>'
     end
@@ -400,8 +401,9 @@ function M.main(frame)
     for _, v in ipairs(bar_parts) do parts[#parts + 1] = v end
 
     -- Vertical line at the TT/PC boundary (year 1.0 in fractional space).
+    -- Only meaningful for the Haracalnde calendar.
     local span = pe_num - ps_num
-    if span > 0 and ps_num <= 1 and pe_num >= 1 then
+    if options.calendar == "haracalnde" and span > 0 and ps_num <= 1 and pe_num >= 1 then
         local boundary_x = frac_to_x((1.0 - ps_num) / span)
         parts[#parts + 1] = string.format(
             '<div style="position:absolute;left:%dpx;top:0;width:2px;height:%dpx;background:#2C3E50;"></div>',
