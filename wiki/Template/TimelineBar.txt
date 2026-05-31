@@ -17,7 +17,10 @@ One line per speaker term on the data subpage:
 ; nation_id : colour key from [[Module:Timeline]]'s colour map (e.g. <code>nongba</code>)
 ; start_date : Haracalnde date, <code>d-m y PC</code> or <code>d-m y TT</code>
 ; end_date : Haracalnde date, or the literal <code>present</code> for active speakers
-; narrow : optional; pass <code>narrow</code> for a narrow overlay segment (secondary affiliation)
+; width : optional sixth arg; controls bar height:
+:* (omitted) — full height (16 px)
+:* <code>mid</code> — medium height (11 px)
+:* <code>narrow</code> — narrow overlay (6 px, draws on top of full/mid bars)
 
 === Example ===
 

@@ -12,7 +12,7 @@
 -- Data subpage may contain:
 --   {{TimelineOption|calendar=haracalnde}}  (default; also: deysachni)
 --   {{TimelineColor|id|#RRGGBB|Legend Name}}
---   {{TimelineBar|bar_id|label|color_id|start|end[|narrow]}}
+--   {{TimelineBar|bar_id|label|color_id|start|end[|narrow|mid]}}
 
 local Cal = require("Module:AttuCalendar")
 
@@ -23,8 +23,9 @@ local LABEL_W  = 150   -- px: left label column
 local BAR_W    = 1150  -- px: bar area width
 local CANVAS_W = LABEL_W + BAR_W
 local ROW_H    = 20    -- px: row height (barincrement)
-local BAR_H    = 16    -- px: full bar (ROW_H - 2*2)
-local NARROW_H = 6     -- px: narrow overlay height
+local BAR_H    = 16    -- px: full bar
+local MID_H    = 11    -- px: mid-width bar
+local NARROW_H = 6     -- px: narrow overlay
 
 -- Nation colour map — muted palette derived from flag hues.
 local COLORS = {
@@ -170,11 +171,15 @@ local function parse_data(content)
                 row_idx[bar] = #rows
             end
             if not segs[bar] then segs[bar] = {} end
+            local bar_type = "full"
+            if narrow == "narrow" then bar_type = "narrow"
+            elseif narrow == "mid"    then bar_type = "mid"
+            end
             table.insert(segs[bar], {
-                color  = color,
-                start  = start_s,
-                stop   = end_s,
-                narrow = (narrow == "narrow"),
+                color    = color,
+                start    = start_s,
+                stop     = end_s,
+                bar_type = bar_type,
             })
         end
     end
@@ -194,8 +199,9 @@ end
 -- ---------- renderers ----------
 
 local function render_segs(seg_list, row_top, frac_of, colors)
-    -- Render full bars before narrow bars so narrow overlays draw on top.
+    -- Render full bars first, then mid, then narrow, so overlays draw on top.
     local full   = {}
+    local mid    = {}
     local narrow = {}
     for _, seg in ipairs(seg_list) do
         local ok,  f1 = pcall(frac_of, seg.start)
@@ -203,13 +209,16 @@ local function render_segs(seg_list, row_top, frac_of, colors)
         if ok and ok2 and f2 > f1 then
             f1 = math.max(0, math.min(1, f1))
             f2 = math.max(0, math.min(1, f2))
-            local x   = frac_to_x(f1)
-            local w   = frac_to_w(f1, f2)
-            local bg  = colors[seg.color] or "#CCCCCC"
+            local x  = frac_to_x(f1)
+            local w  = frac_to_w(f1, f2)
+            local bg = colors[seg.color] or "#CCCCCC"
             local h, top_off
-            if seg.narrow then
+            if seg.bar_type == "narrow" then
                 h       = NARROW_H
                 top_off = row_top + math.floor((ROW_H - NARROW_H) / 2)
+            elseif seg.bar_type == "mid" then
+                h       = MID_H
+                top_off = row_top + math.floor((ROW_H - MID_H) / 2)
             else
                 h       = BAR_H
                 top_off = row_top + 2
@@ -218,12 +227,13 @@ local function render_segs(seg_list, row_top, frac_of, colors)
                 '<div style="position:absolute;left:%dpx;top:%dpx;width:%dpx;height:%dpx;background:%s;"></div>',
                 x, top_off, w, h, bg
             )
-            if seg.narrow then narrow[#narrow + 1] = div
-            else               full[#full + 1]     = div
+            if seg.bar_type == "narrow" then narrow[#narrow + 1] = div
+            elseif seg.bar_type == "mid" then mid[#mid + 1]     = div
+            else                               full[#full + 1]   = div
             end
         end
     end
-    return table.concat(full) .. table.concat(narrow)
+    return table.concat(full) .. table.concat(mid) .. table.concat(narrow)
 end
 
 local function render_label(label, row_top)
@@ -234,36 +244,66 @@ local function render_label(label, row_top)
     )
 end
 
+-- Pick a round major-tick interval that gives roughly 8-15 labels across the span.
+local function nice_interval(span)
+    if span < 100 then return 5 end
+    local target = span / 15
+    local nices  = {10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000}
+    for _, v in ipairs(nices) do
+        if v >= target then return v end
+    end
+    return nices[#nices]
+end
+
 -- Render year axis ticks and major labels.
 -- Returns the HTML string and the additional height consumed by the axis.
 local function render_axis(ps_num, pe_num, bars_h)
     local out      = {}
     local axis_top = bars_h + 4
+    local span     = pe_num - ps_num
+    if span <= 0 then return "", 28 end
 
-    local y_first = math.ceil(ps_num)
-    local y_last  = math.floor(pe_num)
-    local span    = pe_num - ps_num
+    local major_int   = nice_interval(span)
+    local minor_int   = math.floor(major_int / 5)
+    local px_per_unit = BAR_W / span
+    local draw_minor  = minor_int >= 1 and (px_per_unit * minor_int) >= 4
 
-    for y = y_first, y_last do
+    -- Minor ticks (skip positions covered by a major tick)
+    if draw_minor then
+        local m0 = math.ceil(ps_num / minor_int) * minor_int
+        local y  = m0
+        while y <= pe_num do
+            if y % major_int ~= 0 then
+                local frac = (y - ps_num) / span
+                if frac >= 0 and frac <= 1 then
+                    out[#out + 1] = string.format(
+                        '<div style="position:absolute;left:%dpx;top:%dpx;width:1px;height:3px;background:#555;"></div>',
+                        frac_to_x(frac), axis_top
+                    )
+                end
+            end
+            y = y + minor_int
+        end
+    end
+
+    -- Major ticks and labels
+    local y0 = math.ceil(ps_num / major_int) * major_int
+    local y  = y0
+    while y <= pe_num do
         local frac = (y - ps_num) / span
         if frac >= 0 and frac <= 1 then
-            local x        = frac_to_x(frac)
-            local is_major = (y % 5 == 0)
-            local tick_h   = is_major and 6 or 3
-
+            local x = frac_to_x(frac)
             out[#out + 1] = string.format(
-                '<div style="position:absolute;left:%dpx;top:%dpx;width:1px;height:%dpx;background:#555;"></div>',
-                x, axis_top, tick_h
+                '<div style="position:absolute;left:%dpx;top:%dpx;width:1px;height:6px;background:#555;"></div>',
+                x, axis_top
             )
-
-            if is_major then
-                out[#out + 1] = string.format(
-                    '<div style="position:absolute;left:%dpx;top:%dpx;width:40px;'
-                    .. 'font-size:10px;text-align:center;white-space:nowrap;">%d</div>',
-                    x - 20, axis_top + 8, y
-                )
-            end
+            out[#out + 1] = string.format(
+                '<div style="position:absolute;left:%dpx;top:%dpx;width:40px;'
+                .. 'font-size:10px;text-align:center;white-space:nowrap;">%d</div>',
+                x - 20, axis_top + 8, y
+            )
         end
+        y = y + major_int
     end
 
     return table.concat(out), 28  -- axis consumes 28px below bar area
