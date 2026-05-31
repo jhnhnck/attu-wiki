@@ -2,6 +2,7 @@
 name: attu-prod
 networks:
     attu:
+        external: true
         attachable: true
         name: attu_prod
 services:
