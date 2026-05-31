@@ -39,6 +39,9 @@ while IFS= read -r line; do
     image_hash="${line%% *}"
     filepath="${line##*  }"
 
+    # skip the checksums manifest itself
+    [[ "$filepath" == "$image_checksums" ]] && continue
+
     title=$(page_title "$filepath")
 
     # compare to last-applied checksum for this path
