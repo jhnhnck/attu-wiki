@@ -135,12 +135,60 @@ No-op template. Renders nothing when transcluded directly — exists so the data
 
 ---
 
-## Pages changed
+## Manual page edits
 
-Reference copies of edited article pages live in `notes/wiki-pages/` and must be pushed manually.
+These changes need to be made directly on the wiki. Fetch the current wikitext first and apply the diffs below — don't use a stored snapshot, the page may have changed.
 
-| Page | Reference copy | Change |
-|---|---|---|
-| `Attu Project:Home` | [Attu_Project.Home.txt](../wiki-pages/Attu_Project.Home.txt) | `Current Year:` → `{{#invoke:AttuCalendar\|current_year}} PC` |
-| `List_of_IgRS_Speakers_by_time_as_Speaker` | [List_of_IgRS_Speakers_by_time_as_Speaker.txt](../wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.txt) | `{{#tag:timeline\|...}}` → `{{#invoke:Timeline\|main\|...}}`; active speaker speech lengths → `years_between` |
-| `List_of_IgRS_Speakers_by_time_as_Speaker/Timeline` | [List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt](../wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt) | Data subpage; regenerate with `convert_timeline.py` |
+### `Attu Project:Home`
+
+In the `== Current Events ==` section, replace the hardcoded year:
+
+```
+Current Year: 80 PC
+```
+→
+```
+Current Year: {{#invoke:AttuCalendar|current_year}} PC
+```
+
+### `List_of_IgRS_Speakers_by_time_as_Speaker`
+
+**1. Replace the EasyTimeline block.** Find `{{#tag:timeline|` and delete everything through the closing `}}`, replacing with:
+
+```
+{{#invoke:Timeline|main
+|data=List_of_IgRS_Speakers_by_time_as_Speaker/Timeline
+|period_start=1-1 1 PC
+|period_end=present
+}}
+```
+
+**2. Update speech lengths for active speakers.** For each row where the date range ends in `present`, replace the static `~N years` cell with a `years_between` call using the start date from that row:
+
+```
+|{{#invoke:AttuCalendar|years_between|<start date>|present}} years
+```
+
+Active speakers and their start dates as of the last conversion:
+
+| Speaker | Start date |
+|---|---|
+| Alekso IV | `8-9 18 PC` |
+| Deyg Arthur | `4-9 22 PC` |
+| Cya Iri-Semwache | `20-7 52 PC` |
+| Dimasi V'sha | `3-9 53 PC` |
+| Giulio Moretti | `7-2 57 PC` |
+| Reto Heyel | `1-1 57 PC` |
+| Řiselan | `1-1 58 PC` |
+| Kenpu Nan | `1-1 59 PC` |
+| Klemens Joachim | `1-1 60 PC` |
+
+### `List_of_IgRS_Speakers_by_time_as_Speaker/Timeline`
+
+Create this subpage. Generate the content with:
+
+```bash
+uv run scripts/misc/convert_timeline.py
+```
+
+Paste the output as the full page content.
