@@ -7,10 +7,11 @@ Lua modules and templates tracked in this repo under `wiki/`. The files here are
 ```
 wiki/
   <Namespace>/
-    <PageTitle>.<ext>   — Lua modules use .lua; wikitext pages use .txt
+    <PageTitle>.<ext>   — system namespaces only: Module, Template, MediaWiki
 ```
 
-Main-namespace pages (no prefix) live under `wiki/Main/`. Subpages use actual subdirectories.
+Only `Module:`, `Template:`, and `MediaWiki:` pages live here — these are auto-synced.
+Article pages and data subpages are **not** tracked in `wiki/`; see `notes/wiki-pages/` instead.
 
 ## Pushing updates
 
@@ -103,7 +104,7 @@ Example (IgRS Speakers):
 
 ### Data subpage format
 
-**Source:** [wiki/Main/List_of_IgRS_Speakers_by_time_as_Speaker/Timeline.txt](../../wiki/Main/List_of_IgRS_Speakers_by_time_as_Speaker/Timeline.txt)
+**Reference copy:** [notes/wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt](../wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt) — push manually via `wiki.py edit`.
 
 One `{{TimelineBar|...}}` line per speaker term, in display order (top-to-bottom in the rendered chart):
 
@@ -118,10 +119,10 @@ One `{{TimelineBar|...}}` line per speaker term, in display order (top-to-bottom
 - `start` / `end` — Haracalnde dates; `end` may be `present`
 - `narrow` — optional sixth arg; renders a 6 px overlay instead of a 16 px full bar
 
-To regenerate the data subpage from the EasyTimeline block on prod:
+To regenerate from the EasyTimeline block on prod:
 
 ```bash
-uv run scripts/misc/convert_timeline.py > wiki/Main/List_of_IgRS_Speakers_by_time_as_Speaker/Timeline.txt
+uv run scripts/misc/convert_timeline.py > notes/wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt
 ```
 
 ---
@@ -136,7 +137,10 @@ No-op template. Renders nothing when transcluded directly — exists so the data
 
 ## Pages changed
 
-| Page | Change |
-|---|---|
-| `Attu Project:Home` | `Current Year:` replaced with `{{#invoke:AttuCalendar\|current_year}} PC` |
-| `List_of_IgRS_Speakers_by_time_as_Speaker` | `{{#tag:timeline\|...}}` block replaced with `{{#invoke:Timeline\|main\|...}}` |
+Reference copies of edited article pages live in `notes/wiki-pages/` and must be pushed manually.
+
+| Page | Reference copy | Change |
+|---|---|---|
+| `Attu Project:Home` | [Attu_Project.Home.txt](../wiki-pages/Attu_Project.Home.txt) | `Current Year:` → `{{#invoke:AttuCalendar\|current_year}} PC` |
+| `List_of_IgRS_Speakers_by_time_as_Speaker` | [List_of_IgRS_Speakers_by_time_as_Speaker.txt](../wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.txt) | `{{#tag:timeline\|...}}` → `{{#invoke:Timeline\|main\|...}}`; active speaker speech lengths → `years_between` |
+| `List_of_IgRS_Speakers_by_time_as_Speaker/Timeline` | [List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt](../wiki-pages/List_of_IgRS_Speakers_by_time_as_Speaker.Timeline.txt) | Data subpage; regenerate with `convert_timeline.py` |
