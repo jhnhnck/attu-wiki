@@ -27,7 +27,7 @@ set -eu -o pipefail
 # both — there is no skip-dev mode.
 typeset -a DRY_RUN_FLAG YES_FLAG TRACE_FLAG OVERWRITE_FLAG
 typeset -a TARGET_HOST_OPT REMOTE_BASE_OPT SSH_USER_OPT DUMP_DIR_OPT
-zparseopts -D -E -K -- \
+zparseopts -D -E -F -- \
     -dry-run=DRY_RUN_FLAG \
     -target-host:=TARGET_HOST_OPT \
     -remote-base:=REMOTE_BASE_OPT \
@@ -118,9 +118,9 @@ print -P "%F{cyan}[local]%f checking remote disk space"
 # `du` exits non-zero when it hits unreadable files (e.g. database/ owned by
 # the mariadb container's uid). swallow that so pipefail+errexit don't kill
 # us — the byte total is still correct.
-src_bytes=$({ du -sb /srv/services/attu-wiki-prod /srv/services/attu-wiki-dev 2>/dev/null || true; } \
+src_bytes=$({ du --summarize --bytes /srv/services/attu-wiki-prod /srv/services/attu-wiki-dev 2>/dev/null || true; } \
     | awk '{s+=$1} END{print s}')
-have_bytes=$(ssh "$ssh_target" "df -B1 --output=avail $remote_base | tail -n1 | tr -d ' '")
+have_bytes=$(ssh "$ssh_target" "df --block-size=1 --output=avail $remote_base | tail --lines=1 | tr -d ' '")
 python3 - "$src_bytes" "$have_bytes" <<'PY'
 import sys
 src = int(sys.argv[1])
@@ -151,8 +151,8 @@ if (( ! ${#DRY_RUN_FLAG} )); then
     # grep -c exits 1 on zero matches; swallow it so set -e + pipefail don't
     # kill the script when LocalSettings.php hasn't been patched yet.
     already_patched=$(docker compose -f "$prod_compose" exec -T mediawiki \
-        grep -c '^\$wgReadOnly' /app/mediawiki/LocalSettings.php 2>/dev/null \
-        | tr -dc '0-9' || true)
+        grep --count '^\$wgReadOnly' /app/mediawiki/LocalSettings.php 2>/dev/null \
+        | tr -dc '0-9' || true)  # tr -dc = delete complement of '0-9' (keep only digits)
     : "${already_patched:=0}"
 fi
 
@@ -161,7 +161,7 @@ if (( already_patched > 0 )) && (( ! ${#OVERWRITE_FLAG} )); then
 else
     print -P "%F{cyan}[local]%f patching source LocalSettings.php → read-only"
     run docker compose -f "$prod_compose" exec -T mediawiki \
-        sh -c "printf '%s\n' \"\\\$wgReadOnly = '$read_only_msg';\" >> /app/mediawiki/LocalSettings.php"
+        sh -c "printf '%s\n' \"\\\$wgReadOnly = '$read_only_msg';\" >> /app/mediawiki/LocalSettings.php"  # sh, not zsh
 fi
 
 # --- 2. mariadb-dump (live, while read-only) ----------------------------
@@ -190,7 +190,7 @@ if ! should_skip "$dump_dir/attu-wiki-prod.sql.gz"; then
       | gzip -9 > '$dump_dir/attu-wiki-prod.sql.gz'"
 
     if (( ! ${#DRY_RUN_FLAG} )); then
-        sql_size=$(stat -c%s "$dump_dir/attu-wiki-prod.sql.gz" 2>/dev/null || echo 0)
+        sql_size=$(stat --format=%s "$dump_dir/attu-wiki-prod.sql.gz" 2>/dev/null || print 0)
         if (( sql_size < 10000 )); then
             print -u2 -- "SQL dump suspiciously small ($sql_size bytes); aborting"
             exit 1
@@ -209,10 +209,10 @@ if ! should_skip "$dump_dir/redis-data.tar.gz"; then
     print -P "%F{cyan}[local]%f saving redis state"
     if (( ! ${#DRY_RUN_FLAG} )); then
         if ! docker compose -f "$prod_compose" exec -T redis redis-cli SAVE 2>&1 \
-                | grep -q '^OK$'; then
+                | grep --quiet '^OK$'; then
             print -P "%F{yellow}[local]%f BGSAVE already running, waiting for it to finish"
             while docker compose -f "$prod_compose" exec -T redis redis-cli INFO persistence \
-                    2>/dev/null | grep -q '^rdb_bgsave_in_progress:1'; do
+                    2>/dev/null | grep --quiet '^rdb_bgsave_in_progress:1'; do
                 sleep 1
             done
         fi

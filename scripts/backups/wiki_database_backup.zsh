@@ -2,6 +2,8 @@
 # Attu Project Wiki - Automatic database backups script
 # This file is licensed under the MIT License; See LICENSE for full text.
 
+set -eu
+
 # wiki config
 backup_path="$APP_HOME/backups"
 min_backup_size=10000
@@ -11,15 +13,15 @@ current_date=$(date +%Y-%m-%d)
 db_backup_file="${backup_path}/attu-wiki-backup_${current_date}.sql.bz2"
 
 # ensure backup directory exists
-sudo zsh -c 'mkdir -vp "$1" && chown -c doom:doom "$1"' -- "$backup_path"
+sudo zsh -c 'mkdir --verbose --parents "$1" && chown --changes doom:doom "$1"' -- "$backup_path"
 
 # dump db and compress
 MYSQL_PWD="$ATTU_DB_PASSWORD" mariadb-dump --user=attu --host="$db_host" --databases attu_wiki --single-transaction --quick \
     | bzip2 > "$db_backup_file"
 
 # verify backup size
-backup_size=$(wc -c < "$db_backup_file")
-if [ ! "$backup_size" -ge "$min_backup_size" ]; then
-    printf '%s\n' "failure: wiki backup too small ($backup_size bytes)"
+backup_size=$(wc --bytes < "$db_backup_file")
+if (( backup_size < min_backup_size )); then
+    print "failure: wiki backup too small ($backup_size bytes)"
     exit 1
 fi

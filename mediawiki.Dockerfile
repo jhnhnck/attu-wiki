@@ -268,4 +268,4 @@ RUN --mount=type=cache,uid=1000,gid=1000,target=$USER_HOME/.cache/uv \
 ENV PATH="$USER_HOME/.venv/bin:$PATH"
 
 # cp /etc/zshrc $APP_HOME/.zshrc;
-CMD ["zsh", "./entry.zsh"]
+CMD zsh ./entry.zsh "task:${RUNNER_TYPE}"

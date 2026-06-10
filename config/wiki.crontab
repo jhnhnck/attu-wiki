@@ -8,17 +8,17 @@
 # *  *  *  *  * command to be executed
 
 # Tasks
-*/15 * * * *    zsh $USER_HOME/attu_tasks.zsh "task:error-rate-monitor"
-*/2 * * * *     zsh $USER_HOME/attu_tasks.zsh "task:run-jobs" --allow-dev
+*/15 * * * *    zsh $USER_HOME/entry.zsh "task:error-rate-monitor"
+*/2 * * * *     zsh $USER_HOME/entry.zsh "task:run-jobs" --allow-dev
 
 # Backups
-0 18 * * *      zsh $USER_HOME/attu_tasks.zsh "backup:database"
-0 18 */3 * *    zsh $USER_HOME/attu_tasks.zsh "backup:images"
+0 18 * * *      zsh $USER_HOME/entry.zsh "backup:database"
+0 18 */3 * *    zsh $USER_HOME/entry.zsh "backup:images"
 
 # Chores
-0 20 1 * *      zsh $USER_HOME/attu_tasks.zsh "chore:bundle-backups"
-30 0 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:clean-upload-stash"
-0 20 * * *      zsh $USER_HOME/attu_tasks.zsh "chore:regenerate-sitemap"
-0 20 */3 * *    zsh $USER_HOME/attu_tasks.zsh "chore:spam-list-refresh"
-0 20 */7 * *    zsh $USER_HOME/attu_tasks.zsh "chore:templates-refresh"
-0 3,15 * * *    zsh $USER_HOME/attu_tasks.zsh "chore:certbot-renew"
+0 20 1 * *      zsh $USER_HOME/entry.zsh "chore:bundle-backups"
+30 0 * * *      zsh $USER_HOME/entry.zsh "chore:clean-upload-stash"
+0 20 * * *      zsh $USER_HOME/entry.zsh "chore:regenerate-sitemap"
+0 20 */3 * *    zsh $USER_HOME/entry.zsh "chore:spam-list-refresh"
+0 20 */7 * *    zsh $USER_HOME/entry.zsh "chore:templates-refresh"
+0 3,15 * * *    zsh $USER_HOME/entry.zsh "chore:certbot-renew"

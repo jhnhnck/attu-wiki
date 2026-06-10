@@ -25,9 +25,9 @@ page_title() {
     local rest="${rel#*/}"             # remainder after namespace/
     local base="${rest%.*}"            # strip extension
     if [[ "$ns" == "Main" ]]; then
-        printf '%s' "$base"
+        print -rn -- "$base"
     else
-        printf '%s:%s' "$ns" "$base"
+        print -rn -- "${ns}:${base}"
     fi
 }
 
@@ -47,16 +47,16 @@ while IFS= read -r line; do
     # compare to last-applied checksum for this path
     applied_hash=""
     if [[ -f "$applied_checksums" ]]; then
-        applied_hash=$(grep -F "  $filepath" "$applied_checksums" 2>/dev/null | head -1 | awk '{print $1}')
+        applied_hash=$(grep --fixed-strings "  $filepath" "$applied_checksums" 2>/dev/null | head --lines=1 | awk '{print $1}')
     fi
 
     if [[ "$image_hash" == "$applied_hash" ]]; then
-        printf 'skipped %s\n' "$title"
+        print "skipped $title"
         (( skipped++ )) || true
         continue
     fi
 
-    printf 'updating %s\n' "$title"
+    print "updating $title"
     sudo --preserve-env -u www-data -- \
         php maintenance/run.php edit \
             -u "DoomBot" \
@@ -68,12 +68,12 @@ while IFS= read -r line; do
     # update applied checksum for this path
     if [[ -f "$applied_checksums" ]]; then
         # remove old entry for this path, append new one
-        grep -vF "  $filepath" "$applied_checksums" > "${applied_checksums}.tmp" || true
+        grep --invert-match --fixed-strings "  $filepath" "$applied_checksums" > "${applied_checksums}.tmp" || true
         mv "${applied_checksums}.tmp" "$applied_checksums"
     fi
-    printf '%s  %s\n' "$image_hash" "$filepath" >> "$applied_checksums"
+    print -- "$image_hash  $filepath" >> "$applied_checksums"
 
     (( updated++ )) || true
 done < "$image_checksums"
 
-printf '%d updated, %d skipped\n' "$updated" "$skipped"
+print "${updated} updated, ${skipped} skipped"

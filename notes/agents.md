@@ -26,7 +26,7 @@ self-hosted MediaWiki 1.44 wiki for the [Attu Project](https://attuproject.org),
 | `mediawiki` | FrankenPHP app server (Caddy + PHP 8.4) on port 8080; serves the wiki at `/wiki/$1` |
 | `database` | MariaDB 12; dev is ephemeral (loaded from SQL dump), prod uses a persistent volume |
 | `redis` | object cache, session store, parser cache, and job queue backend |
-| `scheduler` | Supercronic cron runner; dispatches all background tasks via `attu_tasks.zsh` |
+| `scheduler` | Supercronic cron runner; dispatches all background tasks via `entry.zsh` |
 | `job-update` | init container; runs `update --quick` DB migrations before `mediawiki` and `scheduler` start |
 | `yourls` | URL shortener at `links.attuproject.org` (prod only, port 6009) |
 | `config/` | Caddyfile, LocalSettings.php, wiki.crontab, robots.txt, yourls config |
@@ -62,7 +62,7 @@ self-hosted MediaWiki 1.44 wiki for the [Attu Project](https://attuproject.org),
   sudo zsh -c 'mkdir -vp "$1"' -- "$backup_path"
   ```
 
-- scripts invoked from `attu_tasks.zsh` are called with `zsh -eu`; no need to re-declare `set -eu` unless the script is also run standalone
+- all scripts declare `set -eu` internally; callers do not need to pass `-eu` on the command line
 
 ## conventions: python
 
@@ -166,8 +166,7 @@ attu-wiki-dev/
 │   ├── wiki.crontab                 ← Supercronic schedule
 │   └── yourls/                      ← YOURLS config (prod only)
 ├── scripts/
-│   ├── attu_tasks.zsh               ← task dispatcher; all scheduled tasks route through here
-│   ├── entry.zsh                    ← container entrypoint (scheduler or update mode)
+│   ├── entry.zsh                    ← container entrypoint and task dispatcher
 │   ├── requirements.txt             ← Python deps for scripts
 │   ├── migrate.zsh                  ← host migration orchestrator (source-side)
 │   ├── migration/

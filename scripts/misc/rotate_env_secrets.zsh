@@ -37,19 +37,19 @@ if [[ -e "$real_env.bak" ]]; then
     [[ "$confirm" == [yY] ]] || { print "aborted."; exit 1; }
 fi
 
-cp -p "$real_env" "$real_env.bak"
+cp --preserve "$real_env" "$real_env.bak"
 chmod 600 "$real_env.bak"
 
 new_pw=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
 [[ -n "$new_pw" ]] || { print -u2 -- "secret generation failed"; exit 1; }
 
 # in-place rewrite via temp file to preserve symlink target identity
-tmp=$(mktemp -p "$(dirname "$real_env")" .env.new.XXXXXX)
+tmp=$(mktemp --tmpdir="$(dirname "$real_env")" .env.new.XXXXXX)
 trap 'rm -f "$tmp"' EXIT
 sed "s|^ATTU_DB_PASSWORD=.*|ATTU_DB_PASSWORD=\"$new_pw\"|" "$real_env" > "$tmp"
 
 # verify the line landed
-if ! grep -q "^ATTU_DB_PASSWORD=\"$new_pw\"$" "$tmp"; then
+if ! grep --quiet "^ATTU_DB_PASSWORD=\"$new_pw\"$" "$tmp"; then
     print -u2 -- "sed rewrite failed; check .env format"
     exit 1
 fi

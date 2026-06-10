@@ -1,4 +1,4 @@
-scheduled-task catalog for the wiki: every task runs via Supercronic in the `scheduler` container and routes through `scripts/attu_tasks.zsh`, which handles Discord failure alerts and BetterStack heartbeat pings.
+scheduled-task catalog for the wiki: every task runs via Supercronic in the `scheduler` container and routes through `scripts/entry.zsh`, which handles Discord failure alerts and BetterStack heartbeat pings.
 
 ## tasks
 
@@ -20,7 +20,7 @@ scheduled-task catalog for the wiki: every task runs via Supercronic in the `sch
 all tasks are invoked as:
 
 ```zsh
-zsh $USER_HOME/attu_tasks.zsh "<identifier>"
+zsh $USER_HOME/entry.zsh "<identifier>"
 ```
 
 the dispatcher does the following, in order:
@@ -31,14 +31,14 @@ the dispatcher does the following, in order:
 1. runs the task via a `case "$1"` match
 1. calls `send_success` at the end of successful tasks; pings the BetterStack heartbeat URL
 
-the ZERR trap fires on any command failure, not just the final command. sub-scripts called with `zsh -eu` propagate their failures back correctly.
+the ZERR trap fires on any command failure, not just the final command. sub-scripts propagate their failures back via their own `set -eu`.
 
 ## dev mode
 
 in dev (`BUILD_TYPE=dev`), every task short-circuits:
 
 ```zsh
-printf 'Dev Build: Simulating [%s]\n' "$1"
+print "Dev Build: Simulating [${1}]"
 sleep 5
 exit 0
 ```
@@ -48,7 +48,7 @@ exception: `task:run-jobs` is the only entry in `wiki.crontab` that passes `--al
 to run any other task for real in dev:
 
 ```bash
-docker compose exec scheduler zsh "$USER_HOME/attu_tasks.zsh" "task:error-rate-monitor" --allow-dev
+docker compose exec scheduler zsh "$USER_HOME/entry.zsh" "task:error-rate-monitor" --allow-dev
 ```
 
 ## environment variables
@@ -65,11 +65,11 @@ docker compose exec scheduler zsh "$USER_HOME/attu_tasks.zsh" "task:error-rate-m
 
 ## adding a new task
 
-1. add a `case` entry in `scripts/attu_tasks.zsh`:
+1. add a `case` entry in `scripts/entry.zsh`:
 
    ```zsh
    'task:my-new-task')
-   printf '%s\n' "Running task: my new task"
+   print 'Running task: my new task'
    python3 "$USER_HOME/tasks/my_task.py" && send_success
    ;;
    ```
@@ -77,7 +77,7 @@ docker compose exec scheduler zsh "$USER_HOME/attu_tasks.zsh" "task:error-rate-m
 1. add a line to `config/wiki.crontab`:
 
    ```
-   0 6 * * *   zsh $USER_HOME/attu_tasks.zsh "task:my-new-task"
+   0 6 * * *   zsh $USER_HOME/entry.zsh "task:my-new-task"
    ```
 
 1. rebuild the scheduler container so it picks up the updated crontab:

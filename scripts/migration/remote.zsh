@@ -13,7 +13,7 @@ set -eu -o pipefail
 
 if (( $# != 3 )); then
     print -u2 -- "usage: remote.zsh <prod-dir> <dev-dir> <dump-dir>"
-    exit 64
+    exit 2
 fi
 
 prod_dir="$1"
@@ -38,7 +38,7 @@ www_data_paths=(
     "$prod_dir/files/listed_ip_30_all.txt"
 )
 for p in "${www_data_paths[@]}"; do
-    [[ -e "$p" ]] && sudo chown -R 33:33 "$p"
+    [[ -e "$p" ]] && sudo chown --recursive 33:33 "$p"
 done
 
 # --- Set up package deps for the two devel/ repos that need it.
@@ -87,7 +87,7 @@ if (( db_init_marker_present )); then
     print -P "%F{yellow}[remote]%f db volume already initialized; preserving current .env (skipping rotation)"
 else
     print -P "%F{cyan}[remote]%f rotating ATTU_DB_PASSWORD in $dev_dir/.env"
-    rm -f "$dev_dir/.env.bak"
+    rm --force "$dev_dir/.env.bak"
     zsh "$dev_dir/scripts/misc/rotate_env_secrets.zsh" </dev/null
 fi
 
@@ -170,6 +170,6 @@ print -P "%F{cyan}[remote]%f running chore:regenerate-sitemap"
 cd "$prod_dir"
 docker compose "${prod_compose_args[@]}" run --rm \
     --entrypoint zsh scheduler \
-    /app/scripts/attu_tasks.zsh chore:regenerate-sitemap
+    /app/scripts/entry.zsh chore:regenerate-sitemap
 
 print -P "%F{green}[remote]%f migration target steps complete"

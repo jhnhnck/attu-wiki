@@ -16,5 +16,5 @@ certbot renew \
 # scheduler container, so we can't `chown :caddy` by name. verify the host's
 # caddy GID matches if you migrate or change hosts: `getent group caddy`.
 find "${certbot_config}" -type f -name '*.pem' \
-  -exec sudo chown :976 -c {} \+ \
-  -exec sudo chmod -c g+r {} \+
+  -exec sudo chown --changes :976 {} \+ \
+  -exec sudo chmod --changes g+r {} \+

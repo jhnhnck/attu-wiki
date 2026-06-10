@@ -75,7 +75,7 @@ docker compose up -d --build
 
 ## scheduled tasks
 
-all tasks run via Supercronic in the scheduler container and route through `attu_tasks.zsh`, which sends Discord alerts on failure and pings BetterStack on success.
+all tasks run via Supercronic in the scheduler container and route through `entry.zsh`, which sends Discord alerts on failure and pings BetterStack on success.
 
 | schedule | task | description |
 |---|---|---|
