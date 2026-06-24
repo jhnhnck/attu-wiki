@@ -37,7 +37,7 @@ services:
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
             - /srv/backups/attu-wiki:/app/backups
             - /var/log/journal:/var/log/journal:ro
-            - /srv/services/certificates:/srv/services/certificates
+            - /srv/services/caddy/certificates:/doom/certificates
     yourls:
         ports: !override
             - 127.0.1.4:8080:8080

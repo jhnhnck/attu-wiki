@@ -129,7 +129,7 @@ services:
             - /run/systemd/journal/socket:/run/systemd/journal/socket:ro
             - /srv/backups/attu-wiki:/app/backups
             - /var/log/journal:/var/log/journal:ro
-            - /srv/services/certificates:/srv/services/certificates
+            - /srv/services/caddy/certificates:/doom/certificates
     yourls:
         depends_on:
             database:

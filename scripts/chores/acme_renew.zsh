@@ -7,8 +7,8 @@
 
 set -eu -o pipefail
 
-typeset -r acme_home='/srv/services/certificates/.acme.sh'
-typeset -r cert_out='/srv/services/certificates'
+typeset -r acme_home="${USER_HOME}/certificates/.acme.sh"
+typeset -r cert_out="${USER_HOME}/certificates"
 
 print -P '%F{cyan}[acme-renew]%f checking certificate'
 

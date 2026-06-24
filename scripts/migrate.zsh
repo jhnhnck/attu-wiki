@@ -290,9 +290,9 @@ else
 fi
 
 # rsync acme.sh cert state (issued certs, account config in .acme.sh/).
-print -P "%F{cyan}[local]%f rsync /srv/services/certificates → ${ssh_target}:${remote_base}/certificates/"
+print -P "%F{cyan}[local]%f rsync /srv/services/caddy/certificates → ${ssh_target}:/srv/services/caddy/certificates/"
 run rsync $rsync_flags \
-    /srv/services/certificates/ "${ssh_target}:${remote_base}/certificates/"
+    /srv/services/caddy/certificates/ "${ssh_target}:/srv/services/caddy/certificates/"
 
 # --- 5. Rsync override templates → final names + dump artifacts ---------
 print -P "%F{cyan}[local]%f installing docker-compose.override.yml on target"

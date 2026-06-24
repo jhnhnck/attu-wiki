@@ -13,7 +13,7 @@ scheduled-task catalog for the wiki: every task runs via Supercronic in the `sch
 | `chore:regenerate-sitemap` | daily 20:00 | `php maintenance/run.php generateSitemap` | writes XML sitemaps to `/app/mediawiki/sitemap/`; skips redirects |
 | `chore:spam-list-refresh` | every 3 days 20:00 | `chores/spam_list_refresh.zsh` | downloads fresh StopForumSpam blocklist to `resources/listed_ip_30_all.txt` |
 | `chore:templates-refresh` | every 7 days 20:00 | `chores/templates_refresh.zsh` | imports 9 Wikipedia templates via `Special:Export` + `importDump` maintenance script |
-| `chore:acme-renew` | daily 03:00 + 15:00 | `chores/acme_renew.zsh` | runs `acme.sh --issue --dns dns_cf` (Let's Encrypt, Cloudflare DNS-01); issues/renews a single multi-SAN cert for all three domains; installs to `/srv/services/certificates/attuproject.org/`; fixes `.pem` ownership to GID 976 (caddy); exit 2 from acme.sh = not yet due, treated as success |
+| `chore:acme-renew` | daily 03:00 + 15:00 | `chores/acme_renew.zsh` | runs `acme.sh --issue --dns dns_cf` (Let's Encrypt, Cloudflare DNS-01); issues/renews a single multi-SAN cert for all three domains; installs to `/doom/certificates/attuproject.org/` (host: `/srv/services/caddy/certificates/attuproject.org/`); fixes `.pem` ownership to GID 976 (caddy); exit 2 from acme.sh = not yet due, treated as success |
 
 ## dispatcher
 
