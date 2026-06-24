@@ -45,7 +45,7 @@ done
 # NovaDiscord (PHP, composer) and FamilyTreeEditor (JS, pnpm workspace) are
 # the only devel/ repos with package managers that need running on a fresh
 # checkout. Other devel/ repos (Citizen, Drafts, MediaWiki) are pure-PHP and
-# don't need install steps. Other host paths (scripts/.venv, certbot/.venv,
+# don't need install steps. Other host paths (scripts/.venv,
 # project-root .venv) are intentionally untouched here — they're either set
 # up out-of-band on target or not actually used at runtime.
 #

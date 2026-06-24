@@ -122,9 +122,9 @@ case "$1" in
     wait
     ;;
 
-    'chore:certbot-renew')
+    'chore:acme-renew')
     print 'Running chore: renew SSL certificates'
-    zsh "$USER_HOME/chores/certbot_renew.zsh" && send_success
+    zsh "$USER_HOME/chores/acme_renew.zsh" && send_success
     ;;
 
     'chore:load-modules')

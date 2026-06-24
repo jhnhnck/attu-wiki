@@ -14,7 +14,7 @@ open work items for the Attu wiki repo, grouped by area; see [format](#format) f
 - :o: `low priority` `low effort` remove git objects/modules after NovaDiscord clone in prod build (`mediawiki.Dockerfile:199`)
 - :o: `low priority` `high effort` port doom-bot `deploy.py` pattern to wiki repo (version bump, tag, ff-merge dev → trunk, build, health-check, push, rollback)
 - :o: `low priority` `medium effort` publish FamilyTreeEditor to a repo prod can clone at build time, then drop the dev-only `Caddyfile.trees` gate
-- :o: `low priority` `low effort` verify host caddy GID matches `976` after server migration (`scripts/chores/certbot_renew.zsh`)
+- :o: `low priority` `low effort` verify host caddy GID matches `976` after server migration (`scripts/chores/acme_renew.zsh`)
 
 ### search
 

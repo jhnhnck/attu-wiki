@@ -289,13 +289,10 @@ else
     print -P "%F{yellow}[local]%f preserving target's .env (already exists)"
 fi
 
-# rsync certbot config (live cert state, cloudflare creds, domains.conf).
-# excludes: work/ and logs/ are runtime scratch; venv/ is rebuilt on target
-# by the venv-recreation walker in remote.zsh.
-print -P "%F{cyan}[local]%f rsync /srv/services/certbot → ${ssh_target}:${remote_base}/certbot/"
+# rsync acme.sh cert state (issued certs, account config in .acme.sh/).
+print -P "%F{cyan}[local]%f rsync /srv/services/certificates → ${ssh_target}:${remote_base}/certificates/"
 run rsync $rsync_flags \
-    --exclude 'work/' --exclude 'logs/' --exclude 'venv/' \
-    /srv/services/certbot/ "${ssh_target}:${remote_base}/certbot/"
+    /srv/services/certificates/ "${ssh_target}:${remote_base}/certificates/"
 
 # --- 5. Rsync override templates → final names + dump artifacts ---------
 print -P "%F{cyan}[local]%f installing docker-compose.override.yml on target"

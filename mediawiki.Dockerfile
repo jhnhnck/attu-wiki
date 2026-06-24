@@ -252,7 +252,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
         mariadb-client; \
     sudo curl -sSL -o /usr/local/bin/discord.sh https://github.com/fieu/discord.sh/releases/download/v2.0.1/discord.sh; \
     echo '01619fc6b89dd88fef7386d14f3b1db9aaaf9b5a8501d263f24228924fe0d528  /usr/local/bin/discord.sh' | sha256sum -c; \
-    sudo chmod a+x /usr/local/bin/discord.sh;
+    sudo chmod a+x /usr/local/bin/discord.sh; \
+    sudo curl -sSL -o /usr/local/bin/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/3.1.3/acme.sh; \
+    echo '66171c3113f2e36569572edb1656962d63c72862a57e03cbd2a066adaad5e588  /usr/local/bin/acme.sh' | sha256sum -c; \
+    sudo chmod a+x /usr/local/bin/acme.sh;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
 COPY --chown=doom:doom ./pyproject.toml ./uv.lock $USER_HOME/

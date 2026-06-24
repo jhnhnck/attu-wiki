@@ -21,4 +21,4 @@
 0 20 * * *      zsh $USER_HOME/entry.zsh "chore:regenerate-sitemap"
 0 20 */3 * *    zsh $USER_HOME/entry.zsh "chore:spam-list-refresh"
 0 20 */7 * *    zsh $USER_HOME/entry.zsh "chore:templates-refresh"
-0 3,15 * * *    zsh $USER_HOME/entry.zsh "chore:certbot-renew"
+0 3,15 * * *    zsh $USER_HOME/entry.zsh "chore:acme-renew"
