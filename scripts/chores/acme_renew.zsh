@@ -19,17 +19,26 @@ typeset -a domains=(
     attu.link
 )
 
+typeset -i rc failures=0
+
 print -P '%F{cyan}[acme-renew]%f checking certificates'
 
 for domain in "${domains[@]}"; do
     print -P "%F{cyan}[acme-renew]%f ${domain}"
 
+    rc=0
     # --home keeps all state (account, domain config) on the bind mount so it
     # survives container restarts; ACME_HOME env var is not reliably picked up
     acme.sh --home "${acme_home}" --issue --dns dns_cf --server letsencrypt \
         -d "${domain}" \
         -d "*.${domain}" \
-        || (( $? == 2 ))
+        || rc=$?
+
+    if (( rc != 0 && rc != 2 )); then
+        print -P "%F{yellow}[acme-renew]%f ${domain}: issue failed (exit ${rc}), skipping"
+        (( ++failures ))
+        continue
+    fi
 
     mkdir -p "${cert_out}/${domain}"
 
@@ -45,5 +54,8 @@ done
 find "${cert_out}" -type f -name '*.pem' \
     -exec sudo chown --changes :976 {} \+ \
     -exec sudo chmod --changes g+r {} \+
+
+# non-zero exit triggers the ZERR trap in entry.zsh, firing the Discord alert
+(( failures == 0 ))
 
 print -P '%F{green}Done.%f'
