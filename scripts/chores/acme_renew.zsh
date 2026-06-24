@@ -12,15 +12,17 @@ typeset -r cert_out='/srv/services/certificates'
 
 print -P '%F{cyan}[acme-renew]%f checking certificate'
 
-ACME_HOME="${acme_home}" CF_Token="${CF_Token}" \
-acme.sh --issue --dns dns_cf --server letsencrypt \
+# --home keeps all state (account, domain config) on the bind mount so it
+# survives container restarts; ACME_HOME env var is not reliably picked up
+acme.sh --home "${acme_home}" --issue --dns dns_cf --server letsencrypt \
     -d attuproject.org \
     -d dev.attuproject.org \
     -d links.attuproject.org \
     || (( $? == 2 ))
 
-ACME_HOME="${acme_home}" \
-acme.sh --install-cert -d attuproject.org \
+mkdir -p "${cert_out}/attuproject.org"
+
+acme.sh --home "${acme_home}" --install-cert -d attuproject.org \
     --cert-file      "${cert_out}/attuproject.org/cert.pem" \
     --key-file       "${cert_out}/attuproject.org/key.pem" \
     --fullchain-file "${cert_out}/attuproject.org/fullchain.pem" \
