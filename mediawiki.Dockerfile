@@ -255,7 +255,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
     sudo chmod a+x /usr/local/bin/discord.sh; \
     sudo curl -sSL -o /usr/local/bin/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/3.1.3/acme.sh; \
     echo '66171c3113f2e36569572edb1656962d63c72862a57e03cbd2a066adaad5e588  /usr/local/bin/acme.sh' | sha256sum -c; \
-    sudo chmod a+x /usr/local/bin/acme.sh;
+    sudo chmod a+x /usr/local/bin/acme.sh; \
+    sudo mkdir -p /usr/local/bin/dnsapi; \
+    sudo curl -sSL -o /usr/local/bin/dnsapi/dns_cf.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/3.1.3/dnsapi/dns_cf.sh; \
+    echo '9628ee8238cb3f9cfa1b1a985c0e9593436a3e4f8a9d65a6f775b981be9e76c8  /usr/local/bin/dnsapi/dns_cf.sh' | sha256sum -c;
 
 COPY --from=gobuilder /go/bin/supercronic /usr/bin/supercronic
 COPY --chown=doom:doom ./pyproject.toml ./uv.lock $USER_HOME/
