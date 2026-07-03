@@ -199,6 +199,7 @@ $wgVisualEditorEnableDiffPage = true;
 $wgVisualEditorEnableWikitext = true;
 $wgVisualEditorUseSingleEditTab = true;
 wfLoadExtension('WikiEditor');
+wfLoadExtension('AttuEditor');
 wfLoadExtension('ParserFunctions');
 $wgPFEnableStringFunctions = true;
 

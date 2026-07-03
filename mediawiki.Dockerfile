@@ -207,6 +207,10 @@ RUN set -eu; \
         find .. -type d -name '.git' -exec rm -rf \{\} +; \
     fi;
 
+# AttuEditor — wiki editor SPA packaged as a ResourceLoader extension
+# prerequisite: run `pnpm -F wiki-editor build:ext` from tree-editor before docker compose build
+COPY --chown=www-data:www-data ./extensions/AttuEditor/ $APP_HOME/mediawiki/extensions/AttuEditor/
+
 # mediawiki assets and config
 COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets
 COPY --chown=www-data:www-data ./config/LocalSettings.php $APP_HOME/mediawiki/LocalSettings.php
