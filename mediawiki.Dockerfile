@@ -209,8 +209,8 @@ RUN set -eu; \
     fi;
 
 # AttuEditor — wiki editor SPA packaged as a ResourceLoader extension
-# prerequisite: run `pnpm -F wiki-editor build:ext` from tree-editor before docker compose build
-COPY --chown=www-data:www-data ./extensions/AttuEditor/ $APP_HOME/mediawiki/extensions/AttuEditor/
+# disabled until the tree-editor build output is ready; prerequisite: run `pnpm -F wiki-editor build:ext` from tree-editor before re-enabling
+# COPY --chown=www-data:www-data ./extensions/AttuEditor/ $APP_HOME/mediawiki/extensions/AttuEditor/
 
 # mediawiki assets and config
 COPY --chown=www-data:www-data ./files/assets/ $APP_HOME/mediawiki/resources/assets

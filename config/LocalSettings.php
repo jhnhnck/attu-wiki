@@ -199,7 +199,7 @@ $wgVisualEditorEnableDiffPage = true;
 $wgVisualEditorEnableWikitext = true;
 $wgVisualEditorUseSingleEditTab = true;
 wfLoadExtension('WikiEditor');
-wfLoadExtension('AttuEditor');
+// wfLoadExtension('AttuEditor'); // disabled until tree-editor build output is ready
 wfLoadExtension('ParserFunctions');
 $wgPFEnableStringFunctions = true;
 
