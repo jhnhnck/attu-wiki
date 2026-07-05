@@ -135,6 +135,7 @@ RUN set -eu; \
         extensions/Echo \
         extensions/InputBox \
         extensions/Interwiki \
+        extensions/Linter \
         extensions/Math \
         extensions/PageImages \
         extensions/ParserFunctions \

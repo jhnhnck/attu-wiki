@@ -292,6 +292,8 @@ $wgGroupPermissions['sysop']['interwiki'] = true;
 
 wfLoadExtension('CreatePageUw');
 
+wfLoadExtension('Linter');
+
 # Misc
 $wgPingback = true;
 $wgRightsPage = '';
