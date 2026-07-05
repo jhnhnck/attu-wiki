@@ -41,6 +41,7 @@ sitemap/
 docker-compose.yml
 devel/
 .claude/worktrees/
+.playwright-mcp/
 
 ### Notes ###
 notes/plans/
